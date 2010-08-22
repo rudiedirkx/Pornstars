@@ -92,6 +92,7 @@ foreach ( $arrUnits AS $arrUnit ) {
 		if ( 'r_d_required_id' != $szProp && 'steals' != $szProp ) {
 			if ( 'COSTS' === $szProp ) {
 				$costs = db_fetch('SELECT *'.( 'NEW' !== $arrUnit['id'] ? ' FROM d_resources r LEFT JOIN d_unit_costs c ON c.resource_id = r.id AND c.unit_id = '.$arrUnit['id'] : ', 0 amount FROM d_resources r' ).' ORDER BY r.id ASC');
+echo db_error();
 				foreach ( $costs AS $c ) {
 					echo '<tr><td align="right">'.$c['resource'].'</td><td>:</td><td><input type="text" name="costs['.$c['id'].']" value="'.(int)$c['amount'].'" size="5" /></td></tr>';
 				}
