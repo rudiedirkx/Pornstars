@@ -6,6 +6,10 @@ define( 'PARENT_SCRIPT_NAME',	$_SERVER['SCRIPT_NAME'] );
 define( 'BASEPAGE', basename($_SERVER['PHP_SELF']) );
 
 
+define( 'PROJECT_RUNTIME',	dirname(dirname(__FILE__)).'/runtime' );
+define( 'PROJECT_LOGS',		PROJECT_RUNTIME.'/logs' );
+
+
 session_start();
 error_reporting(2047);
 

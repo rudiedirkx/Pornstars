@@ -153,6 +153,11 @@ function db_delete($tbl, $where) {
 function db_query($query) {
 	global $g_db, $g_iQueries, $g_arrQueries;
 	$r = @mysql_query($query, $g_db)/* or die('<pre>QUERY: "'.$query.'"<br />ERROR: <b>'.mysql_error().'</b></pre>')*/;
+	if ( !$r ) {
+		static $log;
+		if ( !$log ) $log = fopen(PROJECT_LOGS.'/sqlerrors.log', 'a');
+		fwrite($log, $query."\r\n".db_error()."\r\n\r\n");
+	}
 	if ( !isset($g_iQueries,$g_arrQueries) ) {
 		$g_iQueries = 1;
 		$g_arrQueries = array($query);

@@ -3,9 +3,9 @@
 
 <?php if ( isset($titlearray[$st]) ) { $st = $titlearray[$st]; } if ( !isset($stF) || $stF != "overview" ) { ?>
 <br />
-<table border="0" cellpadding="2" cellspacing="0" width="100%" style="border-collapse:collapse;background-color:#211;">
-<tr><td style="border:solid 1px #333;" align="center"><b>INFORMATION -- <?php echo strtoupper(str_replace('_', ' ', $st)); ?></b></td></tr>
-<tr><td style="border:solid 1px #333;padding:4px;" align="center">
+<table border="0" cellpadding="2" cellspacing="0" width="100%" style="border-collapse:collapse;background-color:#383838;">
+<tr><td style="border-bottom:solid 1px #555;" align="center"><b>INFORMATION -- <?php echo strtoupper(str_replace('_', ' ', $st)); ?></b></td></tr>
+<tr><td style="padding:4px;" align="center">
 <?php
 
 global $NUM_OUTGOING_FLEETS, $FLEETNAMES;

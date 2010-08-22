@@ -14,12 +14,12 @@ if ( logincheck(false) ) {
 <head>
 <title><?php echo $GAMENAME; ?></title>
 </head>
-<frameset rows="30,*" frameborder="0" border="0">
-	<frameset cols="152,*" frameborder="0" border="0">
+<frameset rows="50,*" frameborder="0" border="0">
+	<frameset cols="220,*" frameborder="0" border="0">
 		<frame name="t0" SRC="<?php echo !empty($_SESSION['ps_is_ticker']) ? 'tickah.php?special=yes' : 'leeg.php'; ?>" noresize="noresize" marginwidth="0" marginheight="0" scrolling="no" frameborder="0">
 		<frame name="a0" SRC="index.php?ps_page=playtitelbalk" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
 	</frameset>
-	<frameset cols="152,*" frameborder="0" border="0">
+	<frameset cols="220,*" frameborder="0" border="0">
 		<frame name="a1" SRC="menu.php" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
 		<frame name="a9" SRC="overview.php" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
 	</frameset>
