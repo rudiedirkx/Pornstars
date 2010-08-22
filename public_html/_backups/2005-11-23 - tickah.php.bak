@@ -1,0 +1,523 @@
+<?
+
+function getmicrotime_t()
+{
+    list($usec, $sec) = explode(" ",microtime());
+    return ((float)$usec + (float)$sec);
+} $start_time = getmicrotime_t();
+
+include("config.php");
+
+echo "<title>TICKER</title><pre><body style='margin:0px;overflow:auto;' bgcolor=black scroll=no><br>";
+
+$refreshingtime = ($TICKERTIME>5) ? round($TICKERTIME/2) : $TICKERTIME;
+$autorefresh = 1;
+
+if (!$GAMEPREFS[ticker_on])
+{
+	if (!$MyT)
+		die("<META http-equiv=refresh content=$refreshingtime>Ticker has not yet started. Sign up and join the game!");
+	else
+		die("<META http-equiv=refresh content=$refreshingtime>Ticker is temporarily disabled.");
+}
+
+if ($GAMEPREFS[tickcount] >= $GAMEPREFS[general_gamestoptick] && $GAMEPREFS[general_gamestoptick])
+{
+	$r = mysql_fetch_assoc(mysql_query("SELECT id,username,x,y,score FROM $TABLE[users] ORDER BY rank LIMIT 1"));
+	die("You wont believe, but the game has STOPPED! The winner:<br><b>$r[username] #$r[id] from ($r[x],$r[y]) with ".nummertje($r[score])." points.");
+}
+
+
+$pw = "adminn";
+if ($password != $pw && $_SERVER[HTTP_HOST] != "localhost" && $_SERVER[REMOTE_ADDR] != "80.126.42.215" && $GAMEPREFS[pwd_voor_ticker])
+{
+	die("<META http-equiv=refresh content=$refreshingtime>Password error!");
+}
+
+
+
+if ($tickdif<$tickertime-1 && !$TICKERTIMEOVERRIDE)
+{
+	die("<META http-equiv=refresh content=$refreshingtime>Less than $tickertime seconds since last tick!");
+}
+
+$fp = fopen("ticker.dat","w");
+fputs($fp,time());
+fclose($fp);
+
+
+
+// RESEARCHES // SECTION A
+mysql_query("UPDATE $TABLE[users] SET r_scan1=r_scan1-1 WHERE r_scan1>1 AND ready2play='1'") or die("error_AA".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan2=r_scan2-1 WHERE r_scan2>1 AND ready2play='1'") or die("error_AB".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan3=r_scan3-1 WHERE r_scan3>1 AND ready2play='1'") or die("error_AC".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan4=r_scan4-1 WHERE r_scan4>1 AND ready2play='1'") or die("error_AD".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan5=r_scan5-1 WHERE r_scan5>1 AND ready2play='1'") or die("error_AE".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_crystal15=r_crystal15-1 WHERE r_crystal15>1 AND ready2play='1'") or die("error_AF".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_crystal25=r_crystal25-1 WHERE r_crystal25>1 AND ready2play='1'") or die("error_AG".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_metal15=r_metal15-1 WHERE r_metal15>1 AND ready2play='1'") or die("error_AH".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_metal25=r_metal25-1 WHERE r_metal25>1 AND ready2play='1'") or die("error_AI".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_pwarast=r_pwarast-1 WHERE r_pwarast>1 AND ready2play='1'") or die("error_AJ".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_pcob=r_pcob-1 WHERE r_pcob>1 AND ready2play='1'") or die("error_AK".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_energy=r_energy-1 WHERE r_energy>1 AND ready2play='1'") or die("error_AL".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_wblockers=r_wblockers-1 WHERE r_wblockers>1 AND ready2play='1'") or die("error_AM".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_abot=r_abot-1 WHERE r_abot>1 AND ready2play='1'") or die("error_AN".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_abot2=r_abot2-1 WHERE r_abot2>1 AND ready2play='1'") or die("error_AO".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_enef=r_enef-1 WHERE r_enef>1 AND ready2play='1'") or die("error_AP".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_timt=r_timt-1 WHERE r_timt>1 AND ready2play='1'") or die("error_AQ".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_timt2=r_timt2-1 WHERE r_timt2>1 AND ready2play='1'") or die("error_AR".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_rebo=r_rebo-1 WHERE r_rebo>1 AND ready2play='1'") or die("error_AS".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_prsp=r_prsp-1 WHERE r_prsp>1 AND ready2play='1'") or die("error_AT".mysql_error());
+
+// CONSTRUCTIONS // SECTION B
+mysql_query("UPDATE $TABLE[users] SET c_crystal10=c_crystal10-1 WHERE c_crystal10>1 AND ready2play='1'") or die("error_BA".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_crystal20=c_crystal20-1 WHERE c_crystal20>1 AND ready2play='1'") or die("error_BB".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_crystal30=c_crystal30-1 WHERE c_crystal30>1 AND ready2play='1'") or die("error_BC".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal10=c_metal10-1 WHERE c_metal10>1 AND ready2play='1'") or die("error_BD".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal20=c_metal20-1 WHERE c_metal20>1 AND ready2play='1'") or die("error_BE".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal30=c_metal30-1 WHERE c_metal30>1 AND ready2play='1'") or die("error_BF".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_bscan=c_bscan-1 WHERE c_bscan>1 AND ready2play='1'") or die("error_BG".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_uscan=c_uscan-1 WHERE c_uscan>1 AND ready2play='1'") or die("error_BH".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pscan=c_pscan-1 WHERE c_pscan>1 AND ready2play='1'") or die("error_BI".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_mscan=c_mscan-1 WHERE c_mscan>1 AND ready2play='1'") or die("error_BJ".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_nscan=c_nscan-1 WHERE c_nscan>1 AND ready2play='1'") or die("error_BK".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pinf=c_pinf-1 WHERE c_pinf>1 AND ready2play='1'") or die("error_BL".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pwra=c_pwra-1 WHERE c_pwra>1 AND ready2play='1'") or die("error_BM".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdes=c_pdes-1 WHERE c_pdes>1 AND ready2play='1'") or die("error_BN".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_psco=c_psco-1 WHERE c_psco>1 AND ready2play='1'") or die("error_BO".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdu1=c_pdu1-1 WHERE c_pdu1>1 AND ready2play='1'") or die("error_BP".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdu2=c_pdu2-1 WHERE c_pdu2>1 AND ready2play='1'") or die("error_BQ".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_energy=c_energy-1 WHERE c_energy>1 AND ready2play='1'") or die("error_BR".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_wblockers=c_wblockers-1 WHERE c_wblockers>1 AND ready2play='1'") or die("error_BS".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_abot=c_abot-1 WHERE c_abot>1 AND ready2play='1'") or die("error_BT".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_enef=c_enef-1 WHERE c_enef>1 AND ready2play='1'") or die("error_BU".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_timt=c_timt-1 WHERE c_timt>1 AND ready2play='1'") or die("error_BV".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_rebo=c_rebo-1 WHERE c_rebo>1 AND ready2play='1'") or die("error_BW".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_rebo2=c_rebo2-1 WHERE c_rebo2>1 AND ready2play='1'") or die("error_BX".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_prsp=c_prsp-1 WHERE c_prsp>1 AND ready2play='1'") or die("error_AY".mysql_error());
+
+// MISC 1 // SECTION C
+mysql_query("UPDATE $TABLE[users] SET newbie=newbie-1 WHERE newbie>0 AND lastaction>0 AND ready2play='1'") or die("error_CA".mysql_error());
+mysql_query("UPDATE $TABLE[production] SET eta=eta-1 WHERE eta>0") or die("error_CB".mysql_error());
+// mysql_query("DELETE FROM $TABLE[online] WHERE time<".(time()-600)) or die("error_CC".mysql_error());
+
+mysql_query("UPDATE $TABLE[fleets] SET purpose='',eta=0,starteta=0,actiontime=0,startactiontime=0,destination_id=0,destination_x=0,destination_y=0 WHERE eta=0 AND purpose='return'"); // Klaar met returnen -> army weer klaar
+mysql_query("UPDATE $TABLE[fleets] SET eta=eta-1 WHERE eta>0");
+mysql_query("UPDATE $TABLE[fleets] SET destination_id=0,destination_x=0,destination_y=0,purpose='',eta=0,starteta=0,actiontime=0,startactiontime=0 WHERE infinitys=0 AND wraiths=0 AND warfrigs=0 AND astropods=0 AND cobras=0 AND destroyers=0 AND scorpions=0 AND antennas=0 AND fleetname!='base' AND purpose!=''") or die("error_X2".mysql_error()); // Recall fleets with 0 ships
+mysql_query("UPDATE $TABLE[fleets] SET purpose='return',eta=starteta,starteta=0,actiontime=0,startactiontime=0 WHERE actiontime=0 AND eta=0 AND fleetname!='base' AND purpose!=''"); // Return want klaar met combat (alles leeg behalve eta en targetopties)
+
+// ENERGY // SECTION D
+mysql_query("UPDATE $TABLE[users] SET creoncells=creoncells*.9994, creonboxes=creonboxes*.9994 WHERE ready2play='1'") or die("error_DA".mysql_error());
+mysql_query("UPDATE $TABLE[users] SET energy=energy+(creoncells*40)+(creonboxes*70) WHERE ready2play='1'") or die("error_DA".mysql_error());
+
+
+// Deletes UNUSED accounts (After 48 hours of inactivity)
+// mysql_query("DELETE FROM $TABLE[users] WHERE lastaction<".(time()-3600*48)." AND lastaction>0 AND vacation=0 AND roids<3 AND ready2play='1'") or die("error_X1".mysql_error());
+
+// NEWS deleten uit elke user zn tabel (alleen laatste 48 uur is OK)
+$okaytime = time()-(48*3600);
+// mysql_query("DELETE FROM $TABLE[news] WHERE time<$okaytime AND seen='1' AND visibility='0'") or die("error_X3".mysql_error());
+
+
+
+
+
+
+
+$allusers = mysql_query("SELECT * FROM $TABLE[users] WHERE ready2play='1' ORDER BY x,y") or die("error_X5".mysql_error());
+while ($myrow = mysql_fetch_array($allusers))
+{
+	$id		= $myrow[id];
+	$username	= $myrow[username];
+	$g_rulername	= $myrow[rulername];
+	$g_planetname	= $myrow[planetname];
+	$g_x		= $myrow[x];
+	$g_y		= $myrow[y];
+
+	$crystal	= $myrow[crystal];
+	$metal		= $myrow[metal];
+
+	$size		= $myrow[size];
+	$crystalroid	= $myrow[asteroid_crystal];
+	$metalroid	= $myrow[asteroid_metal];
+	$asteroid_ui	= $myrow[asteroid_ui];
+	$roids		= $crystalroid + $metalroid + $asteroid_ui;
+	$i_roids	= $crystalroid + $metalroid;
+
+
+// RESOURCES //
+
+	$metalincome = 0;
+	$metalincome += res_per_type($metalroid);
+	$metalincome *= ($myrow[c_rebo]==1 && $myrow[c_rebo2]==1 && $myrow[r_rebo]==1) ? 1.15 : 1;
+	$metalincome += ($myrow[galaxyfunction]=="GC") ? 0.05*res_per_type($metalroid) : 0;
+	$metalincome += ($myrow[c_metal10]==1) ? 1500 : 0;
+	$metalincome += ($myrow[c_metal20]==1) ? 3000 : 0;
+	$metalincome += ($myrow[c_metal30]==1) ? 6000 : 0;
+	$crystalincome = 0;
+	$crystalincome += res_per_type($crystalroid);
+	$crystalincome *= ($myrow[c_rebo]==1 && $myrow[c_rebo2]==1 && $myrow[r_rebo]==1) ? 1.15 : 1;
+	$crystalincome += ($myrow[galaxyfunction]=="GC") ? 0.05*res_per_type($crystalroid) : 0;
+	$crystalincome += ($myrow[c_crystal10]==1) ? 1500 : 0;
+	$crystalincome += ($myrow[c_crystal20]==1) ? 3000 : 0;
+	$crystalincome += ($myrow[c_crystal30]==1) ? 6000 : 0;
+	mysql_query("UPDATE $TABLE[users] SET metal=metal+$metalincome, crystal=crystal+$crystalincome WHERE id='$id'") or die("error_X6".mysql_error());
+
+
+// PRODUCTION // SECTION E
+
+	$prod = mysql_query("SELECT * FROM $TABLE[production] WHERE uid='$id' AND eta='0'") or die("error_EC".mysql_error());
+	while ($pi = mysql_fetch_assoc($prod))
+	{
+		if ($pi[prodtype] == "w" || $pi[prodtype] == "e" || $pi[unit]=="rcannons" || $pi[unit]=="avengers" || $pi[unit]=="lstalkers")
+		{	// Het zijn GEEN schepen, die klaar zijn -> in TABLE users
+			$sql = "UPDATE $TABLE[users] SET $pi[unit]=$pi[unit]+$pi[number] WHERE id='$pi[uid]'";
+		}
+		else
+		{	// Het zijn schepen, die klaar zijn -> in TABLE fleets
+			$sql = "UPDATE $TABLE[fleets] SET $pi[unit]=$pi[unit]+$pi[number] WHERE owner_id='$pi[uid]' AND fleetname='base'";
+		}
+		mysql_query($sql) or die("error_EA".mysql_error());
+		mysql_query("DELETE FROM $TABLE[production] WHERE id='$pi[id]' AND uid='$pi[uid]' AND eta=0") or die("error_EB".mysql_error());
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// COMBAT // SECTION F
+
+	$ships = array("inf" => "infinitys","wra" => "wraiths","war" => "warfrigs","ast" => "astropods","cob" => "cobras","des" => "destroyers","sco" => "scorpions","ant" => "antennas");
+	$allunits = $ships;
+	$allunits[rca] = "rcannons";
+	$allunits[ave] = "avengers";
+	$allunits[lst] = "lstalkers";
+
+	// De info van de personen die $id AANVALLEN
+	$attackers_list = mysql_query("SELECT * FROM $TABLE[fleets] WHERE destination_id='$id' AND eta='0' AND purpose='attack' AND actiontime>0 ORDER BY astropods") or die("error_FA".mysql_error());
+	if (mysql_num_rows($attackers_list)>0)
+	{
+		echo "<title>COMBAT</title>Er wordt gevochten op dit moment... Er zijn ".mysql_num_rows($attackers_list)." aanvallers!<br><br><br>";
+
+		// ATTACKING FLEETS
+		$i = 1;
+		$attackers = Array();
+		$totalen_attackers = Array();
+		while ($ai = mysql_fetch_array($attackers_list))
+		{
+			$attackers[$i][fleetname]	= $ai[fleetname];
+			$attackers[$i][uid]		= $ai[owner_id];
+			foreach ($ships AS $kort => $lang)
+			{
+				$attackers[$i][$lang]			= $ai[$lang];	// Per attacker
+				$totalen_attackers[$lang]		+= $ai[$lang];	// Totale vloot attacking
+			}
+			$i++;
+		}
+		$i = 1;
+		while ($attackers[$i][uid])
+		{
+			foreach ($ships AS $kort => $lang)
+			{
+				if ($totalen_attackers[$lang]>0)	$attackers[$i]['p_'.$lang] = $attackers[$i][$lang] / $totalen_attackers[$lang];
+				else					$attackers[$i]['p_'.$lang] = 1;
+			}
+			$i++;
+		}
+
+
+		// DEFENDING FLEETS
+		$defenders_list = mysql_query("SELECT * FROM $TABLE[fleets] WHERE (destination_id='$id' AND purpose='defend' AND actiontime>0 AND infinitys+wraiths+warfrigs+astropods+cobras+destroyers+scorpions+antennas>0) OR (owner_id='$id' AND purpose='') AND eta='0' ORDER BY fleetname") or die(mysql_error());
+		$i = 1;
+		$defenders = Array();
+		$totalen_defenders = Array();
+		while ($ai = mysql_fetch_array($defenders_list))
+		{
+			$defenders[$i][fleetname]	= $ai[fleetname];
+			$defenders[$i][uid]		= $ai[owner_id];
+			foreach ($ships AS $kort => $lang)
+			{
+				$defenders[$i][$lang]			= $ai[$lang];	// Per defenders
+				$totalen_defenders[$lang]		+= $ai[$lang];	// Totale vloot defending
+			}
+			$i++;
+		}
+		$i = 1;
+		while ($defenders[$i][uid])
+		{
+			foreach ($ships AS $kort => $lang)
+			{
+				if ($totalen_defenders[$lang]>0)	$defenders[$i]['p_'.$lang] = $defenders[$i][$lang] / $totalen_defenders[$lang];
+				else					$defenders[$i]['p_'.$lang] = 1;
+			}
+			$i++;
+		}	$totalen_defenders[rcannons]	= $myrow[rcannons];
+			$totalen_defenders[avengers]	= $myrow[avengers];
+			$totalen_defenders[lstalkers]	= $myrow[lstalkers];
+
+
+		// Asteroids van hoofdverdediger
+		$asteroid_crystal	= $myrow[asteroid_crystal];
+		$asteroid_metal		= $myrow[asteroid_metal];
+		$asteroid_ui		= $myrow[asteroid_ui];
+
+
+		// Uitgangsposities (voor combat)
+		$pre_attackers		= $attackers;
+		$pre_totalen_attackers	= $totalen_attackers;
+		$pre_defenders		= $defenders;
+		$pre_totalen_defenders	= $totalen_defenders;
+		$pre_asteroid_crystal	= $asteroid_crystal;
+		$pre_asteroid_metal	= $asteroid_metal;
+		$pre_asteroid_ui	= $asteroid_ui;
+
+	include("shipstats.php");
+
+		// Attackers vallen aan
+		Attackers_Attack(0);
+
+		// Defenders vallen aan
+		Defenders_Attack(0);
+
+
+		$i = 1;
+		while ($attackers[$i][uid]>0)
+		{
+			// ROID-CAPTURING
+			if ($totalen_defenders[cobras] >= $attackers[$i][astropods])
+			{
+				// Geen roids voor deze attacker!
+				$blocked_pods = $attackers[$i][astropods];
+			}
+			else
+			{
+				$roidsc = Roids_Capped($attackers[$i][astropods]-$totalen_defenders[cobras],$asteroid_crystal,$asteroid_metal,$asteroid_ui,count($attackers));
+				mysql_query("UPDATE $TABLE[users] SET asteroid_metal=asteroid_metal+$roidsc[metal],asteroid_crystal=asteroid_crystal+$roidsc[crystal],asteroid_ui=asteroid_ui+$roidsc[ui] WHERE id='".$attackers[$i][uid]."'") or die("error_FC".mysql_error()); 
+				mysql_query("UPDATE $TABLE[users] SET asteroid_metal=asteroid_metal-$roidsc[metal],asteroid_crystal=asteroid_crystal-$roidsc[crystal],asteroid_ui=asteroid_ui-$roidsc[ui] WHERE id='$id'") or die("error_FD".mysql_error()); 
+			}
+
+			// Verloren schepen ATTACKERS
+			foreach ($ships AS $kort => $lang)
+			{
+				$pn = "p_".$lang;
+				$l[$lang] = max(floor(($pre_totalen_attackers[$lang]-$totalen_attackers[$lang])	* $attackers[$i][$pn]),0);
+			}
+
+			if ($attackers[$i][astropods]-$l_att[astropods]-$roidsc[all]<0)
+			{
+				$l[astropods] = $attackers[$i][astropods];
+				$yourlostpods = $attackers[$i][astropods];
+				$totalastropodslostbyroiding += $yourlostpods;
+			}
+			else
+			{
+				$l[astropods] += $roidsc[all];
+				$yourlostpods = $roidsc[all];
+				$totalastropodslostbyroiding += $yourlostpods;
+			}
+
+		// COMBATREPORT // voor alle aanvallers //
+
+			$report = "<table border=0 cellpadding=3 cellspacing=0 width=100%>
+			<tr><td colspan=3>Combat at <b>$g_rulername of $g_planetname</b> ($g_x:$g_y)</td></tr>
+			<tr><td><b><font color=red>Fleet ".$attackers[$i][fleetname]."</td><td>Total:</td><td>Lost:</td></tr>\n
+			<tr><td><b>Defender(s):</td></tr>\n";
+			foreach ($allunits AS $kort => $lang)
+			{
+				$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_defenders[$lang])."</td><td>".nummertje($pre_totalen_defenders[$lang]-$totalen_defenders[$lang])."</tr>\n";
+			}
+			$report .= "<tr><td colspan=3><b>Attacker(s):</td></tr>\n";
+			foreach ($ships AS $kort => $lang)
+			{
+				if ($lang == "astropods")
+					$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_attackers[$lang])."</td><td>".nummertje($pre_totalen_attackers[$lang]-$totalen_attackers[$lang]+$yourlostpods)."</tr>\n";
+				else
+					$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_attackers[$lang])."</td><td>".nummertje($pre_totalen_attackers[$lang]-$totalen_attackers[$lang])."</tr>\n";
+			}
+			$report .= "<tr><td colspan=3><b>Yours:</td></tr>\n";
+			foreach ($ships AS $kort => $lang)
+			{
+				$report .= "<tr><td>$lang:</td><td>".nummertje($attackers[$i][$lang])."</td><td>".nummertje($l[$lang])."</tr>\n";
+			}
+			$report .= "<tr><td colspan=3><b>Asteroids Captured:</td></tr>\n
+			<tr><td>Metal:</td><td colspan=2>$roidsc[metal] / $pre_asteroid_metal</td></tr>\n
+			<tr><td>Crystal:</td><td colspan=2>$roidsc[crystal] / $pre_asteroid_crystal</td></tr>\n
+			<tr><td>Uninitiated:</td colspan=2><td>$roidsc[ui] / $pre_asteroid_ui</td></tr>\n
+			</table>\n";
+			AddNews("combatreport",$report,$attackers[$i][uid]);
+
+			$asteroid_crystal -= $roidsc[crystal];
+			$asteroid_metal -= $roidsc[metal];
+			$asteroid_ui -= $roidsc[ui];
+
+		echo	$sql = "UPDATE $TABLE[fleets] SET infinitys=infinitys-$l[infinitys], wraiths=wraiths-$l[wraiths], warfrigs=warfrigs-$l[warfrigs], astropods=astropods-$l[astropods], cobras=cobras-$l[cobras], destroyers=destroyers-$l[destroyers], scorpions=scorpions-$l[scorpions], antennas=antennas-$l[antennas],actiontime=actiontime-1 WHERE owner_id='".$attackers[$i][uid]."' AND fleetname='".$attackers[$i][fleetname]."' AND purpose='attack'";
+			mysql_query($sql) or die("<br><b>Combat (0001): ".mysql_error());
+echo "\n";
+
+			$i++;
+		}
+
+
+
+
+
+
+
+
+
+		$i = 1;
+		while ($defenders[$i][uid]>0)
+		{
+			// Verloren schepen DEFENDERS
+			foreach ($ships AS $kort => $lang)
+			{
+				$pn = "p_".$lang;
+			echo	$l[$lang] = max(floor(($pre_totalen_defenders[$lang]-$totalen_defenders[$lang])	* $defenders[$i][$pn]),0);
+			}
+
+		// COMBATREPORT // voor alle verdedigers //
+
+			$report = "<table border=0 cellpadding=3 cellspacing=0 width=100%>
+			<tr><td colspan=3>Combat at <b>$g_rulername of $g_planetname</b> ($g_x:$g_y)</td></tr>
+			<tr><td><b><font color=green>Fleet ".$defenders[$i][fleetname]."</td><td>Total:</td><td>Lost:</td></tr>\n
+			<tr><td colspan=3><b>Defender(s):</td></tr>\n";
+			foreach ($allunits AS $kort => $lang)
+			{
+				$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_defenders[$lang])."</td><td>".nummertje($pre_totalen_defenders[$lang]-$totalen_defenders[$lang])."</tr>\n";
+			}
+			$report .= "<tr><td colspan=3><b>Attacker(s):</td></tr>\n";
+			foreach ($ships AS $kort => $lang)
+			{
+				if ($lang == "astropods")
+					$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_attackers[$lang])."</td><td>".nummertje($pre_totalen_attackers[$lang]-$totalen_attackers[$lang]+$totalastropodslostbyroiding)."</tr>\n";
+				else
+					$report .= "<tr><td>$lang:</td><td>".nummertje($pre_totalen_attackers[$lang])."</td><td>".nummertje($pre_totalen_attackers[$lang]-$totalen_attackers[$lang])."</tr>\n";
+			}
+			$report .= "<tr><td colspan=3><b>Yours:</td></tr>\n";
+			foreach ($ships AS $kort => $lang)
+			{
+				$report .= "<tr><td>$lang:</td><td>".nummertje($defenders[$i][$lang])."</td><td>".nummertje($l[$lang])."</tr>\n";
+			}
+			if ($defenders[$i][uid] == $id)
+			{
+				$report .= "<tr><td>rcannons:</td><td>".nummertje($pre_totalen_defenders[rcannons])."</td><td>".nummertje($pre_totalen_defenders[rcannons]-$totalen_defenders[rcannons])."</tr>\n";
+				$report .= "<tr><td>avengers:</td><td>".nummertje($pre_totalen_defenders[avengers])."</td><td>".nummertje($pre_totalen_defenders[avengers]-$totalen_defenders[avengers])."</tr>\n";
+				$report .= "<tr><td>lstalkers:</td><td>".nummertje($pre_totalen_defenders[lstalkers])."</td><td>".nummertje($pre_totalen_defenders[lstalkers]-$totalen_defenders[lstalkers])."</tr>\n";
+
+			echo	$sql = "UPDATE $TABLE[users] SET rcannons=".$totalen_defenders[rcannons].",avengers=".$totalen_defenders[avengers].",lstalkers=".$totalen_defenders[lstalkers]." WHERE rcannons=".$pre_totalen_defenders[rcannons]." AND avengers=".$pre_totalen_defenders[avengers]." AND lstalkers=".$pre_totalen_defenders[lstalkers]." AND id=$id";
+				mysql_query($sql) or die("<br><b>Combat (0002): ".mysql_error());
+echo "\n";
+			}
+			$report .= "<tr><td colspan=3><b>Asteroids:</td></tr>\n
+			<tr><td>Metal:</td><td colspan=2>".nummertje($pre_asteroid_metal-$asteroid_metal)." / $pre_asteroid_metal</td></tr>\n
+			<tr><td>Crystal:</td><td colspan=2>".nummertje($pre_asteroid_crystal-$asteroid_crystal)." / $pre_asteroid_crystal</td></tr>\n
+			<tr><td>Uninitiated:</td><td colspan=2>".nummertje($pre_asteroid_ui-$asteroid_ui)." / $pre_asteroid_ui</td></tr>\n
+			</table>\n";
+
+			if ($defenders[$i][uid] == $id && !$defenders[$i][infinitys] && !$defenders[$i][wraiths] && !$defenders[$i][warfrigs] && !$defenders[$i][astropods] && !$defenders[$i][cobras] && !$defenders[$i][destroyers] && !$defenders[$i][scorpions] && !$defenders[$i][antennas] && !$COMBATREPORTSENTTOID && !$HOMEDEFENSEGETS3COMBATREPORTS)
+			{
+				$COMBATREPORTSENTTOID=1;
+				AddNews("combatreport",$report,$defenders[$i][uid]);
+			}
+			
+
+			$atstring = ($defenders[$i][uid]!=$id) ? ",actiontime=actiontime-1" : "";
+		echo	$sql = "UPDATE $TABLE[fleets] SET infinitys=infinitys-$l[infinitys], wraiths=wraiths-$l[wraiths], warfrigs=warfrigs-$l[warfrigs], astropods=astropods-$l[astropods], cobras=cobras-$l[cobras], destroyers=destroyers-$l[destroyers], scorpions=scorpions-$l[scorpions], antennas=antennas-$l[antennas] $atstring WHERE owner_id='".$defenders[$i][uid]."' AND fleetname='".$defenders[$i][fleetname]."'";
+			mysql_query($sql) or die("<br><b>Combat (0003): ".mysql_error());
+echo "\n";
+
+			$i++;
+		}
+	}
+	// Fleet check
+	mysql_query("UPDATE $TABLE[fleets] SET owner_x='$myrow[x]', owner_y='$myrow[y]' WHERE owner_id='$myrow[id]'");
+}
+
+mysql_query("UPDATE $TABLE[fleets] SET infinitys=0 WHERE infinitys<0");
+mysql_query("UPDATE $TABLE[fleets] SET wraiths=0 WHERE wraiths<0");
+mysql_query("UPDATE $TABLE[fleets] SET warfrigs=0 WHERE warfrigs<0");
+mysql_query("UPDATE $TABLE[fleets] SET astropods=0 WHERE astropods<0");
+mysql_query("UPDATE $TABLE[fleets] SET cobras=0 WHERE cobras<0");
+mysql_query("UPDATE $TABLE[fleets] SET destroyers=0 WHERE destroyers<0");
+mysql_query("UPDATE $TABLE[fleets] SET scorpions=0 WHERE scorpions<0");
+mysql_query("UPDATE $TABLE[fleets] SET antennas=0 WHERE antennas<0");
+
+// SCORES (users)
+$ss = mysql_query("SELECT * FROM $TABLE[fleets] ORDER BY owner_id;") or die("error_X99".mysql_error());
+while ($ssi = mysql_fetch_assoc($ss))
+{
+	$scores[$ssi[owner_id]] += $ssi[infinitys]*30 + $ssi[wraiths]*100 + $ssi[warfrigs]*500 + $ssi[astropods]*250 + $ssi[cobras]*300 + $ssi[destroyers]*500 + $ssi[scorpions]*700 + $ssi[antennas]*2100;
+}
+$q = mysql_query("SELECT id FROM $TABLE[users] ORDER BY id;");
+while ($i = mysql_fetch_assoc($q))
+{
+	$score = $scores[$i[id]];
+	$sql = "UPDATE $TABLE[users] SET size=asteroid_ui+asteroid_metal+asteroid_crystal, score=((crystal+metal+energy)/100+(asteroid_metal+asteroid_crystal)*1500+rcannons*100+avengers*160+lstalkers*600+waveamps*600+waveblockers*900+$score) WHERE id='$i[id]'";
+	mysql_query($sql) or die("error_X100".mysql_error());
+}unset($score);
+
+
+// RANKING (galaxies,alliances,users)
+$n=1;
+$ranking = mysql_query("SELECT id,x,tag,score,size FROM $TABLE[users] ORDER BY -score,-size,rulername ASC") or die("error_X101".mysql_error());
+mysql_query("UPDATE $TABLE[alliances] SET score=0,size=0,num_members=0");
+mysql_query("UPDATE $TABLE[galaxies] SET score=0,size=0,num_planets=0");
+while ($r = mysql_fetch_assoc($ranking))
+{
+	mysql_query("UPDATE $TABLE[galaxies] SET score=score+$r[score], size=size+$r[size], num_planets=num_planets+1 WHERE x='$r[x]'") or die("error_X108".mysql_error());
+	mysql_query("UPDATE $TABLE[alliances] SET score=score+$r[score], size=size+$r[size],num_members=num_members+1 WHERE tag='".addslashes($r[tag])."';") or die("error_X102".mysql_error());
+	mysql_query("UPDATE $TABLE[users] SET rank='$n' WHERE id='$r[id]'") or die("error_X103".mysql_error());
+	$n++;
+}
+mysql_query("DELETE FROM $TABLE[galaxies] WHERE num_planets<1");
+mysql_query("UPDATE $TABLE[prefs] SET tickcount=tickcount+1");
+
+if (ceil($MyT/20) == floor($MyT/20))
+{
+	mysql_query("OPTIMIZE TABLE $TABLE[alliances],$TABLE[galaxies],$TABLE[users],$TABLE[production],$TABLE[news],$TABLE[fleets],$TABLE[mail]") or die("error_X109".mysql_error());
+}
+
+$end_time = getmicrotime_t();
+$load_time = round($end_time-$start_time,3);
+
+?>
+
+<br>
+<br>Tick done! (<?=($MyT)?>) (<?=$TICKERTIME?>s.)<br>
+Game stops <?=($GAMEPREFS[general_gamestoptick])?"at $GAMEPREFS[general_gamestoptick].":"never!"?><br>
+Ticker loaded in <?=$load_time?> seconds
+<?=($autorefresh)?"<META http-equiv=refresh content=$refreshingtime>":""?>
+
+

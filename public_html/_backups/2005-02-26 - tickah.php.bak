@@ -1,0 +1,1022 @@
+<?
+
+include("config.php");
+
+$refreshingtime = ($TICKERTIME>5) ? round($TICKERTIME/2) : $TICKERTIME;
+
+if (!$GAMEPREFS[ticker_on])
+{
+	if (!$MyT)
+		die("<title>TICKER</title><META http-equiv=refresh content=$refreshingtime>Ticker has not yet started. Sign up and join the game!");
+	else
+		die("<title>TICKER</title><META http-equiv=refresh content=$refreshingtime>Ticker is temporarily disabled.");
+}
+
+if ($GAMEPREFS[tickcount] >= $GAMEPREFS[general_gamestoptick] && $GAMEPREFS[general_gamestoptick])
+{
+	$r = mysql_fetch_assoc(mysql_query("SELECT id,username,x,y,score FROM $TABLE[users] ORDER BY rank LIMIT 1"));
+	die("<title>TICKER</title>You wont believe, but the game has STOPPED! The winner:<br><b>$r[username] #$r[id] from ($r[x],$r[y]) with ".nummertje($r[score])." points.");
+}
+
+
+$pw = "adminn";
+if ($password != $pw && $_SERVER[HTTP_HOST] != "localhost" && $_SERVER[REMOTE_ADDR] != "80.126.42.215" && $GAMEPREFS[pwd_voor_ticker])
+{
+	die("Password error!");
+}
+
+
+ob_start();
+
+
+
+if ($tickdif<$tickertime-1 && $override!="true")
+{
+	die("<title>TICKER</title><META http-equiv=refresh content=$refreshingtime>Less than $tickertime seconds since last tick!");
+}
+
+$fp = fopen("ticker.dat","w");
+fputs($fp,time());
+fclose($fp);
+
+mysql_query("UPDATE $TABLE[prefs] SET tickcount=tickcount+1");
+
+$time1 = time();
+
+Function Roids_capped($pods,$croids,$mroids,$uiroids,$num_attackers)
+{
+	$percent = 
+	$percent = 0.10;
+	$aroids = $croids + $mroids + $uiroids;
+	if ($pods>($percent * $aroids))
+	{
+		$roids[crystal] = floor($croids * $percent);
+		$roids[metal] = floor($mroids * $percent);
+		$roids[ui] = floor($uiroids * $percent);
+
+		return $roids;
+	}
+	else
+	{
+		$roids[crystal] = floor(($croids / $aroids) * $pods);
+		$roids[metal] = floor(($mroids / $aroids) * $pods);
+		$roids[ui] = floor(($uiroids / $aroids) * $pods);
+
+		return $roids;
+	}
+}
+
+Function dbr($txt)
+{
+	global $dbr;
+
+	$dbr = $dbr.$txt;
+}
+
+unset($dbr);
+
+mysql_query("UPDATE $TABLE[users] SET r_scan1=r_scan1-1 WHERE r_scan1>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan2=r_scan2-1 WHERE r_scan2>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan3=r_scan3-1 WHERE r_scan3>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan4=r_scan4-1 WHERE r_scan4>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_scan5=r_scan5-1 WHERE r_scan5>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_crystal15=r_crystal15-1 WHERE r_crystal15>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_crystal25=r_crystal25-1 WHERE r_crystal25>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_metal15=r_metal15-1 WHERE r_metal15>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_metal25=r_metal25-1 WHERE r_metal25>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_pwarast=r_pwarast-1 WHERE r_pwarast>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_pcob=r_pcob-1 WHERE r_pcob>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_energy=r_energy-1 WHERE r_energy>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_wblockers=r_wblockers-1 WHERE r_wblockers>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_abot=r_abot-1 WHERE r_abot>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_abot2=r_abot2-1 WHERE r_abot2>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_enef=r_enef-1 WHERE r_enef>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET r_special=r_special-1 WHERE r_special>1") or die(mysql_error());
+
+mysql_query("UPDATE $TABLE[users] SET c_crystal10=c_crystal10-1 WHERE c_crystal10>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_crystal20=c_crystal20-1 WHERE c_crystal20>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_crystal30=c_crystal30-1 WHERE c_crystal30>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal10=c_metal10-1 WHERE c_metal10>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal20=c_metal20-1 WHERE c_metal20>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_metal30=c_metal30-1 WHERE c_metal30>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_bscan=c_bscan-1 WHERE c_bscan>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_uscan=c_uscan-1 WHERE c_uscan>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pscan=c_pscan-1 WHERE c_pscan>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_mscan=c_mscan-1 WHERE c_mscan>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_nscan=c_nscan-1 WHERE c_nscan>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pinf=c_pinf-1 WHERE c_pinf>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pwra=c_pwra-1 WHERE c_pwra>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdes=c_pdes-1 WHERE c_pdes>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_psco=c_psco-1 WHERE c_psco>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdu1=c_pdu1-1 WHERE c_pdu1>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_pdu2=c_pdu2-1 WHERE c_pdu2>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_energy=c_energy-1 WHERE c_energy>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_wblockers=c_wblockers-1 WHERE c_wblockers>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_abot=c_abot-1 WHERE c_abot>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_enef=c_enef-1 WHERE c_enef>1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET c_special=c_special-1 WHERE c_special>1") or die(mysql_error());
+
+mysql_query("UPDATE $TABLE[users] SET lastsleep=lastsleep-1 WHERE lastsleep>0") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET sleep=sleep-1 WHERE sleep>0") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET newbie=newbie-1 WHERE newbie>0 AND timer>0") or die(mysql_error());
+
+mysql_query("UPDATE $TABLE[production] SET eta=eta-1 WHERE eta>0") or die(mysql_error());
+
+mysql_query("UPDATE $TABLE[users] SET wareta='$ETA_defending',war=-1,def=0 WHERE wareta=0 AND def>0") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET wareta='$ETA_attacking',war=-1 WHERE wareta=0 AND war>0") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET wareta=0,war=0 WHERE wareta=0 AND war<0") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET wareta=wareta-1 WHERE wareta>0") or die(mysql_error());
+
+
+// zij die wel c_crystal20 en c_metal20 hebben:
+mysql_query("UPDATE $TABLE[users] SET civilians=civilians*1.005, energy=energy-(0.125*civilians) WHERE c_crystal20=1 AND c_metal20=1 AND energy>0") or die(mysql_error());
+// zij die GEEN c_crystal20 en c_metal20 hebben:
+mysql_query("UPDATE $TABLE[users] SET civilians=civilians*1.005 WHERE c_crystal20!=1 AND c_metal20!=1 AND energy>0") or die(mysql_error());
+// Max number of civilians
+mysql_query("UPDATE $TABLE[users] SET civilians=500000 WHERE civilians>500000") or die(mysql_error());
+
+mysql_query("UPDATE $TABLE[users] SET metal=metal+(0.10*civilians),crystal=crystal+(0.10*civilians) WHERE c_special=1 AND r_special=1") or die(mysql_error());
+mysql_query("UPDATE $TABLE[users] SET energy='0' WHERE energy<0") or die(mysql_error());
+
+
+// Deletes UNUSED accounts
+mysql_query("DELETE FROM $TABLE[users] WHERE timer<".(time()-3600*48) AND timer!='');
+
+
+// The recall of fleets with 0 ships
+mysql_query("UPDATE $TABLE[users] SET war=-1,wareta=30 WHERE war>0 AND infinitys_fleet=0 AND wraiths_fleet=0 AND warfrigs_fleet=0 AND astropods_fleet=0 AND cobras_fleet=0 AND destroyers_fleet=0 AND scorpions_fleet=0");
+
+// NEWS deleten uit elke user zn tabel (alleen laatste 24 uur is OK)
+$okaytime = time()-(24*60*60);
+mysql_query("DELETE FROM $TABLE[news] WHERE time<$okaytime AND seen='1'") or die(mysql_error());
+
+
+mysql_query("UPDATE $TABLE[users] SET energy=energy+(energyplants*45) WHERE c_energy=1 AND r_energy=1") or die(mysql_error());
+
+
+
+
+
+
+
+$result = mysql_query("SELECT * FROM $TABLE[users] ORDER BY score DESC") or die(mysql_error());
+$rank = 1;
+while ($myrow = mysql_fetch_array($result))
+{
+	$id = $myrow[id];
+	$username = $myrow[username];
+
+	$r_scan1	= $myrow[r_scan1];
+	$r_scan2	= $myrow[r_scan2];
+	$r_scan3	= $myrow[r_scan3];
+	$r_scan4	= $myrow[r_scan4];
+	$r_scan5	= $myrow[r_scan5];
+	$r_crystal15	= $myrow[r_crystal15];
+	$r_crystal25	= $myrow[r_crystal25];
+	$r_metal15	= $myrow[r_metal15];
+	$r_metal25	= $myrow[r_metal25];
+	$r_pwarast	= $myrow[r_pwarast];
+	$r_pcob		= $myrow[r_pcob];
+	$r_energy	= $myrow[r_energy];
+
+	$c_crystal10	= $myrow[c_crystal10];
+	$c_crystal20	= $myrow[c_crystal20];
+	$c_crystal30	= $myrow[c_crystal30];
+	$c_metal10	= $myrow[c_metal10];
+	$c_metal20	= $myrow[c_metal20];
+	$c_metal30	= $myrow[c_metal30];
+	$c_bscan	= $myrow[c_bscan];
+	$c_uscan	= $myrow[c_uscan];
+	$c_pscan	= $myrow[c_pscan];
+	$c_mscan	= $myrow[c_mscan];
+	$c_nscan	= $myrow[c_nscan];
+	$c_pinf		= $myrow[c_pinf];
+	$c_pwra		= $myrow[c_pwra];
+	$c_pdes		= $myrow[c_pdes];
+	$c_psco		= $myrow[c_psco];
+	$c_pdu1		= $myrow[c_pdu1];
+	$c_pdu2		= $myrow[c_pdu2];
+	$c_energy	= $myrow[c_energy];
+
+	$lstalkers = $myrow[lstalkers];
+	$avengers = $myrow[avengers];
+	$rcannons = $myrow[rcannons];
+
+	$cobras_fleet = $myrow['cobras_fleet'];
+	$infinitys_fleet = $myrow['infinitys_fleet'];
+	$wraiths_fleet = $myrow['wraiths_fleet'];
+	$warfrigs_fleet = $myrow['warfrigs_fleet'];
+	$destroyers_fleet = $myrow['destroyers_fleet'];
+	$scorpions_fleet = $myrow['scorpions_fleet'];
+	$astropods_fleet = $myrow['astropods_fleet'];
+
+	$crystal = $myrow['crystal'];
+	$metal = $myrow['metal'];
+	$war = $myrow['war'];
+	$wareta = $myrow['wareta'];
+	$def = $myrow['def'];
+
+	$timer = $myrow['timer'];
+	$size = $myrow['size'];
+	$crystalroid = $myrow['asteroid_crystal'];
+	$metalroid = $myrow['asteroid_metal'];
+	$asteroid_ui = $myrow['asteroid_ui'];
+	$roids = $crystalroid + $metalroid + $asteroid_ui;
+	$i_roids = $crystalroid + $metalroid;
+
+
+// RESOURCES //
+
+	$crystalincome = 0;
+	$crystalincome += ($c_crystal10==1) ? 1500 : 0;
+	$crystalincome += ($c_crystal20==1) ? 3000 : 0;
+	$crystalincome += ($c_crystal30==1) ? 6000 : 0;
+	$crystalincome += res_per_type($crystalroid);
+	$crystalincome *= ($c_special==1 && $r_special==1) ? 1.05 : 1;
+	$metalincome = 0;
+	$metalincome += ($c_metal10==1) ? 1500 : 0;
+	$metalincome += ($c_metal20==1) ? 3000 : 0;
+	$metalincome += ($c_metal30==1) ? 6000 : 0;
+	$metalincome += res_per_type($metalroid);
+	$metalincome *= ($c_special==1 && $r_special==1) ? 1.05 : 1;
+	mysql_query("UPDATE $TABLE[users] SET metal=metal+$metalincome, crystal=crystal+$crystalincome WHERE id='$id'") or die(mysql_error());
+
+
+// PRODUCTION //
+
+	$prod = mysql_query("SELECT * FROM $TABLE[production] WHERE uid='$id' AND eta='0'") or die(mysql_error());
+	while ($pi = mysql_fetch_assoc($prod))
+	{
+		if ($pi[u_of_w] == "w" || $pi[unit]=="rcannons" || $pi[unit]=="avengers" || $pi[unit]=="lstalkers")
+		{
+		echo	$sql = "UPDATE $TABLE[users] SET $pi[unit]=$pi[unit]+$pi[number] WHERE id='$pi[uid]'";
+		}
+		else
+		{
+		echo	$sql = "UPDATE $TABLE[users] SET $pi[unit]"."_base=$pi[unit]"."_base+$pi[number] WHERE id='$pi[uid]'";
+		}
+		mysql_query($sql) or die(mysql_error());
+		mysql_query("DELETE FROM $TABLE[production] WHERE id='$pi[id]' AND uid='$pi[uid]' AND eta=0") or die(mysql_error());
+	}
+
+
+
+
+
+
+
+
+
+// COMBAT //
+
+
+	// De info van de personen die $id aanvallen
+	$result2 = mysql_query("SELECT * FROM $TABLE[users] WHERE war='$id' AND wareta<5 ORDER BY -score") or die(mysql_error());
+
+	if (mysql_num_rows($result2)>0)
+	{
+		$d_username = $myrow2[username];
+
+
+		# Prepare attacking fleets
+
+		$infinitys_fleet = 0;
+		$wraiths_fleet = 0;
+		$warfrigs_fleet = 0;
+		$destroyers_fleet = 0;
+		$cobras_fleet = 0;
+		$scorpions_fleet = 0;
+		$astropods_fleet = 0;
+
+		$i = 0;
+		$attack = Array();
+		while($myrow2=mysql_fetch_array($result2))
+		{
+			$attack[$i][id]			= $myrow2[id];
+
+			$attack[$i][infinitys_fleet]	= $myrow2[infinitys_fleet];
+			$attack[$i][wraiths_fleet]	= $myrow2[wraiths_fleet];
+			$attack[$i][warfrigs_fleet]	= $myrow2[warfrigs_fleet];
+			$attack[$i][destroyers_fleet]	= $myrow2[destroyers_fleet];		// Getallen van de aanvallers apart
+			$attack[$i][cobras_fleet]	= $myrow2[cobras_fleet];
+			$attack[$i][scorpions_fleet]	= $myrow2[scorpions_fleet];
+			$attack[$i][astropods_fleet]	= $myrow2[astropods_fleet];
+
+			$infinitys_fleet		+= $myrow2[infinitys_fleet];
+			$wraiths_fleet			+= $myrow2[wraiths_fleet];
+			$warfrigs_fleet			+= $myrow2[warfrigs_fleet];
+			$destroyers_fleet		+= $myrow2[destroyers_fleet];		// Getallen van de gehele aanvallende vloot samen
+			$cobras_fleet			+= $myrow2[cobras_fleet];
+			$scorpions_fleet		+= $myrow2[scorpions_fleet];
+			$astropods_fleet		+= $myrow2[astropods_fleet];
+
+			$i++;
+		}
+
+		$i = 0;
+		while ($attack[$i][id] > 0)
+		{
+			if ($infinitys_fleet>0)		$attack[$i][p_infinitys] = $attack[$i][infinitys_fleet] / $infinitys_fleet;
+			else				$attack[$i][p_infinitys] = 1;
+
+			if ($wraiths_fleet>0)		$attack[$i][p_wraiths] = $attack[$i][wraiths_fleet] / $wraiths_fleet;
+			else				$attack[$i][p_wraiths] = 1;
+
+			if ($warfrigs_fleet>0)		$attack[$i][p_warfrigs] = $attack[$i][warfrigs_fleet] / $warfrigs_fleet;
+			else				$attack[$i][p_warfrigs] = 1;
+
+			if ($destroyers_fleet>0)	$attack[$i][p_destroyers] = $attack[$i][destroyers_fleet] / $destroyers_fleet;
+			else				$attack[$i][p_destroyers] = 1;
+
+			if ($cobras_fleet>0)		$attack[$i][p_cobras] = $attack[$i][cobras_fleet] / $cobras_fleet;
+			else				$attack[$i][p_cobras] = 1;
+
+			if ($scorpions_fleet>0)		$attack[$i][p_scorpions] = $attack[$i][scorpions_fleet] / $scorpions_fleet;
+			else				$attack[$i][p_scorpions] = 1;
+
+			if ($astropods_fleet>0)		$attack[$i][p_astropods] = $attack[$i][astropods_fleet] / $astropods_fleet;
+			else				$attack[$i][p_astropods] = 1;
+
+			$i++;
+		}
+
+
+# Prepare defending fleets
+
+		$defend = Array();
+		if (!$myrow[war] && !$myrow[def])	// Vloot van de hoofdverdediger is thuis:
+		{
+			$defend[0][id]			= $myrow[id];
+			$defend[0][infinitys]		= $myrow[infinitys_fleet]	+ $myrow[infinitys_base];
+			$defend[0][wraiths]		= $myrow[wraiths_fleet]		+ $myrow[wraiths_base];
+			$defend[0][warfrigs]		= $myrow[warfrigs_fleet]	+ $myrow[warfrigs_base];
+			$defend[0][destroyers]		= $myrow[destroyers_fleet]	+ $myrow[destroyers_base];	// Getallen van de hoofdverdediger
+			$defend[0][cobras]		= $myrow[cobras_fleet]		+ $myrow[cobras_base];
+			$defend[0][scorpions]		= $myrow[scorpions_fleet]	+ $myrow[scorpions_base];
+			$defend[0][astropods]		= $myrow[astropods_fleet]	+ $myrow[astropods_base];
+			$defend[0][sum]			= $myrow[infinitys_fleet]	+ $myrow[infinitys_base] + $myrow[wraiths_fleet] + $myrow[wraiths_base] + $myrow[warfrigs_fleet] + $myrow[warfrigs_base] + $myrow[destroyers_fleet] + $myrow[destroyers_base] + $myrow[cobras_fleet] + $myrow[cobras_base] + $myrow[scorpions_fleet] + $myrow[scorpions_base] + $myrow[astropods_fleet]+ $myrow[astropods_base];
+			$d_sum = $defend[0][sum];
+
+			$d_infinitys	= $myrow[infinitys_fleet]	+ $myrow[infinitys_base];
+			$d_wraiths	= $myrow[wraiths_fleet]		+ $myrow[wraiths_base];
+			$d_warfrigs	= $myrow[warfrigs_fleet]	+ $myrow[warfrigs_base];
+			$d_destroyers	= $myrow[destroyers_fleet]	+ $myrow[destroyers_base];	// Totale verdedigende vloot
+			$d_cobras	= $myrow[cobras_fleet]		+ $myrow[cobras_base];
+			$d_scorpions	= $myrow[scorpions_fleet]	+ $myrow[scorpions_base];
+			$d_astropods	= $myrow[astropods_fleet]	+ $myrow[astropods_base];
+			$d_rcannons	= $myrow[rcannons];
+			$d_avengers	= $myrow[avengers];
+			$d_lstalkers	= $myrow[lstalkers];
+		}
+		else
+		{
+			$defend[0][id]		= $myrow[id];
+			$defend[0][infinitys]	= $myrow[infinitys_base];
+			$defend[0][wraiths]	= $myrow[wraiths_base];
+			$defend[0][warfrigs]	= $myrow[warfrigs_base];
+			$defend[0][destroyers]	= $myrow[destroyers_base];		// Getallen van de hoofdverdediger (alleen schepen in base)
+			$defend[0][cobras]	= $myrow[cobras_base];
+			$defend[0][scorpions]	= $myrow[scorpions_base];
+			$defend[0][astropods]	= $myrow[astropods_base];
+			$defend[0][sum]		= 0;
+			$d_sum = 0;
+
+			$d_infinitys	= $myrow[infinitys_base];
+			$d_wraiths	= $myrow[wraiths_base];
+			$d_warfrigs	= $myrow[warfrigs_base];
+			$d_destroyers	= $myrow[destroyers_base];
+			$d_cobras	= $myrow[cobras_base];
+			$d_scorpions	= $myrow[scorpions_base];			// Totale verdediging (zonder schepen in vloot van hoofdverdediger)
+			$d_astropods	= $myrow[astropods_base];
+			$d_rcannons	= $myrow[rcannons];
+			$d_avengers	= $myrow[avengers];
+			$d_lstalkers	= $myrow[lstalkers];
+		}
+
+		$i = 1;
+		$result2 = mysql_query("SELECT * FROM $TABLE[users] WHERE def='$id' AND wareta<=10") or die(mysql_error());
+		while($myrow2=mysql_fetch_array($result2))	// Andere verdedigers
+		{
+			$defend[$i][id]		= $myrow2[id];
+			$defend[$i][infinitys]	= $myrow2[infinitys_fleet];
+			$defend[$i][wraiths]	= $myrow2[wraiths_fleet];
+			$defend[$i][warfrigs]	= $myrow2[warfrigs_fleet];
+			$defend[$i][destroyers]	= $myrow2[destroyers_fleet];		// Vloot van de rest van de verdedigers apart
+			$defend[$i][cobras]	= $myrow2[cobras_fleet];
+			$defend[$i][scorpions]	= $myrow2[scorpions_fleet];
+			$defend[$i][astropods]	= $myrow2[astropods_fleet];
+			$defend[$i][sum]	= $myrow[infinitys_fleet] + $myrow[wraiths_fleet] + $myrow[warfrigs_fleet] + $myrow[destroyers_fleet] + $myrow[cobras_fleet] + $myrow[scorpions_fleet] + $myrow[astropods_fleet];
+			$d_sum += $defend[$i][sum];
+
+			$d_infinitys		+= $myrow2[infinitys_fleet];
+			$d_wraiths		+= $myrow2[wraiths_fleet];
+			$d_warfrigs		+= $myrow2[warfrigs_fleet];
+			$d_destroyers		+= $myrow2[destroyers_fleet];		// Totale verdediging (hoofdverdediger + restverdedigers)
+			$d_cobras		+= $myrow2[cobras_fleet];
+			$d_scorpions		+= $myrow2[scorpions_fleet];
+			$d_astropods		+= $myrow2[astropods_fleet];
+
+			$i++;
+		}
+
+		$i = 0;
+		while($defend[$i][id]>0)
+		{
+			if ($d_infinitys>0)	$defend[$i][p_infinitys] = $defend[$i][infinitys] / $d_infinitys;
+			else			$defend[$i][p_infinitys] = 1;
+
+			if ($d_wraiths>0)	$defend[$i][p_wraiths] = $defend[$i][wraiths] / $d_wraiths;
+			else			$defend[$i][p_wraiths] = 1;
+
+			if ($d_warfrigs>0)	$defend[$i][p_warfrigs] = $defend[$i][warfrigs] / $d_warfrigs;
+			else			$defend[$i][p_warfrigs] = 1;
+
+			if ($d_destroyers>0)	$defend[$i][p_destroyers] = $defend[$i][destroyers] / $d_destroyers;
+			else			$defend[$i][p_destroyers] = 1;
+
+			if ($d_cobras>0)	$defend[$i][p_cobras] = $defend[$i][cobras] / $d_cobras;
+			else			$defend[$i][p_cobras] = 1;
+
+			if ($d_scorpions>0)	$defend[$i][p_scorpions] = $defend[$i][scorpions] / $d_scorpions;
+			else			$defend[$i][p_scorpions] = 1;
+
+			if ($d_astropods>0)	$defend[$i][p_astropods] = $defend[$i][astropods] / $d_astropods;
+			else			$defend[$i][p_astropods] = 1;
+
+			if ($d_sum>0)		$defend[$i][p_sum] = $defend[$i][sum] / $d_sum;
+			else			$defend[$i][p_sum] = 1;
+
+			$i++;
+		}
+
+		// Asteroids van hoofdverdediger
+		$d_crystalroid	= $myrow[asteroid_crystal];
+		$d_metalroid	= $myrow[asteroid_metal];
+		$d_asteroid_ui	= $myrow[asteroid_ui];
+
+		$d_crystalroid2	= $myrow[asteroid_crystal];
+		$d_metalroid2	= $myrow[asteroid_metal];
+		$d_asteroid_ui2	= $myrow[asteroid_ui];
+
+
+		// Aanvallende schepen
+		$infinitys2	= $infinitys_fleet;
+		$wraiths2	= $wraiths_fleet;
+		$warfrigs2	= $warfrigs_fleet;
+		$destroyers2	= $destroyers_fleet;
+		$astropods2	= $astropods_fleet;
+		$cobras2	= $cobras_fleet;
+		$scorpions2	= $scorpions_fleet;
+
+
+		// Verdedigende schepen
+		$d_infinitys2 = $d_infinitys;
+		$d_wraiths2 = $d_wraiths;
+		$d_warfrigs2 = $d_warfrigs;
+		$d_destroyers2 = $d_destroyers;
+		$d_astropods2 = $d_astropods;
+		$d_cobras2 = $d_cobras;
+		$d_scorpions2 = $d_scorpions;
+		$d_rcannons2 = $d_rcannons;
+		$d_avengers2 = $d_avengers;
+		$d_lstalkers2 = $d_lstalkers;
+
+
+	# Ship statistics, $stats[inf][wra] = 0.01; sets the firepower of infinitys to 0.01 against wraiths.
+
+	include("shipstats.php");
+
+
+		attack('infinitys_fleet',$d_infinitys * $stats[inf][inf]);
+		attack('wraiths_fleet',$d_infinitys * $stats[inf][wra]);
+		attack('warfrigs_fleet',$d_infinitys * $stats[inf][war]);
+		attack('astropods_fleet',$d_infinitys * $stats[inf][ast]);
+		attack('destroyers_fleet',$d_infinitys * $stats[inf][des]);
+		attack('scorpions_fleet',$d_infinitys * $stats[inf][sco]);
+		attack('cobras_fleet',$d_infinitys * $stats[inf][cob]);
+
+		attack('infinitys_fleet',$d_wraiths * $stats[wra][inf]);
+		attack('wraiths_fleet',$d_wraiths * $stats[wra][wra]);
+		attack('warfrigs_fleet',$d_wraiths * $stats[wra][war]);
+		attack('astropods_fleet',$d_wraiths * $stats[wra][ast]);
+		attack('destroyers_fleet',$d_wraiths * $stats[wra][des]);
+		attack('scorpions_fleet',$d_wraiths * $stats[wra][sco]);
+		attack('cobras_fleet',$d_wraiths * $stats[wra][cob]);
+
+		attack('infinitys_fleet',$d_warfrigs * $stats[war][inf]);
+		attack('wraiths_fleet',$d_warfrigs * $stats[war][wra]);
+		attack('warfrigs_fleet',$d_warfrigs * $stats[war][war]);
+		attack('astropods_fleet',$d_warfrigs * $stats[war][ast]);
+		attack('destroyers_fleet',$d_warfrigs * $stats[war][des]);
+		attack('scorpions_fleet',$d_warfrigs * $stats[war][sco]);
+		attack('cobras_fleet',$d_warfrigs * $stats[war][cob]);
+
+		attack('infinitys_fleet',$d_destroyers * $stats[des][inf]);
+		attack('wraiths_fleet',$d_destroyers * $stats[des][wra]);
+		attack('warfrigs_fleet',$d_destroyers * $stats[des][war]);
+		attack('astropods_fleet',$d_destroyers * $stats[des][ast]);
+		attack('destroyers_fleet',$d_destroyers * $stats[des][des]);
+		attack('scorpions_fleet',$d_destroyers * $stats[des][sco]);
+		attack('cobras_fleet',$d_destroyers * $stats[des][cob]);
+
+		attack('infinitys_fleet',$d_scorpions * $stats[sco][inf]);
+		attack('wraiths_fleet',$d_scorpions * $stats[sco][wra]);
+		attack('warfrigs_fleet',$d_scorpions * $stats[sco][war]);
+		attack('astropods_fleet',$d_scorpions * $stats[sco][ast]);
+		attack('destroyers_fleet',$d_scorpions * $stats[sco][des]);
+		attack('scorpions_fleet',$d_scorpions * $stats[sco][sco]);
+		attack('cobras_fleet',$d_scorpions * $stats[sco][cob]);
+
+		attack('infinitys_fleet',$d_cobras * $stats[cob][inf]);
+		attack('wraiths_fleet',$d_cobras * $stats[cob][wra]);
+		attack('warfrigs_fleet',$d_cobras * $stats[cob][war]);
+		attack('destroyers_fleet',$d_cobras * $stats[cob][des]);
+		attack('scorpions_fleet',$d_cobras * $stats[cob][sco]);
+		attack('cobras_fleet',$d_cobras * $stats[cob][cob]);
+
+		attack('infinitys_fleet',$d_rcannons * $stats[rca][inf]);
+		attack('astropods_fleet',$d_rcannons * $stats[rca][ast]);
+
+		attack('wraiths_fleet',$d_avengers * $stats[ave][wra]);
+		attack('warfrigs_fleet',$d_avengers * $stats[ave][war]);
+		attack('cobras_fleet',$d_avengers * $stats[ave][cob]);
+
+		attack('destroyers_fleet',$d_lstalkers * $stats[lst][des]);
+		attack('scorpions_fleet',$d_lstalkers * $stats[lst][sco]);
+
+# ---------------------------------------------
+
+		attack('d_infinitys',$infinitys2 * $stats[inf][inf]);
+		attack('d_wraiths',$infinitys2 * $stats[inf][wra]);
+		attack('d_warfrigs',$infinitys2 * $stats[inf][war]);
+		attack('d_astropods',$infinitys2 * $stats[inf][ast]);
+		attack('d_destroyers',$infinitys2 * $stats[inf][des]);
+		attack('d_scorpions',$infinitys2 * $stats[inf][sco]);
+		attack('d_cobras',$infinitys2 * $stats[inf][cob]);
+
+		attack('d_infinitys',$wraiths2 * $stats[wra][inf]);
+		attack('d_wraiths',$wraiths2 * $stats[wra][wra]);
+		attack('d_warfrigs',$wraiths2 * $stats[wra][war]);
+		attack('d_astropods',$wraiths2 * $stats[wra][ast]);
+		attack('d_destroyers',$wraiths2 * $stats[wra][inf]);
+		attack('d_scorpions',$wraiths2 * $stats[wra][sco]);
+		attack('d_cobras',$wraiths2 * $stats[wra][cob]);
+		attack('d_lstalkers',$wraiths2 * $stats[wra][lst]);
+
+		attack('d_infinitys',$warfrigs2 * $stats[war][inf]);
+		attack('d_wraiths',$warfrigs2 * $stats[war][wra]);
+		attack('d_warfrigs',$warfrigs2 * $stats[war][war]);
+		attack('d_astropods',$warfrigs2 * $stats[war][ast]);
+		attack('d_destroyers',$warfrigs2 * $stats[war][des]);
+		attack('d_scorpions',$warfrigs2 * $stats[war][sco]);
+		attack('d_cobras',$warfrigs2 * $stats[war][cob]);
+		attack('d_rcannons',$warfrigs2 * $stats[war][rca]);
+
+		attack('d_infinitys',$destroyers2 * $stats[des][inf]);
+		attack('d_wraiths',$destroyers2 * $stats[des][wra]);
+		attack('d_warfrigs',$destroyers2 * $stats[des][war]);
+		attack('d_astropods',$destroyers2 * $stats[des][ast]);
+		attack('d_destroyers',$destroyers2 *$stats[des][des]);
+		attack('d_scorpions',$destroyers2 * $stats[des][sco]);
+		attack('d_cobras',$destroyers2 * $stats[des][cob]);
+		attack('d_avengers',$destroyers2 * $stats[des][ave]);
+
+		attack('d_infinitys',$scorpions2 * $stats[sco][inf]);
+		attack('d_wraiths',$scorpions2 * $stats[sco][wra]);
+		attack('d_warfrigs',$scorpions2 * $stats[sco][war]);
+		attack('d_astropods',$scorpions2 * $stats[sco][ast]);
+		attack('d_destroyers',$scorpions2 * $stats[sco][des]);
+		attack('d_scorpions',$scorpions2 * $stats[sco][sco]);
+		attack('d_cobras',$scorpions2 * $stats[sco][cob]);
+
+		attack('d_infinitys',$cobras2 * $stats[cob][inf]);
+		attack('d_wraiths',$cobras2 * $stats[cob][wra]);
+		attack('d_warfrigs',$cobras2 * $stats[cob][war]);
+		attack('d_destroyers',$cobras2 * $stats[cob][des]);
+		attack('d_scorpions',$cobras2 * $stats[cob][sco]);
+		attack('d_cobras',$cobras2 * $stats[cob][cob]);
+
+
+		// Roid capturing
+
+		$t_block=0;
+
+		$i = 0;
+		while ($attack[$i][id]>0)
+		{
+			if ($d_cobras >= $attack[$i][astropods_fleet])
+			{
+				$block = $attack[$i][astropods_fleet];
+			}
+			else
+			{
+				$block = $d_cobras;
+			}
+			$t_block += $block;
+
+			$roidsc = Roids_capped($attack[$i][astropods_fleet]-$block,$d_crystalroid,$d_metalroid,$d_asteroid_ui,count($attack));
+
+			$roidscapped = $roidsc[crystal] + $roidsc[metal] + $roidsc[ui];
+			mysql_query("UPDATE $TABLE[users] SET asteroid_metal=asteroid_metal+$roidsc[metal],asteroid_crystal=asteroid_crystal+$roidsc[crystal],asteroid_ui=asteroid_ui+$roidsc[ui] WHERE id='".$attack[$i][id]."'") or die(mysql_error()); 
+			mysql_query("UPDATE $TABLE[users] SET asteroid_metal=asteroid_metal-$roidsc[metal],asteroid_crystal=asteroid_crystal-$roidsc[crystal],asteroid_ui=asteroid_ui-$roidsc[ui] WHERE id='$id'") or die(mysql_error()); 
+
+			$l_infinitys	= round(($infinitys2-$infinitys_fleet)	* $attack[$i][p_infinitys]);
+			$l_wraiths	= round(($wraiths2-$wraiths_fleet)	* $attack[$i][p_wraiths]);
+			$l_warfrigs	= round(($warfrigs2-$warfrigs_fleet)	* $attack[$i][p_warfrigs]);
+			$l_destroyers	= round(($destroyers2-$destroyers_fleet)* $attack[$i][p_destroyers]);		// Verloren schepen PER aanvaller
+			$l_cobras	= round(($cobras2-$cobras_fleet)	* $attack[$i][p_cobras]);
+			$l_astropods	= round(($astropods2-$astropods_fleet)	* $attack[$i][p_astropods]);
+			$l_scorpions	= round(($scorpions2-$scorpions_fleet)	* $attack[$i][p_scorpions]);
+
+			if ($attack[$i][astropods_fleet]-$l_astropods-$roidscapped<0)
+			{
+				$l_astropods = $attack[$i][astropods_fleet];
+			}
+			else
+			{
+				$l_astropods = $l_astropods+$roidscapped;
+			}
+
+		/* IS DIT NODIG?? */
+			if ($l_infinitys < 0) $l_infinitys = 0;
+			if ($l_wraiths < 0) $l_wraiths = 0;
+			if ($l_warfrigs < 0) $l_warfrigs = 0;
+			if ($l_destroyers < 0) $l_destroyers = 0;
+			if ($l_astropods < 0) $l_astropods = 0;
+			if ($l_scorpions < 0) $l_scorpions = 0;
+			if ($l_cobras < 0) $l_cobras = 0;
+
+			if ($d_infinitys2 <0) $d_infinitys2 = 0;
+			if ($d_wraiths2 <0) $d_wraiths2 = 0;
+			if ($d_warfrigs2 <0) $d_warfrigs2 = 0;
+			if ($d_destroyers2 <0) $d_destroyers2 = 0;
+			if ($d_cobras2 <0) $d_cobras2 = 0;
+			if ($d_astropods2 <0) $d_astropods2 = 0;
+			if ($d_scorpions2 <0) $d_scorpions2 = 0;
+		/* TOT HIER DUS */
+
+			if ($d_infinitys <0) $d_infinitys = 0;
+			if ($d_wraiths <0) $d_wraiths = 0;
+			if ($d_warfrigs <0) $d_warfrigs = 0;
+			if ($d_destroyers <0) $d_destroyers = 0;
+			if ($d_cobras <0) $d_cobras = 0;
+			if ($d_astropods <0) $d_astropods = 0;
+			if ($d_scorpions <0) $d_scorpions = 0;
+
+			// Zoveel van het totaal aanvallende schepen zijn er verloren
+			$inf = round($d_infinitys2-$d_infinitys);
+			if ($inf < 0) $inf = 0;
+			$wra = round($d_wraiths2-$d_wraiths);
+			if ($wra < 0) $wra = 0;
+			$war = round($d_warfrigs2-$d_warfrigs);
+			if ($war < 0) $war = 0;
+			$des = $d_destroyers2-$d_destroyers;
+			if ($des < 0) $des = 0;
+			$ast = round($d_astropods2-$d_astropods);
+			if ($ast < 0) $ast = 0;
+			$sco = round($d_scorpions2-$d_scorpions);
+			if ($sco < 0) $sco = 0;
+			$cob = round($d_cobras2-$d_cobras);
+			if ($cob < 0) $cob = 0;
+
+
+
+// COMBATREPORT // voor alle aanvallers //
+
+			AddNews("combatreport",
+			"<table border=0 cellpadding=3 cellspacing=0 width=100%>
+			<tr><td colspan=3>Combat found place at $username #$id</td></tr>
+			<tr><td><b>Defender(s):</td><td>Total:</td><td>Lost:</td></tr>\n
+			<tr><td>Infinitys:</td><td>".nummertje($d_infinitys2)."</td><td>".nummertje($inf)."</tr>\n
+			<tr><td>Wraiths:</td><td>".nummertje($d_wraiths2)."</td><td>".nummertje($wra)."</tr>\n
+			<tr><td>Warfrigates:</td><td>".nummertje($d_warfrigs2)."</td><td>".nummertje($war)."</tr>\n
+			<tr><td>Astropods:</td><td>".nummertje($d_astropods2)."</td><td>".nummertje($ast)."</tr>\n
+			<tr><td>Cobras:</td><td>".nummertje($d_cobras2)."</td><td>".nummertje($cob)."</tr>\n
+			<tr><td>Destroyers:</td><td>".nummertje($d_destroyers2)."</td><td>".nummertje($des)."</tr>\n
+			<tr><td>Scorpions:</td><td>".nummertje($d_scorpions2)."</td><td>".nummertje($sco)."</tr>\n
+			<tr><td>Reaper cannons:</td><td>".nummertje($d_rcannons2)."</td><td>".nummertje($d_rcannons2-$d_rcannons)."</tr>\n
+			<tr><td>Avengers:</td><td>".nummertje($d_avengers2)."</td><td>".nummertje($d_avengers2-$d_avengers)."</tr>\n
+			<tr><td>Lucius stalkers:</td><td>".nummertje($d_lstalkers2)."</td><td>".nummertje($d_lstalkers2-$d_lstalkers)."</tr>\n
+			<tr><td colspan=3><b>Attacker(s):</td></tr>\n
+			<tr><td>Infinitys:</td><td>".nummertje($infinitys2)."</td><td>".nummertje($infinitys2-$infinitys_fleet)."</tr>\n
+			<tr><td>Wraiths:</td><td>".nummertje($wraiths2)."</td><td>".nummertje($wraiths2-$wraiths_fleet)."</tr>\n
+			<tr><td>Warfrigates:</td><td>".nummertje($warfrigs2)."</td><td>".nummertje($warfrigs2-$warfrigs_fleet)."</tr>\n
+			<tr><td>Astropods:</td><td>".nummertje($astropods2)." (".nummertje($block)." blocked)</td><td>".nummertje($astropods2-$astropods_fleet)."</tr>\n
+			<tr><td>Cobras:</td><td>".nummertje($cobras2)."</td><td>".nummertje($cobras2-$cobras_fleet)."</tr>\n
+			<tr><td>Destroyers:</td><td>".nummertje($destroyers2)."</td><td>".nummertje($destroyers2-$destroyers_fleet)."</tr>\n
+			<tr><td>Scorpions:</td><td>".nummertje($scorpions2)."</td><td>".nummertje($scorpions2-$scorpions_fleet)."</tr>\n
+			<tr><td colspan=3><b>Yours (=attacker):</td></tr>\n
+			<tr><td>Infinitys:</td><td>".nummertje($attack[$i][infinitys_fleet])."</td><td>".nummertje($l_infinitys)."</tr>\n
+			<tr><td>Wraiths:</td><td>".nummertje($attack[$i][wraiths_fleet])."</td><td>".nummertje($l_wraiths)."</tr>\n
+			<tr><td>Warfrigates:</td><td>".nummertje($attack[$i][warfrigs_fleet])."</td><td>".nummertje($l_warfrigs)."</tr>\n
+			<tr><td>Astropods:</td><td>".nummertje($attack[$i][astropods_fleet])." (".nummertje($block)." blocked)</td><td>".nummertje($l_astropods)."</tr>\n
+			<tr><td>Cobras:</td><td>".nummertje($attack[$i][cobras_fleet])."</td><td>".nummertje($l_cobras)."</tr>\n
+			<tr><td>Destroyers:</td><td>".nummertje($attack[$i][destroyers_fleet])."</td><td>".nummertje($l_destroyers)."</tr>\n
+			<tr><td>Scorpions:</td><td>".nummertje($attack[$i][scorpions_fleet])."</td><td>".nummertje($l_scorpions)."</tr>\n
+			<tr><td colspan=3><b>Roids captured:</td></tr>\n
+			<tr><td>Metal:</td><td colspan=2>$roidsc[metal] / $d_metalroid</td></tr>\n
+			<tr><td>Crystal:</td><td colspan=2>$roidsc[crystal] / $d_crystalroid</td></tr>\n
+			<tr><td>Undeveloped:</td><td colspan=2>$roidsc[ui] / $d_asteroid_ui</td></tr>\n
+			</table>\n",$attack[$i][id]);
+
+
+
+
+			mysql_query("UPDATE $TABLE[users] SET infinitys_fleet=infinitys_fleet-$l_infinitys, wraiths_fleet=wraiths_fleet-$l_wraiths, warfrigs_fleet=warfrigs_fleet-$l_warfrigs, destroyers_fleet=destroyers_fleet-$l_destroyers, astropods_fleet=astropods_fleet-$l_astropods, scorpions_fleet=scorpions_fleet-$l_scorpions, cobras_fleet=cobras_fleet-$l_cobras WHERE id='".$attack[$i][id]."'"); 
+
+			$i++;
+
+			$d_crystalroid -= $roidsc[crystal];
+			$d_metalroid -= $roidsc[metal];
+			$d_asteroid_ui -= $roidsc[ui];
+		}
+
+		/*
+		Primary defender calcs
+		----------------------
+		*/
+		$i = 0;
+
+		$l_infinitys = round(round($d_infinitys2-$d_infinitys) * $defend[$i][p_infinitys]);
+		$l_wraiths = round(round($d_wraiths2-$d_wraiths) * $defend[$i][p_wraiths]);
+		$l_warfrigs = round(round($d_warfrigs2-$d_warfrigs) * $defend[$i][p_warfrigs]);
+		$l_destroyers = round(round($d_destroyers2-$d_destroyers) * $defend[$i][p_destroyers]);
+		$l_astropods = round(round($d_astropods2-$d_astropods) * $defend[$i][p_astropods]);
+#  if ($attack[$i][astropods]-$l_astropods-$roidscapped<0) $l_astropods = 0; else $l_astropods = $l_astropods+$roidscapped;
+		$l_scorpions = round(round($d_scorpions2-$d_scorpions) * $defend[$i][p_scorpions]);
+		$l_cobras = round(round($d_cobras2-$d_cobras) * $defend[$i][p_cobras]);
+		$l_rcannons = round($d_rcannons2-$d_rcannons);
+		$l_avengers = round($d_avengers2-$d_avengers);
+		$l_lstalkers = round($d_lstalkers2-$d_lstalkers);
+
+	/* IS DIT NODIG? */
+		if ($l_infinitys < 0) $l_infinitys = 0;
+		if ($l_wraiths < 0) $l_wraiths = 0;
+		if ($l_warfrigs < 0) $l_warfrigs = 0;
+		if ($l_destroyers < 0) $l_destroyers = 0;
+		if ($l_astropods < 0) $l_astropods = 0;
+		if ($l_scorpions < 0) $l_scorpions = 0;
+		if ($l_cobras < 0) $l_cobras = 0;
+
+		if ($d_infinitys2 <0) $d_infinitys2 = 0;
+		if ($d_wraiths2 <0) $d_wraiths2 = 0;
+		if ($d_warfrigs2 <0) $d_warfrigs2 = 0;
+		if ($d_destroyers2 <0) $d_destroyers2 = 0;
+		if ($d_cobras2 <0) $d_cobras2 = 0;
+		if ($d_astropods2 <0) $d_astropods2 = 0;
+		if ($d_scorpions2 <0) $d_scorpions2 = 0;
+	/* TOT HIER */
+
+		if ($d_infinitys <0) $d_infinitys = 0;
+		if ($d_wraiths <0) $d_wraiths = 0;
+		if ($d_warfrigs <0) $d_warfrigs = 0;
+		if ($d_destroyers <0) $d_destroyers = 0;
+		if ($d_cobras <0) $d_cobras = 0;
+		if ($d_astropods <0) $d_astropods = 0;
+		if ($d_scorpions <0) $d_scorpions = 0;
+
+		$inf = round($d_infinitys2-$d_infinitys);
+		if ($inf < 0) $inf = 0;
+		$wra = round($d_wraiths2-$d_wraiths);
+		if ($wra < 0) $wra = 0;
+		$war = round($d_warfrigs2-$d_warfrigs);
+		if ($war < 0) $war = 0;
+		$des = $d_destroyers2-$d_destroyers;
+		if ($des < 0) $des = 0;
+		$ast = round($d_astropods2-$d_astropods);
+		if ($ast < 0) $ast = 0;
+		$sco = round($d_scorpions2-$d_scorpions);
+		if ($sco < 0) $sco = 0;
+		$cob = round($d_cobras2-$d_cobras);
+		if ($cob < 0) $cob = 0;
+
+
+
+// COMBATREPORT // verdediging (target) //
+
+		AddNews("combatreport",
+		"<table border=0 cellpadding=3 cellspacing=0 width=100%>
+		<tr><td colspan=3>Combat found place at $username #$id</td></tr>
+		<tr><td><b>Defender(s):</td><td>Total:</td><td>Lost:</td></tr>\n
+		<tr><td>Infinitys:</td><td>".nummertje($d_infinitys2)."</td><td>".nummertje($d_infinitys2-$d_infinitys)."</tr>\n
+		<tr><td>Wraiths:</td><td>".nummertje($d_wraiths2)."</td><td>".nummertje($d_wraiths2-$d_wraiths)."</tr>\n
+		<tr><td>Warfrigates:</td><td>".nummertje($d_warfrigs2)."</td><td>".nummertje($d_warfrigs2-$d_warfrigs)."</tr>\n
+		<tr><td>Astropods:</td><td>".nummertje($d_astropods2)."</td><td>".nummertje($d_astropods2-$d_astropods)."</tr>\n
+		<tr><td>Cobras:</td><td>".nummertje($d_cobras2)."</td><td>".nummertje($d_cobras2-$d_cobras)."</tr>\n
+		<tr><td>Destroyers:</td><td>".nummertje($d_destroyers2)."</td><td>".nummertje($d_destroyers2-$d_destroyers)."</tr>\n
+		<tr><td>Scorpions:</td><td>".nummertje($d_scorpions2)."</td><td>".nummertje($d_scorpions2-$d_scorpions)."</tr>\n
+		<tr><td colspan=3><b>Attacker(s):</td></tr>\n
+		<tr><td>Infinitys:</td><td>".nummertje($infinitys2)."</td><td>".nummertje($infinitys2-$infinitys_fleet)."</tr>\n
+		<tr><td>Wraiths:</td><td>".nummertje($wraiths2)."</td><td>".nummertje($wraiths2-$wraiths_fleet)."</tr>\n
+		<tr><td>Warfrigates:</td><td>".nummertje($warfrigs2)."</td><td>".nummertje($warfrigs2-$warfrigs_fleet)."</tr>\n
+		<tr><td>Astropods:</td><td>".nummertje($astropods2)." (".nummertje($t_block)." blocked)</td><td>".nummertje($astropods2-$astropods_fleet)."</tr>\n
+		<tr><td>Cobras:</td><td>".nummertje($cobras2)."</td><td>".nummertje($cobras2-$cobrass_fleet)."</tr>\n
+		<tr><td>Destroyers:</td><td>".nummertje($destroyers2)."</td><td>".nummertje($destroyers2-$destroyers_fleet)."</tr>\n
+		<tr><td>Scorpions:</td><td>".nummertje($scorpions2)."</td><td>".nummertje($scorpions2-$scorpions_fleet)."</tr>\n
+		<tr><td colspan=3><b>Yours (=THEdefender):</td></tr>\n
+		<tr><td>Infinitys:</td><td>".nummertje($defend[$i][infinitys])."</td><td>".nummertje($l_infinitys)."</tr>\n
+		<tr><td>Wraiths:</td><td>".nummertje($defend[$i][wraiths])."</td><td>".nummertje($l_wraiths)."</tr>\n
+		<tr><td>Warfrigates:</td><td>".nummertje($defend[$i][warfrigs])."</td><td>".nummertje($l_warfrigs)."</tr>\n
+		<tr><td>Astropods:</td><td>".nummertje($defend[$i][astropods])."</td><td>".nummertje($l_astropods)."</tr>\n
+		<tr><td>Cobras:</td><td>".nummertje($defend[$i][cobras])."</td><td>".nummertje($l_cobras)."</tr>\n
+		<tr><td>Destroyers:</td><td>".nummertje($defend[$i][destroyers])."</td><td>".nummertje($l_destroyers)."</tr>\n
+		<tr><td>Scorpions:</td><td>".nummertje($defend[$i][scorpions])."</td><td>".nummertje($l_scorpions)."</tr>\n
+		<tr><td>Reaper cannons:</td><td>".nummertje($d_rcannons2)."</td><td>".nummertje($d_rcannons2-$d_rcannons)."</tr>\n
+		<tr><td>Avengers:</td><td>".nummertje($d_avengers2)."</td><td>".nummertje($d_avengers2-$d_avengers)."</tr>\n
+		<tr><td>Lucius stalkers:</td><td>".nummertje($d_lstalkers2)."</td><td>".nummertje($d_lstalkers2-$d_lstalkers)."</tr>\n
+		<tr><td colspan=3><b>Roids lost:</td></tr>
+		<tr><td>Metal:</td><td colspan=2>".($d_metalroid2-$d_metalroid)." / $d_metalroid2</td></tr>
+		<tr><td>Crystal:</td><td colspan=2>".($d_crystalroid2-$d_crystalroid)." / $d_crystalroid2</td></tr>
+		<tr><td>Undeveloped:</td><td colspan=2>".($d_asteroid_ui2-$d_asteroid_ui)." / $d_asteroid_ui2</td></tr>
+		</table>\n",$defend[$i][id]);
+
+
+
+
+		mysql_query("UPDATE $TABLE[users] SET infinitys_fleet=infinitys_fleet-$l_infinitys,wraiths_fleet=wraiths_fleet-$l_wraiths,warfrigs_fleet=warfrigs_fleet-$l_warfrigs,destroyers_fleet=destroyers_fleet-$l_destroyers,astropods_fleet=astropods_fleet-$l_astropods,scorpions_fleet=scorpions_fleet-$l_scorpions,cobras_fleet=cobras_fleet-$l_cobras,rcannons=rcannons-$l_rcannons,avengers=avengers-$l_avengers,lstalkers=lstalkers-$l_lstalkers WHERE id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET infinitys_base=infinitys_base-$inf,wraiths_base=wraiths_base-$wra,warfrigs_base=warfrigs_base-$war,destroyers_base=destroyers_base-$des,astropods_base=astropods_base-$ast,scorpions_base=scorpions_base-$sco,cobras_base=cobras_base-$cob WHERE id=".$defend[0]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET infinitys_base=0,wraiths_base=0,warfrigs_base=0,destroyers_base=0,astropods_base=0,scorpions_base=0,cobras_base=0 WHERE infinitys_base < 0 AND wraiths_base < 0 AND warfrigates_base < 0 AND astropods_base < 0 AND cobras < 0 AND scorpions_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET infinitys_fleet=0 where infinitys_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET infinitys_base=0 where infinitys_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET cobras_fleet=0 where cobras_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET cobras_base=0 where cobras_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET wraiths_fleet=0 where wraiths_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET wraiths_base=0 where wraiths_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET warfrigs_fleet=0 where warfrigs_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET warfrigs_base=0 where warfrigs_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET destroyers_fleet=0 where destroyers_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET destroyers_base=0 where destroyers_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET scorpions_fleet=0 where scorpions_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET scorpions_base=0 where scorpions_base < 0 AND id=".$defend[$i]["id"]);
+
+		mysql_query("UPDATE $TABLE[users] SET astropods_fleet=0 where astropods_fleet < 0 AND id=".$defend[$i]["id"]);
+		mysql_query("UPDATE $TABLE[users] SET astropods_base=0 where astropods_base < 0 AND id=".$defend[$i]["id"]);
+
+		$i++;
+
+
+		// END PRIMARY-DEFENDER CALCS
+
+
+
+		while($defend[$i][id]>0)
+		{
+			$l_infinitys = round(round($d_infinitys2-$d_infinitys) * $defend[$i][p_infinitys]);
+			$l_wraiths = round(round($d_wraiths2-$d_wraiths) * $defend[$i][p_wraiths]);
+			$l_warfrigs = round(round($d_warfrigs2-$d_warfrigs) * $defend[$i][p_warfrigs]);
+			$l_destroyers = round(round($d_destroyers2-$d_destroyers) * $defend[$i][p_destroyers]);
+			$l_astropods = round(round($d_astropods2-$d_astropods) * $defend[$i][p_astropods]);
+#  if ($attack[$i][astropods]-$l_astropods-$roidscapped<0) $l_astropods = 0; else $l_astropods = $l_astropods+$roidscapped;
+			$l_scorpions = round(round($d_scorpions2-$d_scorpions) * $defend[$i][p_scorpions]);
+			$l_cobras = round(round($d_cobras2-$d_cobras) * $defend[$i][p_cobras]);
+
+		/* ECHT NODIG? */
+			if ($l_infinitys < 0) $l_infinitys = 0;
+			if ($l_wraiths < 0) $l_wraiths = 0;
+			if ($l_warfrigs < 0) $l_warfrigs = 0;
+			if ($l_destroyers < 0) $l_destroyers = 0;
+			if ($l_astropods < 0) $l_astropods = 0;
+			if ($l_scorpions < 0) $l_scorpions = 0;
+			if ($l_cobras < 0) $l_cobras = 0;
+
+			if ($d_infinitys2 <0) $d_infinitys2 = 0;
+			if ($d_wraiths2 <0) $d_wraiths2 = 0;
+			if ($d_warfrigs2 <0) $d_warfrigs2 = 0;
+			if ($d_destroyers2 <0) $d_destroyers2 = 0;
+			if ($d_cobras2 <0) $d_cobras2 = 0;
+			if ($d_astropods2 <0) $d_astropods2 = 0;
+			if ($d_scorpions2 <0) $d_scorpions2 = 0;
+		/* TOT HIER */
+
+			if ($d_infinitys <0) $d_infinitys = 0;
+			if ($d_wraiths <0) $d_wraiths = 0;
+			if ($d_warfrigs <0) $d_warfrigs = 0;
+			if ($d_destroyers <0) $d_destroyers = 0;
+			if ($d_cobras <0) $d_cobras = 0;
+			if ($d_astropods <0) $d_astropods = 0;
+			if ($d_scorpions <0) $d_scorpions = 0;
+
+			$inf = round($d_infinitys2-$d_infinitys);
+			if ($d_infinitys2-$d_infinitys < 0) $a = 0;
+			$wra = round($d_wraiths2-$d_wraiths);
+			if ($wra < 0) $wra = 0;
+			$war = round($d_warfrigs2-$d_warfrigs);
+			if ($war < 0) $war = 0;
+			$des = $d_destroyers2-$d_destroyers;
+			if ($des < 0) $des = 0;
+			$ast = round($d_astropods2-$d_astropods);
+			if ($ast < 0) $ast = 0;
+			$sco = round($d_scorpions2-$d_scorpions);
+			if ($sco < 0) $sco = 0;
+			$cob = round($d_cobras2-$d_cobras);
+			if ($cob < 0) $cob = 0;
+
+
+
+			// COMBATREPORT // Verdedigers apart //
+
+			AddNews("combatreport",
+			"<table border=0 cellpadding=3 cellspacing=0 width=100%>
+			<tr><td colspan=3>Combat found place at $username #$id</td></tr>
+			<tr><td><b>Defender(s):</td><td>Total:</td><td>Lost:</td></tr>
+			<tr><td>Infinitys:</td><td>".nummertje($d_infinitys2)."</td><td>".(number_format($d_infinitys2-$d_infinitys))."</tr>
+			<tr><td>Wraiths:</td><td>".nummertje($d_wraiths2)."</td><td>".(nummertje($d_wraiths2-$d_wraiths))."</tr>
+			<tr><td>Warfrigates:</td><td>".nummertje($d_warfrigs2)."</td><td>".(nummertje($d_warfrigs2-$d_warfrigs))."</tr>
+			<tr><td>Astropods:</td><td>".nummertje($d_astropods2)."</td><td>".(nummertje($d_astropods2-$d_astropods))."</tr>
+			<tr><td>Cobras:</td><td>".nummertje($d_cobras2)."</td><td>".(nummertje($d_cobras2-$d_cobras))."</tr>
+			<tr><td>Destroyers:</td><td>".nummertje($d_destroyers2)."</td><td>".(nummertje($d_destroyers2-$d_destroyers))."</tr>
+			<tr><td>Scorpions:</td><td>".nummertje($d_scorpions2)."</td><td>".(nummertje($d_scorpions2-$d_scorpions))."</tr>
+			<tr><td colspan=3><b>Attacker(s):</td></tr>
+			<tr><td>Light Infantry:</td><td>".nummertje($infinitys2)."</td><td>".(nummertje($infinitys2-$infinitys))."</tr>
+			<tr><td>Shadows:</td><td>".nummertje($wraiths2)."</td><td>".(nummertje($wraiths2-$wraiths))."</tr>
+			<tr><td>Goliaths:</td><td>".nummertje($warfrigs2)."</td><td>".(nummertje($warfrigs2-$warfrigs))."</tr>
+			<tr><td>Hellspawns:</td><td>".nummertje($destroyers2)."</td><td>".(nummertje($destroyers2-$destroyers))."</tr>
+			<tr><td>Astropods:</td><td>".nummertje($astropods2)." (".nummertje($t_block)." blocked)</td><td>".(nummertje($astropods2-$astropods))."</tr>
+			<tr><td>Ares:</td><td>".nummertje($scorpions2)."</td><td>".(nummertje($scorpions2-$scorpions))."</tr>
+			<tr><td><b>Yours (=outsider?):</td></tr>
+			<tr><td>Light Infantry:</td><td>".nummertje($defend[$i]["infinitys"])."</td><td>".nummertje($l_infinitys)."</tr>
+			<tr><td>Shadows:</td><td>".nummertje($defend[$i]["wraiths"])."</td><td>".nummertje($l_wraiths)."</tr>
+			<tr><td>Goliaths:</td><td>".nummertje($defend[$i]["warfrigs"])."</td><td>".nummertje($l_warfrigs)."</tr>
+			<tr><td>Hellspawns:</td><td>".nummertje($defend[$i]["destroyers"])."</td><td>".nummertje($l_destroyers)."</tr>
+			<tr><td>Medusas:</td><td>".nummertje($defend[$i]["cobras"])."</td><td>".nummertje($l_cobras)."</tr>
+			<tr><td>Astropods:</td><td>".nummertje($defend[$i]["astropods"])."</td><td>".nummertje($l_astropods)."</tr>
+			<tr><td>Ares:</td><td>".nummertje($defend[$i]["scorpions"])."</td><td>".nummertje($l_scorpions)."</tr>
+			<tr><td>Reaper cannons:</td><td>".nummertje($d_rcannons2)."</td><td>".(nummertje($d_rcannons2-$d_rcannons))."</tr>
+			<tr><td>Avengers:</td><td>".nummertje($d_avengers2)."</td><td>".(nummertje($d_avengers2-$d_avengers))."</tr>
+			<tr><td>Lucius stalkers:</td><td>".nummertje($d_lstalkers2)."</td><td>".(nummertje($d_lstalkers2-$d_lstalkers))."</tr>
+			<tr><td><b>Roids Lost:</td></tr>
+			<tr><td>Metal:</td><td>".($d_metalroid2-$d_metalroid)."/$d_metalroid</td></tr>
+			<tr><td>Crystal:</td><td>".($d_crystalroid2-$d_crystalroid)."/$d_crystalroid</td></tr>
+			<tr><td>Undeveloped:</td><td>".($d_asteroid_ui2-$d_asteroid_ui)."/$d_asteroid_ui</td></tr>
+			</table>\n",$defend[$i]["id"]);
+
+
+			
+			mysql_query("UPDATE $TABLE[users] SET infinitys_fleet=infinitys_fleet-$l_infinitys,wraiths_fleet=wraiths_fleet-$l_wraiths,warfrigs_fleet=warfrigs_fleet-$l_warfrigs,destroyers_fleet=destroyers_fleet-$l_destroyers,astropods_fleet=astropods_fleet-$l_astropods,scorpions_fleet=scorpions_fleet-$l_scorpions,cobras_fleet=cobras_fleet-$l_cobras WHERE id=".$defend[$i]["id"]); 
+
+			mysql_query("UPDATE $TABLE[users] SET infinitys_fleet=0 where infinitys_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET cobras_fleet=0 where cobras_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET wraiths_fleet=0 where wraiths_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET warfrigs_fleet=0 where warfrigs_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET destroyers_fleet=0 where destroyers_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET scorpions_fleet=0 where scorpions_fleet < 0 AND id=".$defend[$i]["id"]);
+			mysql_query("UPDATE $TABLE[users] SET astropods_fleet=0 where astropods_fleet < 0 AND id=".$defend[$i]["id"]);
+
+			$i++;
+		}
+
+	}
+
+	mysql_query("UPDATE $TABLE[users] SET size='$roids',rank='$rank' WHERE id='$id'") or die(mysql_error());
+	$rank++;
+}
+// SCORES opslaan
+mysql_query("UPDATE $TABLE[users] SET score=((crystal+metal+energy)/100+(asteroid_metal+asteroid_crystal)*1500+infinitys_fleet*30+infinitys_base*30+wraiths_fleet*100+wraiths_base*100+warfrigs_fleet*500+warfrigs_base*500+astropods_fleet*250+astropods_base*250+cobras_fleet*300+cobras_base*300+destroyers_fleet*500+destroyers_base*500+scorpions_fleet*700+scorpions_base*700+rcannons*100+avengers*140+lstalkers*600+waveamps*450+waveblockers*650+roidscans*200)") or die(mysql_error());
+
+// RANKING opslaan
+$n=1;
+$ranking = mysql_query("SELECT id,tag,score,size FROM $TABLE[users] ORDER BY -score,-size,rulername ASC") or die(mysql_error());
+mysql_query("UPDATE $TABLE[alliances] SET score='',size='',num_members='';");
+while ($r = mysql_fetch_assoc($ranking))
+{
+	mysql_query("UPDATE $TABLE[alliances] SET score=score+$r[score], size=size+$r[size],num_members=num_members+1 WHERE tag='$r[tag]';");
+	mysql_query("UPDATE $TABLE[users] SET rank='$n' WHERE id='$r[id]'");
+	$n++;
+}
+
+
+/* GALAXIES */
+mysql_query("TRUNCATE $TABLE[galaxies]") or die(mysql_error());
+$insq=mysql_query("SELECT x,galname FROM $TABLE[users] GROUP BY x") or die(mysql_error());
+while ($ins = mysql_fetch_assoc($insq))
+{
+	mysql_query("INSERT INTO $TABLE[galaxies] (x,galname) VALUES ('$ins[x]','".addslashes($ins[galname])."')") or die(mysql_error());
+}
+$g = mysql_query("SELECT score,size,x FROM $TABLE[users] ORDER BY x ASC, y ASC") or die(mysql_error());
+while ($gi = mysql_fetch_assoc($g))
+{
+	mysql_query("UPDATE $TABLE[galaxies] SET score=score+$gi[score], size=size+$gi[size] WHERE x='$gi[x]'") or die(mysql_error());
+}
+// end galaxies
+
+if (ceil($MyT/50) == floor($MyT/50))
+{
+	mysql_query("OPTIMIZE TABLE $TABLE[alliances],$TABLE[galaxies],$TABLE[users],$TABLE[production],$TABLE[news],$TABLE[fleets]") or die(mysql_error());
+}
+
+
+?>
+
+<title>TICKER</title><META http-equiv=refresh content=<?=$refreshingtime?>>
+Tick done! (<?=($MyT+1)?>)<br>
+Game stops <?=($GAMEPREFS[general_gamestoptick])?"at $GAMEPREFS[general_gamestoptick].":"never!"?>
+
+

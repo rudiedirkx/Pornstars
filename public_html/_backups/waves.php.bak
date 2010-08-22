@@ -1,0 +1,350 @@
+<?
+
+include("config.php");
+
+logincheck();
+
+// waveParray: soort(naam,uitleg,eta,crystal,energy,rescon_nodig)
+$waveParray = array(	'roidscans'=>array('Asteroidscan','You need these scans to find roids. Build as many as you can!','10','1000','1000','r_scan1'),
+			'a',
+			'sectorscans'=>array('Sector-/Basicscan','The basic sectorscan provides no particular info; no military intel','20','1000','2000','c_bscan'),
+			'unitscans'=>array('Unitscan','The unitscan shows you all current non-stealth ships of your target','30','2000','4000','c_uscan'),
+			'pduscans'=>array('PDUscan','The PDUscan shows all PDU of the targets planet','30','4000','8000','c_pscan'),
+			'militaryscans'=>array('Military-/fleetscan','The military- or fleetscan shows you ALL of your targets units in his fleet','40','12000','24000','c_mscan'),
+			'newsscans'=>array('Newsscan','The newsscan shows you all of your targets news of the last 24hours','40','12000','24000','c_nscan'),
+			'b',
+			'waveamps'=>array('Wave Amplifiers','The more you have, the greater the chance is you penetrate your target\'s shields','30','3000','6000','c_bscan'),
+			'waveblockers'=>array('Wave Blockers','The more you have, the smaller the chance is your enemy penetrates your shields','60','4000','10000','c_wblockers'));
+
+$scan_facts = array('sector'=>'2','unit'=>'4','pdu'=>'5','military'=>'7','news'=>'8');
+
+// Types of wavescans: sector, unit, pdu, military & news
+
+
+
+
+
+function calcres($number)
+{
+	global $roids;
+	srand ((double) microtime() * 1000000);
+	$retval = 0;
+	$a = 0;
+	if ($a!=$number)
+	{
+		do
+		{
+			$a++;
+			$tmp = rand(0,1+($roids+$retval));
+			if ($tmp<20) $retval++;
+		}
+		while($a<$number);
+	}
+	return $retval;
+}
+
+if ($_POST[check] == 1 && $_POST[type] == "roids" && $_POST[aantal]>0 && $r_scan1==1)
+{
+	$a = min($_POST[aantal],$roidscans);
+
+	$found = calcres($a);
+	$sql = "UPDATE $TABLE[users] SET roidscans=roidscans-$a,asteroid_ui=asteroid_ui+$found WHERE id='$UID' AND roidscans>=$a && r_scan1=1";
+	$result = mysql_query($sql) or die(mysql_error());
+
+	Header("Location: ?msggreen=Your $a roidscans found $found roids");
+	die();
+}
+
+$t=$_GET[type];
+$a=$_GET[aantal];
+if ($_GET[check] == 1 && $_GET[action]=="orderscans" && $a>0)
+{
+	$eta = $waveParray[$t][2];
+	$kc = $waveParray[$t][3];
+	$ke = $waveParray[$t][4];
+	$need = $waveParray[$t][5];
+	if ($a*$ke>$energy || $a*$kc>$crystal)
+	{
+		$nn[e]=($ke)?floor($energy/$ke):999999;
+		$nn[c]=($kc)?floor($crystal/$kc):999999;
+		$a = min($nn);
+	}
+	$a=min($a,999999);
+
+	$sql = "UPDATE $TABLE[users] SET p_".$t."='$a', p_".$t."t='".($eta+1)."', crystal=crystal-".($kc*$a).", energy=energy-".($ke*$a)." WHERE id='$UID' AND energy>=".($ke*$a)." AND crystal>=".($kc*$a)." AND p_".$t."='0' AND $need='1'";
+	mysql_query($sql) or die(mysql_error());
+	$affected = mysql_affected_rows();
+	$msg = ($affected) ? "green=Waves ordered!" : "red=Error!";
+
+	Header("Location: ?msg".$msg);
+	exit();
+}
+
+$target=$_GET[target];
+if ($_GET[check] == 1 && $_GET[type] && $_GET[target])
+{
+	if (!mysql_num_rows(mysql_query("SELECT id FROM $TABLE[users] WHERE id='$_GET[target]'")))
+	{
+		die("This planet does not exist!");
+	}
+
+	$myrow = mysql_fetch_assoc(mysql_query("SELECT * FROM $TABLE[users] WHERE id='$target'")) or die(mysql_error());
+	// kansen berekenen
+	$chance = 30 * (1 + $waveamps/$roids - $myrow[waveblockers]/($myrow[asteroid_metal]+$myrow[asteroid_crystal]+$myrow[asteroid_ui]));
+	$rval = rand(0, 100);
+	$scan_fact = $scan_facts[$_GET[type]];
+	if ($rval < $chance)
+	{
+		$reached = TRUE;
+		if ($rval+5*$scan_fact > $chance )
+		{
+			$noticed = TRUE;
+		}
+	}
+	else
+	{
+		$blocked = TRUE;
+		$noticed = TRUE;
+	}
+
+	if ($_GET[type] == "sector" && $sectorscans && $c_bscan==1)
+	{
+		mysql_query("UPDATE $TABLE[users] SET sectorscans=sectorscans-1 WHERE id='$UID'");
+		$sectorscans--;
+
+		if ($reached == TRUE)
+		{
+			$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><b>BASIC Infiltration report on $myrow[username] #$myrow[id]</b></td></tr></table>";
+			$scanresult.= "<table border=0 cellpadding=2 cellspacing=0>";
+			$scanresult.= "<tr><td align=right width=200>Score:</td><td><br></td><td>".nummertje($myrow[score])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Metal:</td><td><br></td><td>".nummertje($myrow[metal])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Crystal:</td><td><br></td><td>".nummertje($myrow[crystal])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Energy:</td><td><br></td><td>".nummertje($myrow[energy])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Civilians:</td><td><br></td><td>".nummertje($myrow[civilians])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Metal Asteroids:</td><td><br></td><td>".nummertje($myrow[asteroid_metal])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Crystal Asteroids:</td><td><br></td><td>".nummertje($myrow[asteroid_crystal])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Undeveloped Asteroids:</td><td><br></td><td>".nummertje($myrow[ui_roids])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Energyplants:</td><td><br></td><td>".nummertje($myrow[energyplants])."</td></tr>";
+		//	$scanresult.= "<tr><td align=right>Sleep:</td><td><br></td><td>";
+		//	$scanresult.= ($myrow[sleep] == 0) ? "OFF" : "ON";
+		//	$scanresult.= "</td></tr>";
+			$scanresult.= "<tr><td align=right>PDU:</td><td><br></td><td>".nummertje($myrow[rcannons]+$myrow[avengers]+$myrow[lstalkers])."</td></tr>";
+			$totaal = $myrow[infinitys_fleet] + $myrow[infinitys_base] + $myrow[wraiths_fleet] + $myrow[wraiths_base] + $myrow[warfrigs_fleet] + $myrow[warfrigs_base] + $myrow[destroyers_fleet] + $myrow[destroyers_base] + $myrow[cobras_fleet] + $myrow[cobras_base] + $myrow[astropods_fleet] + $myrow[astropods_base];
+			$scanresult.= "<tr><td align=right>Units:</td><td><br></td><td>".nummertje($totaal)."</td></tr>";
+			$scanresult.= "</table>";
+		}
+	}
+
+	if ($_GET[type] == "unit" && $unitscans && $c_uscan==1)
+	{
+		mysql_query("UPDATE $TABLE[users] SET unitscans=unitscans-1 WHERE id='$UID'");
+		$unitscans--;
+
+		if ($reached == TRUE)
+		{
+			$infinitys	= $myrow[infinitys_fleet] + $myrow[infinitys_base];
+			$wraiths	= $myrow[wraiths_fleet] + $myrow[wraiths_base];
+			$warfrigs	= $myrow[warfrigs_fleet] + $myrow[warfrigs_base];
+			$destroyers	= $myrow[destroyers_fleet] + $myrow[destroyers_base];
+			$cobras		= $myrow[cobras_fleet] + $myrow[cobras_base];
+			$astropods	= $myrow[astropods_fleet] + $myrow[astropods_base];
+			$totaal		= $infinitys+$wraiths+$warfrigs+$cobras+$astropods+$destroyers;
+
+			$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><b>UNIT Infiltration report on $myrow[username] #$myrow[id]</b></td></tr></table>";
+			$scanresult.= "<table border=0 cellpadding=2 cellspacing=0>";
+			$scanresult.= "<tr><td align=right width=200>Total:</td><td><br></td><td>".nummertje($totaal)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Infinitys:</td><td><br></td><td>".nummertje($infinitys)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Wraiths:</td><td><br></td><td>".nummertje($wraiths)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Warfrigates:</td><td><br></td><td>".nummertje($warfrigs)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Astropods:</td><td><br></td><td>".nummertje($astropods)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Cobras:</td><td><br></td><td>".nummertje($cobras)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Destroyers:</td><td><br></td><td>".nummertje($destroyers)."</td></tr>";
+			$scanresult.= "</table>";
+		}
+	}
+
+	if ($_GET[type] == "pdu" && $pduscans && $c_pscan==1)
+	{
+		mysql_query("UPDATE $TABLE[users] SET pduscans=pduscans-1 WHERE id='$UID'");
+		$pduscans--;
+
+		if ($reached == TRUE)
+		{
+			$totaal = $myrow[rcannons]+$myrow[avengers]+$myrow[lstalkers];
+
+			$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><b>PDU Infiltration report on $myrow[username] #$myrow[id]</b></td></tr></table>";
+			$scanresult.= "<table border=0 cellpadding=2 cellspacing=0>";
+			$scanresult.= "<tr><td align=right width=200>Total:</td><td><br></td><td>".nummertje($totaal)."</td></tr>";
+			$scanresult.= "<tr><td align=right>Reaper Cannons:</td><td><br></td><td>".nummertje($myrow[rcannons])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Avengers:</td><td><br></td><td>".nummertje($myrow[avengers])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Lucius Stalkers:</td><td><br></td><td>".nummertje($myrow[lstalkers])."</td></tr>";
+			$scanresult.= "</table>";
+		}
+	}
+
+	if ($_GET[type] == "military" && $militaryscans && $c_mscan==1)
+	{
+		mysql_query("UPDATE $TABLE[users] SET militaryscans=militaryscans-1 WHERE id='$UID'");
+		$militaryscans--;
+
+		if ($reached == TRUE)
+		{
+			$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><b>Fleet Infiltration report on $myrow[username] #$myrow[id]</b></td></tr></table>";
+			$scanresult.= "<table border=0 cellpadding=2 cellspacing=0>";
+			$scanresult.= "<tr><td align=right width=200>Total</td><td><br></td><td>".nummertje($myrow[infinitys_fleet]+$myrow[wraiths_fleet]+$myrow[warfrigs_fleet]+$myrow[destroyers_fleet]+$myrow[astropods_fleet]+$myrow[scorpions_fleet]+$myrow[cobras_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Infinity</td><td><br></td><td>".nummertje($myrow[infinitys_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Wraiths</td><td><br></td><td>".nummertje($myrow[wraiths_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Warfrigates</td><td><br></td><td>".nummertje($myrow[warfrigs_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Astropods</td><td><br></td><td>".nummertje($myrow[astropods_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Cobras:</td><td><br></td><td>".nummertje($myrow[cobras_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Destroyers</td><td><br></td><td>".nummertje($myrow[destroyers_fleet])."</td></tr>";
+			$scanresult.= "<tr><td align=right>Scorpions</td><td><br></td><td>".nummertje($myrow[scorpions_fleet])."</td></tr>";
+			$scanresult.= "</table>";
+		}
+	}
+
+	if ($_GET[type] == "news" && $newsscans && $c_nscan==1)
+	{
+		mysql_query("UPDATE $TABLE[users] SET newsscans=newsscans-1 WHERE id='$UID'");
+		$newsscans--;
+
+		if ($reached == TRUE)
+		{
+			$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><b>Fleet Infiltration report on $myrow[username] #$myrow[id]</b></td></tr></table>";
+			$scanresult.= "<table border=0 cellpadding=2 cellspacing=0>";
+			$scanresult.= "<tr><td>bla... newsscan</td></tr>";
+			$scanresult.= "</table>";
+		}
+	}
+
+
+
+	if ($blocked == TRUE)
+	{
+		$scanresult = "<table border=0 cellpadding=2 cellspacing=0 width=100%><tr><td style='border:solid 1px black;'><center><font color=red><b>You failed in scanning $myrow[username] (#$myrow[id])</td></tr></table><br>";
+		if ($target!=$UID)
+			AddNews("waves","<b>$USERNAME</b> (#$UID) tried to <b>$_GET[type]"."scan</b> you. He failed!",$target);
+	}
+	if ($noticed == TRUE && $reached == TRUE)
+	{
+		if ($target!=$UID)
+			AddNews("waves","<b>$USERNAME</b> (#$UID) tried to <b>$_GET[type]"."scan</b> you. He succeeded!",$target);
+	}
+}
+
+require "header.php";
+
+echo $scanresult;
+
+?>
+<script>
+function loginpopup(type)
+{
+loginwin = window.open('planets.php?type='+type,'loginwin','toolbar=0,location=0,directories=0,status=1,menubar=0,scrollbars=1,resizable=1,width=450,height=250,left=' + (window.screen.width-450)/2 + ',top=' + (window.screen.height-400)/2);
+loginwin.focus();
+}
+</script>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px black;'><center><b>Waves</b></td></tr>
+</table>
+<br>
+
+<table border=1 bordercolor=#dddddd cellpadding=3 cellspacing=2 align=center style='border:0;'>
+<tr><td></td><td>Type</td><td>Number / Target</td><td></td></tr>
+<form method=post><input type=hidden name=check value=1><input type=hidden name=type value=roids>
+<tr><td width=150 colspan=2><b>Roidsearching:</td><td width=100><input type=text name=aantal style='width:100%;text-align:center;background-image:url(images/amount.bmp);background-position:center;'></td><td width=100><input type=submit value="Search" style='width:100%;'<?=(!$roidscans)?" disabled":""?>></td></tr>
+</form>
+<form><input type=hidden name=check value=1>
+<tr><td width=150><b>Scanners:</td><td width=150><select name=type style='width:100%;text-align:center;'>
+<?
+
+if ($c_bscan==1 && $sectorscans)
+{
+	$s = ($_GET[type]=="sector") ? " SELECTED" : "";
+	echo "<option value='sector'".$s."$d>Sectorscan";
+}
+if ($c_uscan==1 && $unitscans)
+{
+	$s = ($_GET[type]=="unit") ? " SELECTED" : "";
+	echo "<option value='unit'".$s."$d>Unitscan";
+}
+if ($c_pscan==1 && $pduscans)
+{
+	$s = ($_GET[type]=="pdu") ? " SELECTED" : "";
+	echo "<option value='pdu'".$s."$d>PDUscan";
+}
+if ($c_mscan==1 && $militaryscans)
+{
+	$s = ($_GET[type]=="military") ? " SELECTED" : "";
+	echo "<option value='military'".$s."$d>Militaryscan";
+}
+if ($c_nscan==1 && $newsscans)
+{
+	$s = ($_GET[type]=="news") ? " SELECTED" : "";
+	echo "<option value='news'".$s."$d>Newsscan";
+}
+
+?></select></td><td width=100><input type=text name=target value="<?=$_GET[target]?>" style='width:100%;text-align:center;background-image:url(images/target.bmp);background-position:center;'></td><td width=100><input type=submit value="Scan" style='width:100%;'></td></tr>
+</form>
+</table>
+<br>
+<br>
+
+<?
+
+$waves = mysql_query("SELECT * FROM $TABLE[users] WHERE id='$UID';") or die(mysql_error());
+$waves = mysql_fetch_assoc($waves) or die(mysql_error());
+
+// Voor het bouwen - stock staat in options.php
+$p_roidscans = $waves[p_roidscans];
+$p_roidscanst = $waves[p_roidscanst];
+$p_sectorscans = $waves[p_sectorscans];
+$p_sectorscanst = $waves[p_sectorscanst];
+$p_unitscans = $waves[p_unitscans];
+$p_unitscanst = $waves[p_unitscanst];
+$p_pduscans = $waves[p_pduscans];
+$p_pduscanst = $waves[p_pduscanst];
+$p_militaryscans = $waves[p_militaryscans];
+$p_militaryscanst = $waves[p_militaryscanst];
+$p_newsscans = $waves[p_newsscans];
+$p_newsscanst = $waves[p_newsscanst];
+$p_waveamps = $waves[p_waveamps];
+$p_waveampst = $waves[p_waveampst];
+$p_waveblockers = $waves[p_waveblockers];
+$p_waveblockerst = $waves[p_waveblockerst];
+
+?>
+<b>Order waves:</b><br>
+<br>
+<table border=1 bordercolor=#dddddd cellpadding=5 cellspacing=2 width=100% style='border:0;'>
+<?
+
+Production_entry("Name:","<b>Description:","<b>ETA:","<b>Cost:","<b>Stock:","Production:");
+
+if ($c_bscan)
+{
+
+	foreach ($waveParray AS $soort => $inhoud)
+	{
+		if (strlen($soort)==1)
+		{
+			echo "<tr height=5 bgcolor=black><td colspan=6></td></tr>";
+		}
+		else
+		{
+			$cn = 'p_'.$soort;
+			$produce = ($$cn == 0) ? "<table border=0 cellpadding=0 cellspacing=0><form action=waves.php><input type=hidden name=check value=1><input type=hidden name=action value=\"orderscans\"><input type=hidden name=type value=\"$soort\"><input type=hidden name=km value=$inhoud[3]><input type=hidden name=kc value=$inhoud[4]><tr><td><center><input type=text name=aantal style='width:60;text-align:center;' autocomplete=off><br><input type=submit value=\"Order\"></td></tr></form></table>" : "Building<br>".$$cn;
+			$eta = ($$cn == 0) ? $inhoud[2] : "<b>".(${$cn.t}-1);
+			if ($$inhoud[5])
+			{
+				Production_Entry($inhoud[0],$inhoud[1],$eta,"$inhoud[3] crystal<br>$inhoud[4] energy",$$soort,$produce);
+			}
+		}
+	}
+}
+
+?>
+</table>
+
+

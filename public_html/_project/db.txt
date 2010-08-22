@@ -1,0 +1,141 @@
+preferences
+- round			INT	
+- end_at_myt		INT	
+- military_attack_ratio	FLOAT	
+- ticker_time		INT	
+- login_enabled		ENUM(0,1)
+- signup_enabled	ENUM(0,1)
+- ticker_password	STRING	
+
+- planet_winner_id	INT	> users.id	NULL
+- planet_winner_score	INT			NULL
+
+- alliance_winner_id	INT	> alliances.id	NULL
+- alliance_winner_score	INT			NULL
+
+- galaxy_winner_id	INT	> galaxies.id	NULL
+- galaxy_winner_score	INT			NULL
+
+ticker
+- round_id		INT	> preferences.round
+- myt			INT	
+- time_utc		INT	
+- process_time		FLOAT
+
+users
+- id			INT	
+- email			STRING	
+- signup_utc		INT	
+- signup_myt		INT	> ticker.myt
+- x			INT	> galaxies.x
+- y			INT	> galaxies.y
+- asteroids_M		INT	
+- asteroids_C		INT	
+- asteroids_E		INT	
+- asteroids_U		INT	
+
+password_reminders
+- user_id		INT	> users.id
+- hash			STRING	
+
+email_changes
+- user_id		INT	> users.id
+- email			STRING	
+- hash			STRING	
+
+constructing
+- user_id		INT	> users.id
+- construction_id	INT	> constructions.id
+- eta			INT	
+
+constructions [data]
+- id			INT	
+- name			STRING	
+- comment		STRING	
+- eta			INT	
+- costs_M		INT	
+- costs_C		INT	
+- costs_E		INT	
+
+researching
+- user_id		INT	> users.id
+- research_id		INT	> researches.id
+- eta			INT	
+
+researches [data]
+- id			INT	
+- name			STRING	
+- comment		STRING	
+- eta			INT	
+- costs_M		INT	
+- costs_C		INT	
+- costs_E		INT	
+
+fleets
+- id			INT	
+- user_id		INT	> users.id
+- fleet_name		INT	
+- target_id		INT	> users.id
+- objective		INT	
+- duration		INT	
+- eta			INT	
+
+ships [data]
+- id			INT	
+- name			STRING	
+- comments		STRING	
+- costs_M		INT	
+- costs_C		INT	
+- costs_E		INT	
+- fuel_per_tick		INT	
+
+ships_in_fleets
+- fleet_id		INT	> fleets.id
+- ship_id		INT	> ships.id
+- amount		INT	
+
+galaxies
+- x			INT	
+- y			INT	
+- name			STRING	
+- picture		STRING	
+- galaxy_message	STRING	
+
+alliances
+- id			INT	
+- tag			STRING	
+- name			STRING	
+- picture		STRING	
+- password		STRING	
+
+users_in_alliances
+- alliance_id		INT	> alliances.id
+- user_id		INT	> users.id
+- position		ENUM('GC','MW','MC') NULL
+- vote_for_gc		INT	> users.id
+
+mail
+- id			INT	
+- user_id		INT	> users.id
+- from_id		INT	> users.id
+- sent_utc		INT	
+- sent_myt		INT	
+- message		TEXT	
+- seen			ENUM(0,1)
+- deleted		ENUM(0,1)
+
+news
+- id			INT	
+- user_id		INT	> users.id
+- type			ENUM('galaxy','alliance','research','construction','war')
+- message		TEXT	
+- seen			ENUM(0,1)
+- deleted		ENUM(0,1)
+
+old_intel
+- id			INT	
+- user_id		INT	> users.id
+- type			ENUM('','')
+- time_utc		INT	
+- time_myt		INT	
+- message		TEXT	

@@ -1,0 +1,140 @@
+Please do always feel free to send me a message (probably 0:1 or 1:1) when something fails or if you have a good idea for whatever!
+
+
+--- CHANGELOG ---
+
+-- february 24, 2005
+Some structural things:
+- All msgs in SESSION -> always saved and only one page visible;
+- Index has all outside-game-functions (login, signup, index, etc);
+- Finished Affairs (as far as possible). Voting should always go perfectly after this. Different remembering system;
+- Extra security: Checking username/password combo every 2 minutes;
+- NEW: First hand on the MultiTracker (based on IP and computername);
+And a comfort thing:
+- NEW: Upgraded Politics. Topics ordered by startdate/-time. Different date-output. Topics cannot be deleted by anyone;
+
+-- february 25, 2005
+Upgraded all concerning production:
+- Cut a part from the users table, so all production (both weaponary and waves units) go through a new table (production);
+- New table added: production. This table contains all pending units (ships, PDU and waves);
+- Gimme some love, sugar!
+- Edited GameEngine to new production system (reduced 7kb);
+- Edited both Waves and Production: added table containing ships pending, eta and number;
+- NEW: Added "Energy Efficiency" and "AntennaBot" to the TechTree, not yet available though;
+- Added all researches and constructions concerning EE and AB in table and pages. It's not fully implemented yet though;
+
+-- february 26, 2005
+- NEW: Added new page Alliance;
+- NEW: Alliance stuff no more in Preferences;
+- NEW: You can change your username now;
+- NEW: Ranking for Alliances
+- Upgraded ranking for Planets
+- Perfected Communication and News system
+- NEW: Donating now possible to both members of Galaxy and Alliance;
+- Every 20 ticks, on the tick, all tables get OPTIMIZED for faster processing of turns;
+- NEW: Got rid of all references to usernames. Username only for logging in, only for individual player;
+- NEW: "Ticker stopped" in Header;
+- NEW: Added one fleet per planet. All fleets in new table fleets;
+- Attacking and defending no more in usertable. All through table fleets;
+- Delete from usertable: all references to ships and fleet;
+- Huge cuts in page Military (reduced 4kb). Transfer is now much faster and easier;
+- Waves, Production, Military, Options and GameEngine upgraded to new fleetsystem;
+
+-- february 27, 2005
+- Msgs to (0:1) always go to GameAdmin;
+- NEW: No more civilians. So no more Enery losses! But also no advantages. Maybe later;
+- Nice Pornstar pic op top of the menu. LOL;
+- Military: Recall & Selfdestruct per fleet;
+- NEW: Added a few standard galaxy pictures in the image directory. Now:
+  - images/TurkMetGun.jpg
+  - images/pornstars.jpg
+  - images/pornstars_old.jpg
+  - images/death.jpg
+- NEW: Resources - Roids ratio cannot be higher than 1:8 both ways;
+- NEW: Preferences - You can change your email now (with verification);
+- NEW: Added two more researches: "TimeTravel" (eta -8) and "ResourceBoost" (asteroidincome +15%). They're not in the TechTree (couldn't fit them in);
+- Implemented "Resource Boost" -> finished you get 15% more asteroidincome;
+- Funned up the leftside Menu;
+
+-- march 2, 2005
+- Big boobs rule!
+- NEW: Attacking and defending within Galaxy takes 5 ticks less than outside Galaxy;
+- NEW: All ships different ETA and fuel use (See Manual);
+- Implemented all new researches (EE, AB, TT):
+  - Energy Efficiency - Researched: your ships need 40% less Energy. Construction: you can build new powerplants;
+  - AntennaBot - New ship: Antenna. Costs alot both producing and sending, but its big and powerful!;
+  - Time Travel - Part I: 3 ticks off all fleet ETA. Part II: another 5 ticks off all fleet ETA;
+NB: EnergyEfficiency excludes the Antenna and vice versa! And Time Travel excludes Resource Boost and vice versa!
+
+-- march 8, 2005
+- No more Username! Instead of a username, you log in with your emailaddress now;
+- CombatEngine upgraded to new fleetsystem. Still beta though! Totally saved in GameEngine since february: 29.8kb (wow);
+- Added some comfort colors;
+- NEW: Messages in Overview. You can now see whether your RESCON (research&construction) is busy;
+- NEW: Changing password is the first thing you do when you log in the first time. NB: Not optionally;
+
+-- march 9, 2005
+- GC's get 5% extra asteroidincome;
+- NEW: You can now start your game when you're ready. You can chill and read the manual now, without your protection getting thinner;
+- Admin has once again gained more power over his slaves;
+- NEW: Overview - Messages - You can see what RESCON is busy and their ETA's;
+
+-- march 11, 2005
+- NEW: Energysystem totally changed! Same RESCON, but a different story and a few different values;
+NB: Read the Manual on this new way of collecting Energy!
+- You can now trade Crystal for Energy (2:1) and Metal for Energy (4:1);
+- Updated Header. Is now 4.8kb bigger, but its also better! If it loads too slow: tell me;
+- WaveAmps DO help roidsearching now!! The sixth Asteroid you get scanning is still 100% sure, after that, you'll need Amps, luck or more Roidscans;
+
+-- july 30, 2005
+- Got the freakin' sleepmode to work!!;
+- Loads of structural things changed. Shouldn't affect the users;
+- Galaxy and all three rankings changed: better overview;
+- Alliance Area changed: better overview;
+- Secured login;
+- Loadingtime for all pages on the far bottom. If it ever gets to 0.5seconds, let me know the loadingtime and the page;
+- Updated R&D areas. Its faster and smaller now;
+- Finished Galaxy Status (outgoing);
+- Updated Resources. You can see how your income is established now;
+- Updated Production area. Same story and mechanism as R&D areas;
+- Updated Waves Area. Same mechanism as R&D and Production;
+
+-- august 2, 2005
+- Finished Production Spies;
+- New table 'online' to check if users are logged in twice, etc;
+
+-- august 3, 2005
+- Kinda updated the TECHTREE. Aint looking too great though;
+- Added a new (fun) area: FACTS;
+
+-- november 11, 2005
+- Added Facts and Stats. Stats is now what Facts used to be. In Facts will be some gamefacts;
+- Updated the Engine. You can now be the Engine. Click on ON in the MFGTC in Overview and a red square will appear;
+- You can now see how many queries the game uses on every page (in blue at the bottom). It's too much, as you can see;
+
+-- january 25, 2006
+- You can now see how many uninitiated roids you have;
+- A code to verify you can read to log in;
+
+-- january 26, 2006
+- Pictures for news;
+- Make an intel table. You automatically save old scans there;
+
+-- february 24, 2006
+- Saving Intel not free anymore, and not automatically. Set in Prefs if you want it auto;
+
+-- february 27, 2006
+- Updated TechTree. Still 10 R/D missing, of which 2 Specials;
+
+-- may 23, 2006
+- MILITARY
+   If NUM_OUTGOING_FLEETS is bigger than current, add fleets for all users. If it's smaller, remove fleets;
+- LAYOUT
+   Overal class=header in alle headers
+- ALLIANCE
+   Bij Terminate: ontelbaar vaak Missing argument 3 for addnews( ) - FIXED
+   Bij Leave: mysql_result error: can't jump to row x - FIXED
+
+-- september 28, 2008
+- RESOURCES
+   Installed new resources system

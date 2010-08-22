@@ -1,0 +1,190 @@
+<?
+
+include("config.php");
+
+logincheck();
+
+function calccost($number)
+{
+	global $i_roids;
+	$retval = 0;
+	$a = 0;
+	if ($a!=$number)
+	{
+		while($a<$number)
+		{
+			$a++;
+			$cost = 110*($i_roids+$a);
+			$retval += $cost;
+		}
+	}
+	else
+		$retval = 110*($i_roids+$a);
+
+	return $retval;
+}
+
+$donateto = $_POST[donateto];
+$donatemetal = $_POST[donatemetal];
+$donatecrystal = $_POST[donatecrystal];
+$donateenergy = $_POST[donateenergy];
+if ($donateto && ($donatecrystal>0 || $donatemetal>0 || $donateenergy>0))
+{
+	if ($donateto == $UID)
+	{
+		Go("?msgred=You cannot donate to yourself!");
+	}
+	$dti = mysql_query("SELECT x,y,tag FROM $TABLE[users] WHERE id='$donateto'");
+	if (!mysql_num_rows($dti))
+	{
+		Go("?msgred=The planet you are trying to donate to, doesnt exist.");
+	}
+	if ($USER[x] != mysql_result($dti,0,'x') && $USER[tag] != mysql_result($dti,0,'tag'))
+	{
+		Go("?msgred=You can not donate outside your galaxy or alliance!");
+	}
+	if ($energy < $donateenergy || $crystal < $donatecrystal || $metal < $donatemetal)
+	{
+		Go("?msgred=You dont have the required amount of resources to donate!");
+	}
+	if ($newbie)
+	{
+		Go("?msgred=You cannot donate when you're still under protection!");
+	}
+	if (mysql_query("UPDATE $TABLE[users] SET crystal=crystal-$donatecrystal,metal=metal-$donatemetal,energy=energy-$donateenergy WHERE id='$UID' AND energy>=$donateenergy AND crystal>=$donatecrystal AND metal>=$donatemetal"))
+	{
+		mysql_query("UPDATE $TABLE[users] SET crystal=crystal+$donatecrystal,metal=metal+$donatemetal,energy=energy+$donateenergy WHERE id='$donateto'");
+	}
+
+	$string1 = "We recieved a donation of <b>".nummertje($donatemetal)." Metal, ".nummertje($donatecrystal)." Crystal and ".nummertje($donateenergy)." Energy</b> from <b>$USER[rulername] of $USER[planetname]</b> ($USER[x]:$USER[y])...";
+	$string2 = "We donated the amount of <b>".nummertje($donatemetal)." Metal, ".nummertje($donatecrystal)." Crystal and ".nummertje($donateenergy)." Energy</b> to <b>".$userarray[$donateto]." of ".$planetarray[$donateto]."</b> (".$xcoordarray[$donateto].":".$ycoordarray[$donateto].")...";
+
+	AddNews("donation",$string1,$donateto);
+	AddNews("donation",$string2,$UID,1);
+	Logbook("donation",$string2);
+
+	Go("?msg=Donated successfully");
+}
+	
+
+if ($init>0 && $asteroid_ui>0)
+{
+	if ($metalroid && $crystalroid)
+	{
+		if (($metalroid/$crystalroid >= 8 && $_POST[roidtype] == "metal") || ($crystalroid/$metalroid >= 8 && $_POST[roidtype] == "crystal"))
+		{
+			Save_Msg("Roid ratio cannot be higher than 1:8 either ways, since planetary magnetism should always be balanced","red");
+			Go();
+		}
+	}
+	else if (($metalroid >= 8 && $_POST[roidtype] == "metal") || ($crystalroid >= 8 && $_POST[roidtype] == "crystal"))
+	{
+		Save_Msg("Roid ratio cannot be higher than 1:8 either ways, since planetary magnetism should always be balanced","red");
+		Go();
+
+	}
+
+	$cost = calccost(1);
+	if ($metal<$cost)
+	{
+		Save_Msg("You don't have enough metal!","red");
+		Go();
+	}
+	$a = 0;
+	while ($metal>=$cost && $init>$a && $asteroid_ui>0)
+	{
+		$a++;
+		$cost = calccost(1);
+		$metal -= $cost;
+		$tc += $cost;
+		$asteroid_ui--;
+		$i_roids++;
+		$result = mysql_query("UPDATE $TABLE[users] SET metal=metal-".$cost.",asteroid_".$roidtype."=asteroid_".$roidtype."+1,asteroid_ui=asteroid_ui-1 WHERE id='$UID' AND metal>=$cost") or die(mysql_error());
+	
+		$roids_name = ($a==1) ? "roid" : "roids";
+		$msg = "You initiated $a $roids_name for ".nummertje($tc)." Metal";
+	}
+
+//	Logbook("initiate_roids","You initiated $a $roids_name for ".nummertje($tc)." Metal");
+	Save_Msg($msg,"green");
+	Go();
+}
+
+
+include("header.php");
+
+$metalincome = 0;
+$metalincome += res_per_type($metalroid);
+$metalincome *= ($c_rebo==1 && $c_rebo2==1 && $r_rebo==1) ? 1.15 : 1;
+$metalincome += ($USER[galaxyfunction]=="GC") ? 0.05*res_per_type($metalroid) : 0;
+$metalincome += ($c_metal10==1) ? 1500 : 0;
+$metalincome += ($c_metal20==1) ? 3000 : 0;
+$metalincome += ($c_metal30==1) ? 6000 : 0;
+
+$crystalincome = 0;
+$crystalincome += res_per_type($crystalroid);
+$crystalincome *= ($c_rebo==1 && $c_rebo2==1 && $r_rebo==1) ? 1.15 : 1;
+$crystalincome += ($USER[galaxyfunction]=="GC") ? 0.05*res_per_type($crystalroid) : 0;
+$crystalincome += ($c_crystal10==1) ? 1500 : 0;
+$crystalincome += ($c_crystal20==1) ? 3000 : 0;
+$crystalincome += ($c_crystal30==1) ? 6000 : 0;
+
+?>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>Resources</b></td></tr>
+</table>
+<br>
+
+<table border=0 cellpadding=2 cellspacing=0>
+<tr><td align=right><b>Asteroids</td></tr>
+<tr><td align=right width=100>Metal:</td><td width=150><?=nummertje($metalroid)?></td></tr>
+<tr><td align=right>Crystal:</td><td><?=nummertje($crystalroid)?></td></tr>
+<tr><td align=right>Uninitiated:</td><td><?=nummertje($asteroid_ui)?></td></tr>
+</table>
+
+<br>
+<table border=0 cellpadding=2 cellspacing=0>
+<tr><td align=right><b>Income<?=($c_rebo==1 && $c_rebo2==1 && $r_rebo==1)?"*":""?></td></tr>
+<tr><td align=right width=100>Metal:</td><td width=150><?=nummertje($metalincome)?></td></tr>
+<tr><td align=right>Crystal:</td><td><?=nummertje($crystalincome)?></td></tr>
+</table>
+<br>
+<br>
+<?
+
+echo "Cost to activate next roid: ".nummertje(calccost(1))." Metal<br>";;
+if ($asteroid_ui>0)
+{
+	echo "<br><table border=0 cellpadding=2 cellspacing=0><form action=\"resources.php\" method=\"post\">";
+	echo "<tr><td width=100><b>Activate roids</td><td width=150><select name=roidtype style='width:100%;'><option value='metal'>Metal<option value='crystal'>Crystal</select></td><tr>";
+	echo "<td></td><td><input type=text name=init autocomplete=off style='width:100%;'></td><tr>";
+	echo "<td></td><td><input type=submit value=\"Initiate\" style='width:100%;'></td><tr>";
+	echo "</form></table>";
+}
+
+$rcv='';
+$a = mysql_query("SELECT id,rulername,planetname,x,y FROM $TABLE[users] WHERE (x='$USER[x]' OR tag='$USER[tag]') AND id!=$UID ORDER BY x,y");
+while ($rcvi = mysql_fetch_assoc($a))
+{
+	$rcv .= "<option value='$rcvi[id]'>$rcvi[rulername] of $rcvi[planetname] ($rcvi[x]:$rcvi[y])\n";
+}
+
+?>
+<br>
+<br>
+<b>Donate:</b><br>
+<table border=0 cellpadding=2 cellspacing=0>
+<form name=donate method=post>
+<tr><td width=100>Receiver:</td><td width=250><select name=donateto style='width:100%;'><?=$rcv?></select></td></tr>
+<tr><td>Metal:</td><td><input type=text name=donatemetal value="<?=$metal?>" autocomplete=off style='width:100%;'></td></tr>
+<tr><td>Crystal:</td><td><input type=text name=donatecrystal value="<?=$crystal?>" autocomplete=off style='width:100%;'></td></tr>
+<tr><td>Energy:</td><td><input type=text name=donateenergy value="<?=$energy?>" autocomplete=off style='width:100%;'></td></tr>
+<tr><td></td><td><input type=submit value="Donate" style='width:100%;'></td></tr>
+</form></table>
+
+<?
+
+include("footer.php");
+
+

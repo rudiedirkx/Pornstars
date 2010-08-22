@@ -1,0 +1,193 @@
+<?
+
+include("config.php");
+
+logincheck();
+
+if ($_GET[ready2play] == 1)
+{
+	Save_Msg("<b>You are now ready to participate in the game; Have very much fun!","green");
+	mysql_query("UPDATE $TABLE[users] SET ready2play='1' WHERE id='$UID'");
+	Go();
+}
+
+$r = (GameOver()) ? mysql_fetch_assoc(mysql_query("SELECT rulername,planetname,x,y,score FROM $TABLE[users] ORDER BY -score LIMIT 1")) : $r;
+
+$q = mysql_query("SELECT gcmessage FROM $TABLE[galaxies] WHERE x='$USER[x]'") or die(mysql_error());
+$gcmessage = trim(mysql_result($q,0,'gcmessage'));
+
+if ($tickdif > $TICKERTIME)
+{
+	$tickertimetxt = "<font color=red>";
+	if ($tickdif > 60 && $tickdif <= 3600)
+	{
+		$sec = $tickdif;
+		$min = floor($sec/60);
+		$sec = $sec-60*$min;
+		$tickertimetxt .= "$min min, $sec sec";
+	}
+	else if ($tickdif > 3600)
+	{
+		$sec = $tickdif;
+		$hours = floor($sec/3600);
+		$min = floor(($sec-$hours*3600)/60);
+		$sec = $sec-$hours*3600-60*$min;
+		$tickertimetxt .= "$hours hours, $min min, $sec sec";
+		if ($hours > 24)
+		{
+			$days = floor($hours/24);
+			$hours = $hours-$days*24;
+			$tickertimetxt = "<font color=red>$days days, $hours hours, $min min, $sec sec";
+		}
+	}
+	else
+		$tickertimetxt .= "$tickdif seconds";
+}
+else
+{
+	$tickertimetxt = "$tickdif seconds";
+}
+
+$gcq = mysql_query("SELECT rulername,planetname FROM $TABLE[users] WHERE galaxyfunction='GC' AND x='$USER[x]';");
+$gci = mysql_fetch_assoc($gcq);
+
+include("header.php");
+
+?>
+<br>
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Message from God The Creator :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=0 cellspacing=0 width=100%><tr><td><center><font color=#ff66ff>
+<?=nl2br($GAMEPREFS[general_adminmsg])?>
+<?=(GameOver()) ? "<br><font style='font-size:12px;'><b>THE GAME IS OVER!! $GAMEPREFS[general_gamestoptick] ticks HAVE BEEN PLAYED!!<br>The Winner: $r[rulername] of  $r[planetname] from ($r[x]:$r[y]) with ".nummertje($r[score])." points." : (($GAMEPREFS[general_gamestoptick]) ? "<br>Game stops after <b>tick ".nummertje($GAMEPREFS[general_gamestoptick])."</b>!" : "")?>
+</td></tr></table>
+
+<br>
+
+<? if ($USER[newbie] || !$USER[ready2play]) { ?>
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Messages / News :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=3 cellspacing=0><tr><td><center>
+<?=($USER[newbie] > 0) ? "<b><font color=#aaff00>You are under newbie protection for $newbie more ticks</font></b><br><br>":""?>
+<?=(!$USER[ready2play])?"<input type=button value='I AM READY TO PLAY!' OnClick=\"location='?ready2play=1';\"><br>":""?>
+</td></tr></table>
+<br>
+<? } ?>
+
+<? if (mysql_num_rows($gcq) || $gcmessage) { ?>
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Galactic Message :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=0 cellspacing=0 width=100%><tr><td><center><font color=lime>
+<b>Your GC: <?=$gci[rulername]?> of <?=$gci[planetname]?></b><br><font color=#ff66ff>
+<?=nl2br($gcmessage)?>
+</td></tr></table>
+<br>
+<? } ?>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Units (<?=nummertje($NUMSHIPS[base]+$NUMSHIPS[1]+$NUMSHIPS[2])?> total) :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=3 cellspacing=0 width=100%>
+<tr><td align=right width=50%>Infinitys</td><td><?=nummertje($NUMSHIPS[infinitys])?></td></tr>
+<tr><td align=right>Wraiths</td><td><?=nummertje($NUMSHIPS[wraiths])?></td></tr>
+<tr><td align=right>Warfrigates</td><td><?=nummertje($NUMSHIPS[warfrigs])?></td></tr>
+<tr><td align=right>Astropods</td><td><?=nummertje($NUMSHIPS[astropods])?></td></tr>
+<tr><td align=right>Cobras</td><td><?=nummertje($NUMSHIPS[cobras])?></td></tr>
+<tr><td align=right>Destroyers</td><td><?=nummertje($NUMSHIPS[destroyers])?></td></tr>
+<tr><td align=right>Scorpions</td><td><?=nummertje($NUMSHIPS[scorpions])?></td></tr>
+<?=($$productionarray[antennas][5])?"<tr><td align=right>Antennas</td><td>".nummertje($NUMSHIPS[antennas])."</td></tr>\n":""?>
+</table>
+</td></tr>
+</table>
+
+<br>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: PDU (<?=nummertje($rcannons+$avengers+$lstalkers)?> total) :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=3 cellspacing=0 width=100%>
+<tr><td align=right width=50%>Reaper Cannons</td><td><?=nummertje($rcannons)?></td></tr>
+<tr><td align=right>Avengers</td><td><?=nummertje($avengers)?></td></tr>
+<tr><td align=right>Lucius Stalkers</td><td><?=nummertje($lstalkers)?></td></tr>
+</table>
+</td></tr>
+</table>
+
+<br>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Asteroids (<?=nummertje($roids)?> total) :.</b></td></tr>
+<tr><td><center>
+<table border=0 cellpadding=3 cellspacing=0 width=100%>
+<tr><td align=right width=50%>Metal Asteroids</td><td><?=nummertje($USER[asteroid_metal])?></td></tr>
+<tr><td align=right>Crystal Asteroids</td><td><?=nummertje($USER[asteroid_crystal])?></td></tr>
+<tr><td align=right>Undeveloped Asteroids</td><td><?=nummertje($USER[asteroid_ui])?></td></tr>
+</table>
+</td></tr>
+</table>
+
+<br>
+
+<table border=0 cellpadding=2 cellspacing=0 width=100%>
+<tr><td style='border:solid 1px #444444;'><center><b>.: Fleet Status :.</b></td></tr>
+<tr><td>
+<table border=0 cellpadding=0 cellspacing=0 align=center><tr><td><b>
+<?
+
+if (!$FLEET[1][eta] && !$FLEET[1][purpose] && !$FLEET[1][destination_id])
+	echo "Fleet I is at home!";
+if ($FLEET[1][purpose] == "return")
+	echo "Fleet I is returning from ".$userarray[$FLEET[1][destination_id]]." of ".$planetarray[$FLEET[1][destination_id]]." (".$FLEET[1][destination_x].":".$FLEET[1][destination_y].") (ETA: ".$FLEET[1][eta].")...</font>";
+if ($FLEET[1][purpose] == "attack")
+{
+	$eta = ($FLEET[1][eta]==0 && $FLEET[1][actiontime]<=$FLEET[1][startactiontime]) ? $FLEET[1][actiontime]." more ticks" : "ETA: ".($FLEET[1][eta])." ticks";
+	echo "<font color=red>Fleet I is attacking ".$userarray[$FLEET[1][destination_id]]." of ".$planetarray[$FLEET[1][destination_id]]." (".$FLEET[1][destination_x].":".$FLEET[1][destination_y].") ($eta)...</font>";
+}
+if ($FLEET[1][purpose] == "defend")
+{
+	$eta = ($FLEET[1][eta]==0 && $FLEET[1][actiontime]<=$FLEET[1][startactiontime]) ? $FLEET[1][actiontime]." more ticks" : "ETA: ".($FLEET[1][eta])." ticks";
+	echo "<font color=green>Fleet I is defending ".$userarray[$FLEET[1][destination_id]]." of ".$planetarray[$FLEET[1][destination_id]]." (".$FLEET[1][destination_x].":".$FLEET[1][destination_y].") ($eta)...</font>";
+}
+echo "<br>";
+
+if (!$FLEET[2][eta] && !$FLEET[2][purpose] && !$FLEET[2][destination_id])
+	echo "Fleet II is at home!";
+if ($FLEET[2][purpose] == "return")
+	echo "Fleet II is returning from ".$userarray[$FLEET[2][destination_id]]." of ".$planetarray[$FLEET[2][destination_id]]." (".$FLEET[2][destination_x].":".$FLEET[2][destination_y].") (ETA: ".$FLEET[2][eta].")...</font>";
+if ($FLEET[2][purpose] == "attack")
+{
+	$eta = ($FLEET[2][eta]==0 && $FLEET[2][actiontime]<=$FLEET[2][startactiontime]) ? $FLEET[2][actiontime]." more ticks" : "ETA: ".($FLEET[2][eta])." ticks";
+	echo "<font color=red>Fleet II is attacking ".$userarray[$FLEET[2][destination_id]]." of ".$planetarray[$FLEET[2][destination_id]]." (".$FLEET[2][destination_x].":".$FLEET[2][destination_y].") ($eta)...</font>";
+}
+if ($FLEET[2][purpose] == "defend")
+{
+	$eta = ($FLEET[2][eta]==0 && $FLEET[2][actiontime]<=$FLEET[2][startactiontime]) ? $FLEET[2][actiontime]." more ticks" : "ETA: ".($FLEET[2][eta])." ticks";
+	echo "<font color=green>Fleet II is defending ".$userarray[$FLEET[2][destination_id]]." of ".$planetarray[$FLEET[2][destination_id]]." (".$FLEET[2][destination_x].":".$FLEET[2][destination_y].") ($eta)...</font>";
+}
+echo "<br></td></tr></table>";
+
+$num_users = mysql_num_rows(mysql_query("SELECT id FROM $TABLE[users] WHERE lastaction>".(time()-180)." AND lastlogin!='0'"));
+$lastticktime = strftime("%H:%M:%S",$ticktime);
+$avgloading = mysql_fetch_assoc(mysql_query("SELECT SUM(loadingtime) AS total, COUNT(*) as number FROM loading WHERE page='$stF'"));
+
+$_SESSION[ps_msg]=NULL;
+
+?>
+</td></tr>
+</table>
+
+
+<br>
+<br>
+<b><u>&nbsp;.: Game status :.&nbsp;</u></b><br>
+Last tick: <?=$lastticktime?><br>
+<?=$tickertimetxt?> ago</font><br>
+Time: <?=date("H:i:s")?><br>
+<?
+
+include("footer.php");
+
+

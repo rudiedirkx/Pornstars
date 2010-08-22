@@ -1,0 +1,256 @@
+#
+# Tabel structuur voor tabel `alliances`
+#
+CREATE TABLE alliances (
+  id tinyint(4) NOT NULL auto_increment,
+  tag varchar(8) NOT NULL default '',
+  pwd varchar(255) NOT NULL default '',
+  name varchar(40) NOT NULL default '',
+  leader_id tinyint(4) NOT NULL default '0',
+  score bigint(20) NOT NULL default '0',
+  size bigint(20) NOT NULL default '0',
+  num_members int(11) NOT NULL default '0',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `fleets`
+#
+CREATE TABLE fleets (
+  id bigint(20) NOT NULL auto_increment,
+  owner_id smallint(6) NOT NULL default '0',
+  owner_x smallint(6) NOT NULL default '0',
+  owner_y smallint(6) NOT NULL default '0',
+  destination_id smallint(6) NOT NULL default '0',
+  destination_x smallint(6) NOT NULL default '0',
+  destination_y smallint(6) NOT NULL default '0',
+  eta tinyint(4) NOT NULL default '0',
+  starteta tinyint(4) NOT NULL default '0',
+  purpose enum('','attack','defend','return') NOT NULL default '',
+  actiontime tinyint(4) NOT NULL default '0',
+  startactiontime tinyint(4) NOT NULL default '0',
+  fleetname enum('base','1','2') NOT NULL default 'base',
+  infinitys bigint(20) NOT NULL default '0',
+  wraiths bigint(20) NOT NULL default '0',
+  warfrigs bigint(20) NOT NULL default '0',
+  astropods bigint(20) NOT NULL default '0',
+  cobras bigint(20) NOT NULL default '0',
+  destroyers bigint(20) NOT NULL default '0',
+  scorpions bigint(20) NOT NULL default '0',
+  antennas bigint(20) NOT NULL default '0',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM COMMENT='Elke player kan max 3 fleets hebben, waarvan 1 _base';
+
+
+#
+# Tabel structuur voor tabel `galaxies`
+#
+CREATE TABLE galaxies (
+  id tinyint(4) NOT NULL auto_increment,
+  x tinyint(4) NOT NULL default '0',
+  score bigint(20) NOT NULL default '0',
+  size bigint(20) NOT NULL default '0',
+  galname varchar(255) NOT NULL default '',
+  galpic varchar(255) NOT NULL default '',
+  gcmessage text NOT NULL,
+  num_planets tinyint(4) NOT NULL default '0',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `logbook`
+#
+CREATE TABLE logbook (
+  id bigint(20) NOT NULL auto_increment,
+  uid int(11) NOT NULL default '0',
+  action varchar(20) NOT NULL default '',
+  time bigint(20) NOT NULL default '0',
+  myt bigint(20) NOT NULL default '0',
+  text text NOT NULL,
+  ip varchar(20) NOT NULL default '',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `mail`
+#
+CREATE TABLE mail (
+  id int(11) NOT NULL auto_increment,
+  uid int(11) NOT NULL default '0',
+  afzender mediumint(9) NOT NULL default '0',
+  time bigint(20) NOT NULL default '0',
+  myt int(11) NOT NULL default '0',
+  text text NOT NULL,
+  seen enum('0','1') NOT NULL default '0',
+  visibility enum('1','0') NOT NULL default '1',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `news`
+#
+CREATE TABLE news (
+  id int(11) NOT NULL auto_increment,
+  uid int(11) NOT NULL default '0',
+  time bigint(20) NOT NULL default '0',
+  myt int(11) NOT NULL default '0',
+  subject varchar(255) NOT NULL default '',
+  news text NOT NULL,
+  seen enum('0','1') NOT NULL default '0',
+  visibility enum('1','0') NOT NULL default '1',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `politics`
+#
+CREATE TABLE politics (
+  id mediumint(9) NOT NULL auto_increment,
+  threadid mediumint(9) NOT NULL default '0',
+  x tinyint(4) NOT NULL default '0',
+  time bigint(20) NOT NULL default '0',
+  tekst text NOT NULL,
+  header varchar(255) NOT NULL default '',
+  creator smallint(6) NOT NULL default '0',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `prefs`
+#
+CREATE TABLE prefs (
+  id tinyint(1) NOT NULL auto_increment,
+  gamename varchar(24) NOT NULL default '',
+  tickcount int(11) NOT NULL default '0',
+  military_attack enum('1','0') NOT NULL default '1',
+  military_defend enum('1','0') NOT NULL default '1',
+  military_scorelimit tinyint(2) NOT NULL default '0',
+  tickertime mediumint(9) NOT NULL default '20',
+  general_login enum('1','0') NOT NULL default '1',
+  general_signup enum('1','0') NOT NULL default '1',
+  general_adminmsg text NOT NULL,
+  pwd_voor_ticker enum('1','0') NOT NULL default '1',
+  ticker_on enum('1','0') NOT NULL default '1',
+  general_gamestoptick bigint(20) NOT NULL default '0',
+  autologout enum('0','1') NOT NULL default '0',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `production`
+#
+CREATE TABLE production (
+  id bigint(20) NOT NULL auto_increment,
+  uid int(11) NOT NULL default '0',
+  unit enum('infinitys','wraiths','warfrigs','astropods','cobras','destroyers','scorpions','antennas','rcannons','avengers','lstalkers','roidscans','sectorscans','unitscans','pduscans','militaryscans','newsscans','waveamps','waveblockers') NOT NULL default 'infinitys',
+  eta tinyint(4) NOT NULL default '0',
+  number bigint(20) NOT NULL default '0',
+  u_of_w enum('u','w') NOT NULL default 'u',
+  PRIMARY KEY  (id)
+) TYPE=MyISAM;
+
+
+#
+# Tabel structuur voor tabel `users`
+#
+CREATE TABLE users (
+  id int(11) NOT NULL auto_increment,
+  username varchar(30) NOT NULL default '',
+  email varchar(30) NOT NULL default '',
+  password varchar(255) NOT NULL default '',
+  activationcode varchar(255) NOT NULL default '',
+  rulername varchar(40) NOT NULL default '',
+  planetname varchar(40) NOT NULL default '',
+  x int(11) NOT NULL default '0',
+  y int(11) NOT NULL default '0',
+  crystal bigint(255) NOT NULL default '0',
+  metal bigint(255) NOT NULL default '1000',
+  energy bigint(255) NOT NULL default '0',
+  energyplants int(11) NOT NULL default '0',
+  powerplantsX int(11) NOT NULL default '0',
+  asteroid_crystal int(11) NOT NULL default '0',
+  asteroid_metal int(11) NOT NULL default '0',
+  asteroid_ui int(11) NOT NULL default '2',
+  size int(15) NOT NULL default '0',
+  roidscans int(11) NOT NULL default '0',
+  sectorscans int(11) NOT NULL default '0',
+  unitscans int(11) NOT NULL default '0',
+  pduscans int(11) NOT NULL default '0',
+  militaryscans int(11) NOT NULL default '0',
+  newsscans int(11) NOT NULL default '0',
+  waveamps int(11) NOT NULL default '0',
+  waveblockers int(11) NOT NULL default '0',
+  rcannons int(11) NOT NULL default '0',
+  avengers int(11) NOT NULL default '0',
+  lstalkers int(11) NOT NULL default '0',
+  c_crystal10 int(11) NOT NULL default '0',
+  c_crystal20 int(11) NOT NULL default '0',
+  c_crystal30 int(11) NOT NULL default '0',
+  c_metal10 int(11) NOT NULL default '0',
+  c_metal20 int(11) NOT NULL default '0',
+  c_metal30 int(11) NOT NULL default '0',
+  c_energy int(11) NOT NULL default '0',
+  c_bscan int(11) NOT NULL default '0',
+  c_uscan int(11) NOT NULL default '0',
+  c_pscan int(11) NOT NULL default '0',
+  c_mscan int(11) NOT NULL default '0',
+  c_nscan int(11) NOT NULL default '0',
+  c_pinf int(11) NOT NULL default '0',
+  c_pwra int(11) NOT NULL default '0',
+  c_pdes int(11) NOT NULL default '0',
+  c_psco int(11) NOT NULL default '0',
+  c_pdu1 int(11) NOT NULL default '0',
+  c_pdu2 int(11) NOT NULL default '0',
+  c_wblockers int(11) NOT NULL default '0',
+  c_abot int(11) NOT NULL default '0',
+  c_enef int(11) NOT NULL default '0',
+  c_timt int(11) NOT NULL default '0',
+  c_rebo int(11) NOT NULL default '0',
+  c_rebo2 int(11) NOT NULL default '0',
+  r_crystal15 int(11) NOT NULL default '0',
+  r_crystal25 int(11) NOT NULL default '0',
+  r_metal15 int(11) NOT NULL default '0',
+  r_metal25 int(11) NOT NULL default '0',
+  r_energy int(11) NOT NULL default '0',
+  r_scan1 int(11) NOT NULL default '0',
+  r_scan2 int(11) NOT NULL default '0',
+  r_scan3 int(11) NOT NULL default '0',
+  r_scan4 int(11) NOT NULL default '0',
+  r_scan5 int(11) NOT NULL default '0',
+  r_pwarast int(11) NOT NULL default '0',
+  r_pcob int(11) NOT NULL default '0',
+  r_wblockers int(11) NOT NULL default '0',
+  r_abot int(11) NOT NULL default '0',
+  r_abot2 int(11) NOT NULL default '0',
+  r_enef int(11) NOT NULL default '0',
+  r_timt int(11) NOT NULL default '0',
+  r_timt2 int(11) NOT NULL default '0',
+  r_rebo int(11) NOT NULL default '0',
+  lastlogin bigint(20) NOT NULL default '0',
+  lastaction bigint(20) NOT NULL default '0',
+  tag varchar(10) NOT NULL default '',
+  rank int(11) NOT NULL default '0',
+  score bigint(255) NOT NULL default '0',
+  sleep int(11) NOT NULL default '0',
+  lastsleep int(11) NOT NULL default '0',
+  vacation int(11) NOT NULL default '0',
+  closed tinyint(4) NOT NULL default '0',
+  galaxyfunction enum('','GC','MoC','MoW') NOT NULL default '',
+  vote int(11) NOT NULL default '0',
+  civilians int(11) NOT NULL default '0',
+  newbie int(11) NOT NULL default '200',
+  journal text NOT NULL,
+  toggle_rescon enum('1','0') NOT NULL default '1',
+  PRIMARY KEY  (id),
+  UNIQUE KEY planetname (planetname),
+  UNIQUE KEY email (email),
+  UNIQUE KEY username (username),
+  UNIQUE KEY rulername (rulername)
+) TYPE=MyISAM;

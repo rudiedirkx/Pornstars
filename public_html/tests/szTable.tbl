@@ -1,0 +1,91 @@
+<tbody>
+<tr valign="top">
+<td onclick="assignTD(this);" class="header">Crystal Mining</td>
+<td colspan="2" onclick="assignTD(this);" class="header">Waves</td>
+<td onclick="assignTD(this);" class="header">Metal Mining</td>
+<td colspan="4" onclick="assignTD(this);" class="header">Warships &amp; Defence</td>
+<td onclick="assignTD(this);" class="header">Waves</td>
+<td colspan="2" onclick="assignTD(this);" class="header">Energy</td>
+</tr>
+<tr valign="top">
+<td title="1" r_d_id="1" onclick="assignTD(this);" class="development">Crystal Refinery</td>
+<td title="26" r_d_id="26" colspan="2" onclick="assignTD(this);" class="research">About Scanning</td>
+<td colspan="6" title="2" r_d_id="2" onclick="assignTD(this);" class="development">Metal Refinery</td>
+
+<td colspan="2" title="27" r_d_id="27" onclick="assignTD(this);" class="research">About Energy</td>
+</tr>
+<tr valign="top"><td title="28" r_d_id="28" onclick="assignTD(this);" class="research">More Crystal</td>
+<td title="3" r_d_id="3" colspan="2" onclick="assignTD(this);" class="development">Sector Scanning</td>
+<td title="29" r_d_id="29" onclick="assignTD(this);" class="research">More Metal</td>
+<td title="4" r_d_id="4" colspan="5" onclick="assignTD(this);" class="development">First Airport</td>
+<td colspan="2" title="5" r_d_id="5" onclick="assignTD(this);" class="development">Making Energy</td>
+</tr>
+<tr valign="top">
+<td title="6" r_d_id="6" onclick="assignTD(this);" class="development">Get More Crystal</td>
+<td title="30" r_d_id="30" colspan="2" onclick="assignTD(this);" class="research">Unit Patterns</td>
+<td title="7" r_d_id="7" onclick="assignTD(this);" class="development">Get More Metal</td>
+<td title="8" r_d_id="8" colspan="5" onclick="assignTD(this);" class="development">Robot Factory</td>
+<td title="41" r_d_id="41" onclick="assignTD(this);" class="research">Energy Efficiency</td>
+<td r_d_id="48" title="48" onclick="assignTD(this);" class="development">Stress Releasers</td>
+</tr>
+<tr valign="top">
+<td title="31" r_d_id="31" onclick="assignTD(this);" class="research">"Blind Diggers" for Crystal</td>
+<td title="9" r_d_id="9" colspan="2" onclick="assignTD(this);" class="development">Unit Scanning</td>
+<td title="32" r_d_id="32" onclick="assignTD(this);" class="research">"Blind Diggers" for Metal</td>
+<td title="33" r_d_id="33" colspan="5" onclick="assignTD(this);" class="research">Tank Building</td>
+<td title="21" r_d_id="21" onclick="assignTD(this);" class="development">Creons in Boxes</td>
+<td r_d_id="49" title="49" onclick="assignTD(this);" class="research">Work floor management</td>
+</tr>
+<tr valign="top">
+<td title="10" r_d_id="10" onclick="assignTD(this);" class="development">Hardcore Crystal</td>
+<td title="34" r_d_id="34" colspan="2" onclick="assignTD(this);" class="research">PDU Patterns</td>
+<td title="11" r_d_id="11" onclick="assignTD(this);" class="development">Hardcore Metal</td>
+<td title="35" r_d_id="35" colspan="3" onclick="assignTD(this);" class="research">EMP Studies</td>
+<td title="12" r_d_id="12" colspan="2" onclick="assignTD(this);" class="development">Destroyer Factory</td>
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+<tr valign="top">
+<td title="42" r_d_id="42" onclick="assignTD(this);" class="research">Time Travel</td>
+<td title="14" r_d_id="14" colspan="2" onclick="assignTD(this);" class="development">PDU Scanning</td>
+<td title="44" r_d_id="44" onclick="assignTD(this);" class="research">Resource Boost</td>
+<td title="17" r_d_id="17" colspan="3" onclick="assignTD(this);" class="development">PDU Machines</td>
+<td title="13" r_d_id="13" colspan="2" onclick="assignTD(this);" class="development">Scorpion Factory</td>
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+<tr valign="top">
+<td title="43" r_d_id="43" onclick="assignTD(this);" class="research">Time Travel (II)</td>
+<td title="37" r_d_id="37" onclick="assignTD(this);" class="research">NewAge Spies</td>
+<td title="36" r_d_id="36" onclick="assignTD(this);" class="research">Fleet Signatures</td>
+<td title="23" r_d_id="23" onclick="assignTD(this);" class="development">Work, Bitch, Work!</td>
+<td title="39" r_d_id="39" onclick="assignTD(this);" class="research">AntennaBot</td>
+<td title="18" r_d_id="18" onclick="assignTD(this);" class="development">Super PDU</td>
+<td colspan="3" title="38" r_d_id="38" onclick="assignTD(this);" class="research">Wave Blockers</td>
+
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+<tr valign="top">
+<td title="22" r_d_id="22" onclick="assignTD(this);" class="development">Hot 'n' Thick</td>
+<td title="16" r_d_id="16" onclick="assignTD(this);" class="development">High-speed-plasma Spies</td>
+<td title="15" r_d_id="15" onclick="assignTD(this);" class="development">Fleet Scanners</td>
+<td title="24" r_d_id="24" onclick="assignTD(this);" class="development">Building Space Warehouses</td>
+<td title="40" r_d_id="40" onclick="assignTD(this);" class="research">New Hangars</td>
+<td title="" onclick="assignTD(this);" class=""></td>
+<td colspan="3" title="19" r_d_id="19" onclick="assignTD(this);" class="development">Wave Blockers</td>
+
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+<tr valign="top">
+<td title="" colspan="4" onclick="assignTD(this);" class=""></td>
+<td title="20" r_d_id="20" onclick="assignTD(this);" class="development">SuperCruisers</td>
+<td title="" onclick="assignTD(this);" class=""></td>
+<td title="45" colspan="2" r_d_id="45" onclick="assignTD(this);" class="research">Production Spies</td>
+<td r_d_id="46" title="46" onclick="assignTD(this);" class="research">Infiltraitors</td>
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+<tr valign="top">
+<td title="" colspan="6" onclick="assignTD(this);" class=""></td>
+<td title="25" colspan="2" r_d_id="25" onclick="assignTD(this);" class="development">Production Spy Suits</td>
+<td r_d_id="47" title="47" onclick="assignTD(this);" class="development">Infiltraition Syringes</td>
+<td colspan="2" title="" onclick="assignTD(this);" class=""></td>
+</tr>
+</tbody>

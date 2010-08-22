@@ -1,0 +1,35 @@
+
+div.content {
+	padding: 5px;
+	padding-left: 20px;
+	margin-left: 5%;
+	margin-bottom: 30px;
+	margin-top: 0px;
+}
+
+p.separator {
+	border-top: 1px solid #527BBD;
+	margin-top: 7px;
+	margin-bottom: 5px;
+	margin-left: -20px;
+	margin-right: -20px;
+	font-size: 1px;
+}
+
+h3,h4 {
+	margin: 0;
+	margin-top: 20px;
+	padding: 0;
+}
+
+div.content a {
+	margin-left: -20px;
+}
+
+div#footer a {
+	margin-left: 0;
+}
+
+div#advfooter {
+	display: none;
+}

@@ -1,0 +1,114 @@
+<?
+
+include("config.php");
+
+if (isset($UID))
+	include("header.php");
+else
+	echo "<title>Manual > TechTree</title><body bgcolor=black><link rel=stylesheet href=\"css/styles.css\">";
+
+$_C = " bgcolor=lightgreen height=80";
+$_R = " bgcolor=#FFB0B0 height=80";
+$__ = "";
+$_S = 0;
+
+?>
+<center>
+
+<br>
+There are <?=count($constructionarray)?> constructions.<br>
+There are <?=count($researcharray)?> researches.<br>
+-- You cannot do all of them, because you're going to have to make choises --<br>
+<br>
+
+<?/* <td<?=$?>></td> */?>
+<table border=0 cellpadding=5 cellspacing=2 width=100% style='color:black;'>
+<tr height=40 bgcolor=midnightblue>
+<td width=120><center><font color=white><b>Crystal Mining</td>
+<td width=120><center><font color=white><b>Waves</td>
+<td width=120><center><font color=white><b>Metal Mining</td>
+<td width=120><center><font color=white><b>Warships</td>
+<td width=120><center><font color=white><b>Energy</td>
+</tr>
+<tr valign=top>
+<td<?=$_C?>><b>Crystal Refinery</b><br><br>Gain +1500 extra Crystal<?=($_S)?' ($c_crystal10)':""?></td>
+<td<?=$_R?>><b>About Scanning</b><br><br>Enables the production of huge-scale antennas (asteroidscans)<?=($_S)?' ($r_scan1)':""?></td>
+<td<?=$_C?>><b>Metal Refinery</b><br><br>Gain +1500 extra Metal<?=($_S)?' ($c_metal10)':""?></td>
+<td<?=$__?> align=left valign=bottom><img src="images/resconpijltje_rechts.gif"></td>
+<td<?=$_R?>><b>About Energy</b><br><br>Researches the finest Energy techniques<?=($_S)?' ($r_energy)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$_R?>><b>More Crystal</b><br><br>Researches more efficient mining methods<?=($_S)?' ($r_crystal15)':""?></td>
+<td<?=$_C?>><b>Sector Scanning</b><br><br>Enables sectorscans and WaveAmps<?=($_S)?' $c_bscan)':""?></td>
+<td<?=$_R?>><b>More Metal</b><br><br>Researches more efficient mining methods<?=($_S)?' ($r_metal15)':""?></td>
+<td<?=$_C?>><b>First Airport</b><br><br>Enables the production of Infinitys<br>(<i>requires Crystal Refinery</i>)<?=($_S)?' ($c_pinf)':""?></td>
+<td<?=$_C?>><b>Making Energy</b><br><br>Enables the production of hypermodern Energyplants<?=($_S)?' ($c_energy)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$_C?>><b>Get More Crystal</b><br><br>Gain an extra +3000 Crystal<?=($_S)?' ($c_crystal20)':""?></td>
+<td<?=$_R?>><b>Unit Patterns</b><br><br>Researching unitscans<?=($_S)?' ($r_scan2)':""?></td>
+<td<?=$_C?>><b>Get More Metal</b><br><br>Gain an extra +3000 Metal<?=($_S)?' ($c_metal20)':""?></td>
+<td<?=$_C?>><b>Robot Factory</b><br><br>Enables the production of Wraiths<?=($_S)?' ($c_pwra)':""?></td>
+<td<?=$_R?>><b><u>Energy Efficiency</u></b><br><br>Researching a new atom to split, decreasing Energy needs<br>(<i>excl. AntennaBot</i>)<?=($_S)?' ($r_enef)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$__?>><center><img src="images/resconpijltje_beneden.gif"></td>
+<td<?=$__?>><center><img src="images/resconpijltje_beneden.gif"></td>
+<td<?=$__?>><center><img src="images/resconpijltje_beneden.gif"></td>
+<td<?=$__?>><center><img src="images/resconpijltje_beneden.gif"></td>
+<td<?=$_C?>><b>Splitting Atoms</b><br><br>Lets the planet be able to build a new powerplant: X-Atom<?=($_S)?' ($c_enef)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$_R?>><b>"Blind Diggers" for Crystal</b><br><br>Researching machines who dig to the core<?=($_S)?' ($r_crystal25)':""?></td>
+<td<?=$_C?>><b>Unit Scanning</b><br><br>Enables unitscans<?=($_S)?' ($c_uscan)':""?></td>
+<td<?=$_R?>><b>"Blind Diggers" for Metal</b><br><br>Researching machines who dig to the core<?=($_S)?' ($r_metal25)':""?></td>
+<td<?=$_R?>><b>Tank Building</b><br><br>Enables the production of Warfrigates and Astropods<?=($_S)?' ($r_pwarast)':""?></td>
+<td<?=$__?> align=left valign=bottom><img src="images/resconpijltje_rechts.gif"></td>
+</tr>
+<tr valign=top>
+<td<?=$_C?>><b>HardCore Crystal</b><br><br>Builds machines who provide you an extra +6000 Crystal<?=($_S)?' ($c_crystal30)':""?></td>
+<td<?=$_R?>><b>PDU Patterns</b><br><br>Researching PDU-methods<?=($_S)?' ($r_scan3)':""?></td>
+<td<?=$_C?>><b>HardCore Metal</b><br><br>Builds machines who provide you an extra +6000 Metal<?=($_S)?' ($c_metal30)':""?></td>
+<td<?=$_R?>><b>EMP Studies</b><br><br>Enables the production of Cobras (Anti-Pod Fighters) and the research for WaveBlockers<?=($_S)?' ($r_pcob)':""?></td>
+<td<?=$_C?>><b>Destroyer Factory</b><br><br>Enables the production of Destroyers<?=($_S)?' ($c_pdes)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$__?> align=right valign=bottom><img src="images/resconpijltje_links.gif"></td>
+<td<?=$_C?>><b>PDU Scanning</b><br><br>Enables PDUscans<?=($_S)?' ($c_pscan)':""?></td>
+<td<?=$__?> align=right valign=bottom><img src="images/resconpijltje_links.gif"></td>
+<td<?=$_C?>><b>PDU Machines</b><br><br>Enables the production of Planetery Defence Units<?=($_S)?' ($c_pdu1)':""?></td>
+<td<?=$_C?>><b>Scorpion Factory</b><br><br>Enables the production of Scorpions<?=($_S)?' ($c_psco)':""?></td>
+</tr>
+<tr valign=top>
+<td<?=$_R?>><b><u>NewAge Spies</u></b><br><br>Trains human-robots to fly trough time and space to get the latest news<br>(<i>excl. Fleet Signatures</i>)<?=($_S)?' ($r_scan5)':""?></td>
+<td<?=$_R?>><b><u>Fleet Signatures</u></b><br><br>Researches fleetsignatures to penetrate communication shields<br>(<i>excl. NewAge Spies</i>)<?=($_S)?' ($r_scan4)':""?></td>
+<td<?=$_R?>><b><u>AntennaBot</u></b><br><br>Searching for new mining technologies for shipmaterials for a supercruiser<br>(<i>excl. Energy Efficiency</i>)<?=($_S)?' ($r_abot)':""?></td>
+<td<?=$_C?>><b>Super PDU</b><br><br>Enables the production of Lucius Stalkers; the greatest PDU ever built<?=($_S)?' ($c_pdu2)':""?></td>
+<td></td>
+</tr>
+<tr valign=top>
+<td<?=$_C?>><b>High-speed-plasma Spies</b><br><br>Enables newsscans by penetrating the high-speed-plasma of your target<?=($_S)?' ($c_nscan)':""?></td>
+<td<?=$_C?>><b>Fleet Scanners</b><br><br>Enables militaryscans<?=($_S)?' ($c_mscan)':""?></td>
+<td<?=$_R?>><b>New Hangars</b><br><br>Researching for testfacilities big enough for these ships<?=($_S)?' ($r_abot2)':""?></td>
+<td></td>
+<td></td>
+</tr>
+<tr valign=top>
+<td<?=$__?>></td>
+<td<?=$__?>></td>
+<td<?=$_C?>><b>SuperCruisers</b><br><br>Enables the production of Antennas<?=($_S)?' ($c_abot)':""?></td>
+<td></td>
+<td></td>
+</tr>
+</table>
+<br>
+
+<table border=0 cellpadding=5 cellspacing=2 width=100% style='color:black;'>
+<tr>
+<td<?=$_C?> width=50%><center><b style='font-size:13px;'>CONSTRUCTIONS</td>
+<td<?=$_R?> width=50%><center><b style='font-size:13px;'>RESEARCHES</b><br><u>Research</u> -> you have to give up something for this -><br>It'll be excluded -> <i>(excl. ...)</td>
+</tr>
+</table>
+<br>
+
+

@@ -1,0 +1,14 @@
+c_crystal10	+ r_crystal15	c_crystal20	r_crystal25	c_crystal30	
+										+ c_pdu1	c_pdu2
+		+ c_pinf (+m10)	c_pwra		r_pwarast	+ r_pcob	+ r_wblockers	C_WBLOCKERS		r_prsp		c_prsp
+								+ c_pdes	+ c_psco		
+
+c_metal10	r_metal15	c_metal20	r_metal25	c_metal30	
+
+r_scan1		c_bscan		r_scan2		c_uscan		r_scan3		c_pscan		+ r_scan4		c_mscan		
+												+ r_scan5		c_nscan		
+												+ r_timt (+c30+m30)	r_timt2		C_TIMT
+												+ r_rebo (+c30+m30)	c_rebo		C_REBO2
+
+r_energy	C_ENERGY	r_abot (+pdu1)	r_abot2		C_ABOT
+				r_enef (+pdu1)	C_ENEF
