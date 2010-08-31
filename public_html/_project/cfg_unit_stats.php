@@ -58,9 +58,8 @@ $arrRD = db_select_fields('d_r_d_available', 'id, CONCAT(UPPER(T),\': \',name)',
 <style type="text/css">
 select, input { font-size : 9px; }
 </style>
-<script type="text/javascript" src="http://localhost/js/mootools_1_11.js"></script>
 
-<div><form>
+<div><form action="" method="get">
 	<select name="new_unit_T"><option value="ship">ship</option><option value="defence">defence</option><option value="roidscan">roidscan</option><option value="power">power</option><option value="scan">scan</option><option value="amp">amp</option><option value="block">block</option></select>
 	<select name="required"><?php foreach ( $arrRD AS $id => $name ) { echo '<option value="'.$id.'">'.$name.'</option>'; } ?></select>
 	<input type="submit" value="New" />
@@ -85,7 +84,7 @@ foreach ( $arrCombatStats AS $cs ) {
 
 $n=0;
 foreach ( $arrUnits AS $arrUnit ) {
-	echo '<form ajax="1"><input type="hidden" name="unit_id" value="'.$arrUnit['id'].'" /><tr'.( $n++%2==0 ? ' bgcolor="#eeeeee"' : '' ).' unit_id="'.$arrUnit['id'].'" valign="top">';
+	echo '<form method="post" action="?submit"><input type="hidden" name="unit_id" value="'.$arrUnit['id'].'" /><tr'.( $n++%2==0 ? ' bgcolor="#eeeeee"' : '' ).' unit_id="'.$arrUnit['id'].'" valign="top">';
 	echo '<th>'.$arrUnit['unit'].'<br />['.$arrUnit['T'].']<br /><br /><input type="submit" value="Save" /></th>';
 	echo '<td><table border="0">';
 	foreach ( $arrUnitProps AS $k => $szProp ) {
@@ -125,22 +124,3 @@ echo db_error();
 
 ?>
 </table>
-
-<script type="text/javascript">
-<!--//
-$$('form[ajax=1]').each(function(f) {
-console.debug(f);
-	f.setProperties({
-		'autocomplete' : 'off',
-		'method' : 'post',
-		'action' : '?submit',
-	});
-	f.onsubmit = function(e) {
-		e = new Event(e).stop();
-		this.send({onComplete:function(t){alert(t);}});
-		return false;
-	}
-});
-$A(document.forms).each(function(f){f.reset();});
-//-->
-</script>
