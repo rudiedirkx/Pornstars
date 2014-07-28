@@ -1,12 +1,11 @@
 <?php
 
-function db_connect($h,$u,$p,$d) {
-	$c = mysql_connect($h,$u,$p) or die('<b>'.mysql_error().'</b>');
-	mysql_select_db($d,$c) or die('<b>'.mysql_error().'</b>');
-	return $c;
+function db_connect( $h, $u, $p, $d ) {
+	$db = new mysqli($h, $u, $p, $d);
+	return $db;
 }
 
-function db_set($c) {
+function db_set( $c ) {
 	global $g_db;
 	$g_db = $c;
 	return $c;
@@ -14,159 +13,159 @@ function db_set($c) {
 
 function db_insert_id() {
 	global $g_db;
-	return mysql_insert_id($g_db);
+	return $g_db->insert_id;
 }
 
 function db_affected_rows() {
 	global $g_db;
-	return mysql_affected_rows($g_db);
+	return $g_db->affected_rows;
 }
 
 function db_error() {
 	global $g_db;
-	return mysql_error($g_db);
+	return $g_db->error;
 }
 
 function db_errno() {
 	global $g_db;
-	return mysql_errno($g_db);
+	return $g_db->errno;
 }
 
-function db_select($tbl, $where = '') {
-	return db_fetch('SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
+function db_select( $tbl, $where = '' ) {
+	return db_fetch('SELECT * FROM ' . $tbl . ( $where ? ' WHERE ' . $where : '' ));
 }
 
-function db_fetch($query) {
+function db_fetch( $query ) {
 	$r = db_query($query);
-	if ( !$r ) {
+	if ( !is_object($r) ) {
 		return false;
 	}
+
 	$a = array();
-	while ( $l = mysql_fetch_assoc($r) ) {
+	while ( $l = $r->fetch_assoc() ) {
 		$a[] = $l;
 	}
+
 	return $a;
 }
 
-function db_fetch_fields($query) {
+function db_fetch_fields( $query ) {
 	$r = db_query($query);
-	if ( !$r ) {
+	if ( !is_object($r) ) {
 		return false;
 	}
+
 	$a = array();
-	while ( $l = mysql_fetch_row($r) ) {
+	while ( $l = $r->fetch_row() ) {
 		$a[$l[0]] = $l[1];
 	}
+
 	return $a;
 }
 
-function db_select_one($tbl, $field, $where = '') {
-	$r = db_query('SELECT '.$field.' FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).' LIMIT 1;');
-	if ( !$r ) {
+function db_select_one( $tbl, $field, $where = '' ) {
+	$query = 'SELECT ' . $field . ' FROM ' . $tbl . ( $where ? ' WHERE ' . $where : '' );
+	$r = db_query($query);
+
+	if ( !is_object($r) || 0 >= $r->num_rows ) {
 		return false;
 	}
-	return 0 < mysql_num_rows($r) ? mysql_result($r, 0) : false;
+
+	$row = $r->fetch_row();
+	return $row[0];
 }
 
-function db_max($tbl, $field, $where = '') {
-	return db_select_one($tbl, 'MAX('.$field.')', $where);
+function db_max( $tbl, $field, $where = '' ) {
+	return db_select_one($tbl, 'MAX(' . $field . ')', $where);
 }
 
-function db_min($tbl, $field, $where = '') {
-	return db_select_one($tbl, 'MIN('.$field.')', $where);
+function db_min( $tbl, $field, $where = '' ) {
+	return db_select_one($tbl, 'MIN(' . $field . ')', $where);
 }
 
-function db_count($tbl, $where = '') {
+function db_count( $tbl, $where = '' ) {
 	return db_select_one($tbl, 'COUNT(1)', $where);
 }
 
-function db_select_by_field($tbl, $field, $where = '') {
-	$r = db_query('SELECT * FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
-	if ( !$r ) {
+function db_select_by_field( $tbl, $field, $where = '' ) {
+	$r = db_query('SELECT * FROM ' . $tbl . ( $where ? ' WHERE ' . $where : '' ));
+	if ( !is_object($r) ) {
 		return false;
 	}
+
 	$a = array();
-	while ( $l = mysql_fetch_assoc($r) ) {
+	while ( $l = $r->fetch_assoc() ) {
 		$a[$l[$field]] = $l;
 	}
+
 	return $a;
 }
 
-function db_select_fields($tbl, $fields, $where = '') {
-	$r = db_query('SELECT '.$fields.' FROM '.$tbl.( $where ? ' WHERE '.$where : '' ).';');
-	if ( !$r ) {
-		return false;
-	}
-	$a = array();
-	while ( $l = mysql_fetch_row($r) ) {
-		$a[$l[0]] = $l[1];
-	}
-	return $a;
+function db_select_fields( $tbl, $fields, $where = '' ) {
+	$query = 'SELECT ' . $fields . ' FROM ' . $tbl . ( $where ? ' WHERE ' . $where : '' );
+	return db_fetch_fields($query);
 }
 
-function db_replace_into($tbl, $values) {
+function _db_escape_values( $values ) {
 	foreach ( $values AS $k => $v ) {
 		if ( $v === null ) {
 			$values[$k] = 'NULL';
+		}
+		else if ( is_bool($v) ) {
+			$values[$k] = "'" . (int)$v . "'";
 		}
 		else if ( 'NOW()' == $v ) {
 			$values[$k] = 'NOW()';
 		}
 		else {
-			$values[$k] = "'".addslashes($v)."'";
+			$values[$k] = "'" . $g_db->real_escape_string($v) . "'";
 		}
 	}
-	return db_query('REPLACE INTO '.$tbl.' (`'.implode('`,`', array_keys($values)).'`) VALUES ('.implode(",", $values).');');
+
+	return $values;
+}
+
+function db_replace_into( $tbl, $values ) {
+	$values = _db_escape_values($values);
+	return db_query('REPLACE INTO ' . $tbl . ' (`' . implode('`, `', array_keys($values)) . '`) VALUES (' . implode(", ", $values) . ')');
 }
 
 function db_insert($tbl, $values) {
-	foreach ( $values AS $k => $v ) {
-		if ( $v === null ) {
-			$values[$k] = 'NULL';
-		}
-		else if ( 'NOW()' === $v ) {
-			$values[$k] = 'NOW()';
-		}
-		else {
-			$values[$k] = "'".addslashes((string)$v)."'";
-		}
-	}
-	$szSqlQuery = 'INSERT INTO '.$tbl.' (`'.implode('`,`', array_keys($values)).'`) VALUES ('.implode(",", $values).');';
-	return db_query($szSqlQuery);
+	$values = _db_escape_values($values);
+	return db_query('INSERT INTO ' . $tbl . ' (`' . implode('`, `', array_keys($values)) . '`) VALUES (' . implode(", ", $values) . ')');
 }
 
-function db_update($tbl, $update, $where = '') {
+function db_update( $tbl, $update, $where = '' ) {
 	if ( !is_string($update) ) {
-		$u = '';
-		foreach ( (array)$update AS $k => $v ) {
-			$u .= ','.$k.'='.( null === $v || 'NOW()' == $v ? ( null === $v ? 'NULL' : (string)$v ) : '\''.addslashes((string)$v).'\'' );
+		$values = _db_escape_values($update);
+
+		$update = '';
+		foreach ( $values AS $k => $v ) {
+			$update .= ', ' . $k . ' = ' . $v;
 		}
-		$update = substr($u, 1);
+		$update = substr($update, 2);
 	}
-	return db_query('UPDATE '.$tbl.' SET '.$update.( $where ? ' WHERE '.$where : '' ).';');
+
+	return db_query('UPDATE ' . $tbl . ' SET ' . $update . ( $where ? ' WHERE ' . $where : '' ));
 }
 
-function db_delete($tbl, $where) {
-	return db_query('DELETE FROM '.$tbl.' WHERE '.$where.';');
+function db_delete( $tbl, $where ) {
+	return db_query('DELETE FROM ' . $tbl . ' WHERE ' . $where);
 }
 
-function db_query($query) {
+function db_query( $query ) {
 	global $g_db, $g_iQueries, $g_arrQueries;
-	$r = @mysql_query($query, $g_db)/* or die('<pre>QUERY: "'.$query.'"<br />ERROR: <b>'.mysql_error().'</b></pre>')*/;
-	if ( !$r ) {
-		static $log;
-		if ( !$log ) $log = fopen(PROJECT_LOGS.'/sqlerrors.log', 'a');
-		fwrite($log, $query."\r\n".db_error()."\r\n\r\n");
-	}
-	if ( !isset($g_iQueries,$g_arrQueries) ) {
-		$g_iQueries = 1;
-		$g_arrQueries = array($query);
-	}
-	else {
-		$g_iQueries++;
-		$g_arrQueries[] = $query;
-	}
+	$r = @$g_db->query($query);
+
+	// Log error
+	// if ( !$r ) {
+	// 	static $log;
+	// 	if ( !$log ) $log = fopen(PROJECT_LOGS.'/sqlerrors.log', 'a');
+	// 	fwrite($log, $query."\r\n".db_error()."\r\n\r\n");
+	// }
+
+	@$g_iQueries++;
+	@$g_arrQueries[] = $query;
+
 	return $r;
 }
-
-?>
