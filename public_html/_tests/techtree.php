@@ -30,7 +30,7 @@ echo "";
 
 // First, let's get all constructions
 $constructions = Array();
-$c = PSQ("SELECT * FROM $TABLE[r_d] WHERE SUBSTRING(soort,1,2) = 'c_' ORDER BY id ASC;");
+$c = db_query("SELECT * FROM $TABLE[r_d] WHERE SUBSTRING(soort,1,2) = 'c_' ORDER BY id ASC;");
 while ($i = mysql_fetch_assoc($c))
 {
 	$tmp = Array();
@@ -52,7 +52,7 @@ while ($i = mysql_fetch_assoc($c))
 
 // Next, all researches
 $researches = Array();
-$c = PSQ("SELECT * FROM $TABLE[r_d] WHERE SUBSTRING(soort,1,2) = 'r_' ORDER BY id ASC;");
+$c = db_query("SELECT * FROM $TABLE[r_d] WHERE SUBSTRING(soort,1,2) = 'r_' ORDER BY id ASC;");
 while ($i = mysql_fetch_assoc($c))
 {
 	$tmp = Array();

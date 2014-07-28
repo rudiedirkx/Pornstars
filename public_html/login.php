@@ -72,12 +72,12 @@ if ( isset($_POST['u'], $_POST['p']) )
 
 else if ( isset($_POST['pwdvergeten']) )
 {
-	$q = PSQ("SELECT id,email,password FROM planets WHERE email = '$_POST[email]';");
+	$q = db_query("SELECT id,email,password FROM planets WHERE email = '$_POST[email]';");
 	if ( 0 < mysql_num_rows($q) )
 	{
 		$i = mysql_fetch_assoc($q);
 		$newpwd = substr(md5(time()),0,12);
-		PSQ("UPDATE planets SET password ='".md5((int)$i['id'].':'.$newpwd)."' WHERE id = ".(int)$i['id'].";");
+		db_query("UPDATE planets SET password ='".md5((int)$i['id'].':'.$newpwd)."' WHERE id = ".(int)$i['id'].";");
 		logbook('pwd_reminder', 'email='.$i['email'].'&new='.$newpwd, (int)$i['id']);
 		$gameaddress = str_replace("index.php","misc.php",$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']);
 		$gamename0 = str_replace("www.","",$_SERVER['HTTP_HOST']);

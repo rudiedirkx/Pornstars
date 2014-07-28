@@ -4,7 +4,7 @@ require_once('inc.config.php');
 
 if ( isset($_GET['pwdvergeten'], $_GET['email'], $_GET['password']) )
 {
-	$a = PSQ("SELECT * FROM $TABLE[users] WHERE email='".$_GET['email']."' AND password='".$_GET['password']."';");
+	$a = db_query("SELECT * FROM $TABLE[users] WHERE email='".$_GET['email']."' AND password='".$_GET['password']."';");
 	if (mysql_num_rows($a)==0)
 		Go("?changepage=index");
 
@@ -20,14 +20,14 @@ if ( isset($_GET['pwdvergeten'], $_GET['email'], $_GET['password']) )
 	$_SESSION[$sessionname] = $save;
 
 	if ($i['sleep']>time())
-		PSQ("UPDATE $TABLE[users] SET nextsleep=".($time+14*3600)." WHERE id='$UID'");
-	PSQ("UPDATE $TABLE[users] SET sleep='0' WHERE id='$UID';");
+		db_query("UPDATE $TABLE[users] SET nextsleep=".($time+14*3600)." WHERE id='$UID'");
+	db_query("UPDATE $TABLE[users] SET sleep='0' WHERE id='$UID';");
 
 	Go("?changepage=menu");
 }
 else if ( isset($_POST['action'], $_POST['activationcode'], $_POST['email']) && $_POST['action'] == 'activate' )
 {
-	$s = PSQ("UPDATE $TABLE[users] SET activationcode='',lastaction='".time()."' WHERE email='".trim($_POST['email'])."' AND activationcode='".trim($_POST['activationcode'])."';");
+	$s = db_query("UPDATE $TABLE[users] SET activationcode='',lastaction='".time()."' WHERE email='".trim($_POST['email'])."' AND activationcode='".trim($_POST['activationcode'])."';");
 	if (mysql_affected_rows())
 	{
 		Save_Msg("Your account has been activated. You can now proceed to login","green");
@@ -41,7 +41,7 @@ else if ( isset($_POST['action'], $_POST['activationcode'], $_POST['email']) && 
 }
 else if (isset($_POST['action']) && $_POST['action']=="new_email" && isset($_POST['new_email_code']) && isset($_POST['old_email']) && isset($_POST['new_email']) && isset($_POST['pwd']))
 {
-	$s = PSQ("UPDATE $TABLE[users] SET email=new_email,new_email='',new_email_code='',lastaction='".time()."' WHERE email='".trim($_POST['old_email'])."' AND new_email='".trim($_POST['new_email'])."' AND new_email_code='".trim($_POST['new_email_code'])."' AND password='".md5($_POST['pwd'])."';");
+	$s = db_query("UPDATE $TABLE[users] SET email=new_email,new_email='',new_email_code='',lastaction='".time()."' WHERE email='".trim($_POST['old_email'])."' AND new_email='".trim($_POST['new_email'])."' AND new_email_code='".trim($_POST['new_email_code'])."' AND password='".md5($_POST['pwd'])."';");
 	if (mysql_affected_rows())
 	{
 		Save_Msg("Your E-mail address has been updated! You can proceed to login or continue your old session.","green");

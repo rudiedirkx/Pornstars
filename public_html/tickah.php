@@ -10,7 +10,7 @@ if ( !defined('TICKERMAKER') ) {
 
 
 $TICKERTIMEOVERRIDE	= (bool)(int)$GAMEPREFS['tickertime_override'];	// If TRUE, the engine will run as much as its reloaded, no matter what the tickertime is
-$AUTOREFRESH		= (bool)(int)$GAMEPREFS['ticker_autorefresh'];	// 
+$AUTOREFRESH		= (bool)(int)$GAMEPREFS['ticker_autorefresh'];	//
 
 
 
@@ -600,7 +600,7 @@ db_update('fleets', 'actiontime=actiontime-1', 'actiontime > 0 AND eta = 0 AND a
 
 
 /** CHECK NUM FLEETS **
-$a = PSQ("SELECT owner_id,owner_x,owner_y,COUNT(*) AS num FROM $TABLE[fleets] GROUP BY owner_id ASC");
+$a = db_query("SELECT owner_id,owner_x,owner_y,COUNT(*) AS num FROM $TABLE[fleets] GROUP BY owner_id ASC");
 while (list($owner_id,$owner_x,$owner_y,$num_fleets) = mysql_fetch_row($a))
 {
 	$num_fleets-=1;
@@ -609,22 +609,22 @@ while (list($owner_id,$owner_x,$owner_y,$num_fleets) = mysql_fetch_row($a))
 		// Add one or more fleets for this $owner_id
 		for ($i=$num_fleets+1;$i<=$NUM_OUTGOING_FLEETS;$i++)
 		{
-			PSQ("INSERT INTO $TABLE[fleets] (owner_id,owner_x,owner_y,fleetname) VALUES ('$owner_id','$owner_x','$owner_y','$i');");
+			db_query("INSERT INTO $TABLE[fleets] (owner_id,owner_x,owner_y,fleetname) VALUES ('$owner_id','$owner_x','$owner_y','$i');");
 		}
 	}
 	else if ($num_fleets > $NUM_OUTGOING_FLEETS)
 	{
 		// Remove one or more fleets of this $owner_id and transfer all ships to fleet 'base' (ONLY FLEETS NOT ACTIVE, so purpose is empty: '')
-		$b = PSQ("SELECT id,infinitys,wraiths,warfrigs,astropods,cobras,destroyers,scorpions,antennas,(infinitys+wraiths+warfrigs+astropods+cobras+destroyers+scorpions+antennas) AS sum_ships FROM fleets WHERE owner_id='$owner_id' AND purpose='' ORDER BY fleetname DESC LIMIT ".($num_fleets-$NUM_OUTGOING_FLEETS).";");
+		$b = db_query("SELECT id,infinitys,wraiths,warfrigs,astropods,cobras,destroyers,scorpions,antennas,(infinitys+wraiths+warfrigs+astropods+cobras+destroyers+scorpions+antennas) AS sum_ships FROM fleets WHERE owner_id='$owner_id' AND purpose='' ORDER BY fleetname DESC LIMIT ".($num_fleets-$NUM_OUTGOING_FLEETS).";");
 		while (list($fleet_id,$infinitys,$wraiths,$warfrigs,$astropods,$cobras,$destroyers,$scorpions,$antennas,$sum_ships) = mysql_fetch_row($b))
 		{
 			if ($sum_ships)
 			{
 				// $infinitys,$wraiths,$warfrigs,$astropods,$cobras,$destroyers,$scorpions,$antennas toevoegen aan fleet Base voor Owner $owner_id
-				PSQ("UPDATE $TABLE[fleets] SET infinitys=infinitys+$infinitys,wraiths=wraiths+$wraiths,warfrigs=warfrigs+$warfrigs,astropods=astropods+$astropods,cobras=cobras+$cobras,destroyers=destroyers+$destroyers,scorpions=scorpions+$scorpions,antennas=antennas+$antennas WHERE owner_id='$owner_id' AND fleetname='0';");
+				db_query("UPDATE $TABLE[fleets] SET infinitys=infinitys+$infinitys,wraiths=wraiths+$wraiths,warfrigs=warfrigs+$warfrigs,astropods=astropods+$astropods,cobras=cobras+$cobras,destroyers=destroyers+$destroyers,scorpions=scorpions+$scorpions,antennas=antennas+$antennas WHERE owner_id='$owner_id' AND fleetname='0';");
 			}
 			// En de vloot die teveel is weggooien
-			PSQ("DELETE FROM $TABLE[fleets] WHERE id='$fleet_id';");
+			db_query("DELETE FROM $TABLE[fleets] WHERE id='$fleet_id';");
 		}
 	}
 }

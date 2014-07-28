@@ -25,10 +25,10 @@ if ( isset($_POST['oldpassword'], $_POST['newpassword'], $_POST['newpassword2'])
 
 /*else if ( isset($_POST['action']) && $_POST['action']=="changeemail" && $_POST['new_email']==$_POST['new_email2'] && preg_match("/(?i)^([a-z0-9._-])+@([a-z0-9.-])+\.([a-z0-9]){2,4}$/",$_POST['new_email']) )
 {
-	if (mysql_result(PSQ("SELECT COUNT(*) AS a FROM $TABLE[users] WHERE email='".$_POST['new_email']."';"),0,'a') == 0)
+	if (mysql_result(db_query("SELECT COUNT(*) AS a FROM $TABLE[users] WHERE email='".$_POST['new_email']."';"),0,'a') == 0)
 	{
 		$new_email_code = substr(md5(time()),0,18);
-		$c = PSQ("UPDATE $TABLE[users] SET new_email='".$_POST['new_email']."',new_email_code='$new_email_code' WHERE email='".$_POST['old_email']."' AND password='".md5($_POST['password'])."' AND id='$UID';") or die(mysql_error());
+		$c = db_query("UPDATE $TABLE[users] SET new_email='".$_POST['new_email']."',new_email_code='$new_email_code' WHERE email='".$_POST['old_email']."' AND password='".md5($_POST['password'])."' AND id='$UID';") or die(mysql_error());
 	}
 
 	if ($c)

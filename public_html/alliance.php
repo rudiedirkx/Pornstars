@@ -32,7 +32,7 @@ if (isset($_POST['action']) && $_POST['action']=="terminatealliance")
 // ACTION: kick member
 if (isset($_GET['action']) && $_GET['action']=="kickmember" && isset($_GET['define']) && $_GET['define']==1 && isset($_GET['really']) && $_GET['really']=="yes")
 {
-	PSQ("UPDATE $TABLE[users] SET tag='' WHERE id='".$_GET['kickid']."';");
+	db_query("UPDATE $TABLE[users] SET tag='' WHERE id='".$_GET['kickid']."';");
 
 	AddNews("alliance","You\'ve been kicked out of your alliance!",$_GET['kickid']);
 	AddNews("alliance","You\'ve kicked <b>".$userarray[$_GET['kickid']]." of ".$planetarray[$_GET['kickid']]."</b> out of your alliance!",$UID);
@@ -45,7 +45,7 @@ if (isset($_GET['action']) && $_GET['action']=="kickmember" && isset($_GET['defi
 // ACTION: hand over leadership
 if (isset($_GET['action']) && $_GET['action']=="handoverleadership" && isset($_GET['define']) && $_GET['define']==1 && isset($_GET['really']) && $_GET['really']=="yes")
 {
-	PSQ("UPDATE $TABLE[alliances] SET leader_id='".$_GET['newleaderid']."' WHERE tag='".$USER['tag']."';");
+	db_query("UPDATE $TABLE[alliances] SET leader_id='".$_GET['newleaderid']."' WHERE tag='".$USER['tag']."';");
 
 	AddNews("alliance","You\'ve been made leader of your Alliance (<b>".$USER['tag']."</b>)! $RULERNAME quit his job as Alliance leader...",$_GET['newleaderid']);
 	Logbook("alliance","To new leader (uid=".$_GET['newleaderid']."):<br>You\'ve been made leader of your Alliance (<b>".$USER['tag']."</b>)! $RULERNAME quit his job as Alliance leader...");
@@ -57,11 +57,11 @@ if (isset($_GET['action']) && $_GET['action']=="handoverleadership" && isset($_G
 // ACTION: leave alliance
 if (isset($_GET['action']) && isset($_GET['define']) && isset($_GET['really']) && $_GET['action']=="leavealliance" && $_GET['define']==1 && $_GET['really']=="yes")
 {
-	PSQ("UPDATE $TABLE[users] SET tag='' WHERE id='$UID';");
-	$ai = PSQ("SELECT leader_id FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
+	db_query("UPDATE $TABLE[users] SET tag='' WHERE id='$UID';");
+	$ai = db_query("SELECT leader_id FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
 	if (!mysql_num_rows($ai))
 	{
-		PSQ("UPDATE $TABLE[users] SET tag='' WHERE tag='".$USER['tag']."';");
+		db_query("UPDATE $TABLE[users] SET tag='' WHERE tag='".$USER['tag']."';");
 	}
 	else
 	{
@@ -69,7 +69,7 @@ if (isset($_GET['action']) && isset($_GET['define']) && isset($_GET['really']) &
 		if (isset($_GET['leader_is_last']) && $_GET['leader_is_last']==1)
 		{
 			Logbook("alliance","You left your Alliance (<b>".$USER['tag']."</b>)! Since you were the only member, the Alliance is now terminated!");
-			PSQ("DELETE FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
+			db_query("DELETE FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
 			AddNews("alliance","You left your Alliance (<b>".$USER['tag']."</b>)! Since you were the only member, the Alliance is now terminated!",$UID);
 		}
 		else
@@ -85,15 +85,15 @@ if (isset($_GET['action']) && isset($_GET['define']) && isset($_GET['really']) &
 if (isset($_GET['action']) && isset($_GET['define']) && isset($_GET['really']) && $_GET['action']=="terminatealliance" && $_GET['define']==1 && $_GET['really']=="yes")
 {
 	// Delete the Alliance from the `alliances` table
-	PSQ("DELETE FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
+	db_query("DELETE FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';");
 	// Cycle through all users part of this alliance
-	while ($kam = mysql_fetch_assoc(PSQ("SELECT id FROM $TABLE[users] WHERE tag='".$USER['tag']."' AND id!=$UID;")))
+	while ($kam = mysql_fetch_assoc(db_query("SELECT id FROM $TABLE[users] WHERE tag='".$USER['tag']."' AND id!=$UID;")))
 	{
 		// Send every user of this Alliance a MSG that it has been terminated
 		AddNews("alliance","Your Alliance leader terminated the Alliance (".$USER['tag']."). All members were kicked.",$kam['id']);
 	}
 	// And finally: Kick all members of this Alliance, including the owner
-	PSQ("UPDATE $TABLE[users] SET tag='' WHERE tag='".$USER['tag']."';");
+	db_query("UPDATE $TABLE[users] SET tag='' WHERE tag='".$USER['tag']."';");
 
 	// Add this piece of info to this user's NEWS
 	AddNews("alliance","You terminated your alliance (".$USER['tag']."). All members were kicked. The alliance does not exist anymore...",$UID,1);
@@ -106,17 +106,17 @@ if (isset($_GET['action']) && isset($_GET['define']) && isset($_GET['really']) &
 
 if (isset($_POST['newalliance']) && isset($_POST['tag']) && $_POST['tag']!="[TAG]" && strlen($_POST['tag'])>2 && strlen($_POST['name'])>7 && isset($_POST['name']) && $_POST['name']!="[name]")
 {
-	$r = PSQ("SELECT * FROM $TABLE[alliances] WHERE tag='".$_POST['tag']."' OR name='".$_POST['name']."'");
+	$r = db_query("SELECT * FROM $TABLE[alliances] WHERE tag='".$_POST['tag']."' OR name='".$_POST['name']."'");
 	if (!mysql_num_rows($r))
 	{
 		$garbage = "tag".substr(md5(time()),0,7);
 		$tag = goedmaken($_POST['tag']);
 		$name = goedmaken($_POST['name']);
 		$sql = "INSERT INTO $TABLE[alliances] (tag,pwd,name,leader_id) VALUES ('$tag','$garbage','$name','$UID')";
-		PSQ($sql);
+		db_query($sql);
 		@mail($USER['email'],"PornStars - New Alliance","Pornstars\n\n\nYou have created a new alliance:\n\nName = $name\nTag = $tag\nPassword = $garbage\n\nI wish you goodluck with creating a successful alliance...\nPornStars","From: Pornstars <".$_SERVER['HTTP_HOST'].">");
 		AddNews("Alliance","You have made an Alliance. The tag is <b>$tag</b><br>The password to join the alliance is: <b>$garbage</b><br>You are now the proud owner of an alliance!",$UID,1);
-		PSQ("UPDATE $TABLE[users] SET tag='$tag' WHERE id='$UID'");
+		db_query("UPDATE $TABLE[users] SET tag='$tag' WHERE id='$UID'");
 		Logbook("alliance","New Alliance.<br>SQL: ".$sql);
 
 		Save_Msg("Alliance created. The password is $garbage. You might get it in your email.","green");
@@ -132,14 +132,14 @@ if (isset($_POST['newalliance']) && isset($_POST['tag']) && $_POST['tag']!="[TAG
 if (isset($_GET['action']) && $_GET['action']=="refreshtagpwd")
 {
 	$garbage = "tag".substr(md5(time()),0,7);
-	PSQ("UPDATE $TABLE[alliances] SET pwd='$garbage' WHERE leader_id='$UID'") or die(mysql_error());
+	db_query("UPDATE $TABLE[alliances] SET pwd='$garbage' WHERE leader_id='$UID'") or die(mysql_error());
 
 	Go();
 }
 
 if (isset($_POST['joinalliance']) && isset($_POST['pwd']) && $_POST['pwd']!="[password]")
 {
-	$r = PSQ("SELECT * FROM $TABLE[alliances] WHERE pwd='".trim($_POST['pwd'])."';");
+	$r = db_query("SELECT * FROM $TABLE[alliances] WHERE pwd='".trim($_POST['pwd'])."';");
 	if (mysql_num_rows($r))
 	{
 		$i = mysql_fetch_assoc($r);
@@ -148,10 +148,10 @@ if (isset($_POST['joinalliance']) && isset($_POST['pwd']) && $_POST['pwd']!="[pa
 			Save_Msg("You cannot join your own alliance again!","red");
 			Go();
 		}
-		PSQ("UPDATE $TABLE[users] SET tag='".$i['tag']."' WHERE id='$UID'");
+		db_query("UPDATE $TABLE[users] SET tag='".$i['tag']."' WHERE id='$UID'");
 
 		$garbage = "tag".substr(md5(time()),0,7);
-		PSQ("UPDATE $TABLE[alliances] SET pwd='$garbage' WHERE leader_id='".$i['leader_id']."' AND tag='".$i['tag']."';");
+		db_query("UPDATE $TABLE[alliances] SET pwd='$garbage' WHERE leader_id='".$i['leader_id']."' AND tag='".$i['tag']."';");
 		AddNews("Alliance","<b>".$USER['rulername']." of ".$USER['planetname']." (".$USER['x'].":".$USER['y'].")</b> has joined your Alliance.<br>The new password = <b>$garbage</b>.",$i['leader_id']);
 
 		Logbook("alliance","Just joined <b>".$i['tag']."</b>], pwd = ".$_POST['pwd']);
@@ -174,9 +174,9 @@ _header();
 
 if (strlen($USER['tag'])>=2)
 {
-	$ai = mysql_fetch_assoc(PSQ("SELECT * FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';"));
-	$members = PSQ("SELECT id,x,y,rulername,planetname,tag FROM $TABLE[users] WHERE tag='".$USER['tag']."';");
-	$members2 = PSQ("SELECT id,x,y,rulername,planetname,tag FROM $TABLE[users] WHERE tag='".$USER['tag']."';");
+	$ai = mysql_fetch_assoc(db_query("SELECT * FROM $TABLE[alliances] WHERE tag='".$USER['tag']."';"));
+	$members = db_query("SELECT id,x,y,rulername,planetname,tag FROM $TABLE[users] WHERE tag='".$USER['tag']."';");
+	$members2 = db_query("SELECT id,x,y,rulername,planetname,tag FROM $TABLE[users] WHERE tag='".$USER['tag']."';");
 	$nm = mysql_num_rows($members);
 	$USER['tag'] = stripslashes($USER['tag']);
 	if ($ai['leader_id'] == $UID)

@@ -22,7 +22,7 @@ if ( !empty($_POST['message']) && ( !empty($_POST['parent_thread_id']) || !empty
 
 /*else if ( isset($_GET['delete_id']) && $g_arrUser['moc_planet_id'] === PLANET_ID )
 {
-	$q = PSQ("SELECT threadid FROM $TABLE[politics] WHERE id='".$_GET['tid']."' AND deleted='0';");
+	$q = db_query("SELECT threadid FROM $TABLE[politics] WHERE id='".$_GET['tid']."' AND deleted='0';");
 	if (!mysql_num_rows($q))
 	{
 		Save_Msg("This message does not exist!");
@@ -31,14 +31,14 @@ if ( !empty($_POST['message']) && ( !empty($_POST['parent_thread_id']) || !empty
 	if (mysql_result($q,0,'threadid')>0)
 	{
 		// Bericht is een antwoord, geen Thread (OF bestaat niet)
-		PSQ("UPDATE $TABLE[politics] SET deleted='1' WHERE id='".$_GET['tid']."';");
+		db_query("UPDATE $TABLE[politics] SET deleted='1' WHERE id='".$_GET['tid']."';");
 
 		Go("?id=".mysql_result($q,0,'threadid'));
 	}
 	else
 	{
 		// Bericht is Thread, dus alle antwoorden ook weggooien!
-		PSQ("UPDATE $TABLE[politics] SET deleted='1' WHERE (id='".$_GET['tid']."' OR threadid='".$_GET['tid']."');");
+		db_query("UPDATE $TABLE[politics] SET deleted='1' WHERE (id='".$_GET['tid']."' OR threadid='".$_GET['tid']."');");
 
 		Go();
 	}

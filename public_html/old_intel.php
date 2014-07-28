@@ -3,7 +3,7 @@
 require_once('inc.config.php');
 logincheck();
 
-$q = PSQ("SELECT * FROM $TABLE[old_intel] WHERE uid='$UID';");
+$q = db_query("SELECT * FROM $TABLE[old_intel] WHERE uid='$UID';");
 
 _header();
 

@@ -3,9 +3,9 @@
 include("../config.php");
 
 
-$news = (mysql_num_rows(PSQ("SELECT id FROM $TABLE[news] WHERE uid='$UID' AND seen='0' LIMIT 1"))) ? "<img src=\"images/mNews.png\" border=0>" : "NEWS";
-$mail = (mysql_num_rows(PSQ("SELECT id FROM $TABLE[mail] WHERE uid='$UID' AND seen='0' LIMIT 1"))) ? "<img src=\"images/mMail.png\" border=0>" : "MAIL";
-$curleader = mysql_fetch_assoc(PSQ("SELECT x,y,planetname FROM $TABLE[users] ORDER BY score DESC LIMIT 1"));
+$news = (mysql_num_rows(db_query("SELECT id FROM $TABLE[news] WHERE uid='$UID' AND seen='0' LIMIT 1"))) ? "<img src=\"images/mNews.png\" border=0>" : "NEWS";
+$mail = (mysql_num_rows(db_query("SELECT id FROM $TABLE[mail] WHERE uid='$UID' AND seen='0' LIMIT 1"))) ? "<img src=\"images/mMail.png\" border=0>" : "MAIL";
+$curleader = mysql_fetch_assoc(db_query("SELECT x,y,planetname FROM $TABLE[users] ORDER BY score DESC LIMIT 1"));
 
 $a = explode(".",basename($_SERVER['SCRIPT_NAME']));
 $stF = $a[0];

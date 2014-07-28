@@ -491,55 +491,6 @@ function Verschil_In_Tijd( $tijd ) {
 	return ( 0 < $dagen ? $dagen.'d ' : '' ) . str_pad((string)$uren, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string)$minuten, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string)$seconden, 2, '0', STR_PAD_LEFT);
 }
 
-function PSQ( $q, $act = 1 )
-{
-//	global $UID;
-	global $num_queries_per_page;
-	global $queries_per_page;
-//	global $GAMEPREFS;
-
-	if ($act>0)
-	{
-		// Add one more query to the count
-		if (isset($num_queries_per_page) && is_numeric($num_queries_per_page) && $num_queries_per_page>0)
-			$num_queries_per_page++;
-		else
-			$num_queries_per_page = 1;
-
-		// Add the query to the array of queries (per page)
-		$queries_per_page[] = $q;
-
-/*
-		// Add it to the LOG table
-		// Only queries not-starting with 'SELECT' ( or 'INSERT INTO loading' ? )
-		if (trim(strtoupper(substr(str_replace(' ','',$q),0,6))) != 'SELECT')
-		{
-			mysql_query("INSERT INTO $TABLE[logqueries] VALUES ('','$UID','".addslashes($q)."','".time()."');");
-		}
-*/
-
-		// And execute it
-		$a = mysql_query($q) or die((1) ? "<table border=0 cellpadding=2 cellspacing=0><tr><td style='color:red;background:white;'><center><b>MySQL ERROR</td></tr><tr><td style='padding:10px;color:red;background:white;'><font style='font-family:courier new;font-size:10pt;'>&quot".str_replace(" ","&nbsp;",htmlspecialchars($q))."&quot</font><hr>".mysql_error()."</td></tr></table>" : "<font color=red><b>MySQL error!!</b></font>");
-		// If specified: print the query in addition
-		if (2 == $act)
-		{
-			echo '"'.$q.'"';
-		}
-		// Return results from mysql_query( )
-		return $a;
-	}
-	else
-	{
-		// If act was specified to be <= 0, dont execute it, just print it
-		echo '"'.$q.'"';
-	}
-}
-
-function PSQuery( $sql )
-{
-	return PSQ($sql);
-}
-
 function Save_Msg( $msg, $color = 'red' )
 {
 	$_SESSION['ps_msg']['msg'] = $msg;
@@ -626,7 +577,7 @@ function AddNews( $f_iSubject, $f_szMessage, $f_iPlanetId, $bSeen = false ) {
 function Show_Alliance_Members( $tag, $leader_id )
 {
 	$tag = addslashes($tag);
-	$members = PSQ("SELECT id,rulername,planetname,tag,x,y FROM planets WHERE tag='$tag' ORDER BY x,y");
+	$members = db_query("SELECT id,rulername,planetname,tag,x,y FROM planets WHERE tag='$tag' ORDER BY x,y");
 	echo "All members:<br>";
 	while ($mi = mysql_fetch_assoc($members))
 	{
@@ -652,7 +603,7 @@ function GameOver( )
 
 	if ($GAMEPREFS['general_gamestoptick'] && $GAMEPREFS['tickcount'] >= $GAMEPREFS['general_gamestoptick'])
 	{
-		return mysql_fetch_assoc(PSQ("SELECT rulername,planetname,x,y,score FROM planets ORDER BY -score LIMIT 1;"));
+		return mysql_fetch_assoc(db_query("SELECT rulername,planetname,x,y,score FROM planets ORDER BY -score LIMIT 1;"));
 	}
 	return FALSE;
 }
