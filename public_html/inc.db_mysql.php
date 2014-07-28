@@ -107,6 +107,8 @@ function db_select_fields( $tbl, $fields, $where = '' ) {
 }
 
 function _db_escape_values( $values ) {
+	global $g_db;
+
 	foreach ( $values AS $k => $v ) {
 		if ( $v === null ) {
 			$values[$k] = 'NULL';
@@ -157,12 +159,15 @@ function db_query( $query ) {
 	global $g_db, $g_iQueries, $g_arrQueries;
 	$r = @$g_db->query($query);
 
-	// Log error
-	// if ( !$r ) {
-	// 	static $log;
-	// 	if ( !$log ) $log = fopen(PROJECT_LOGS.'/sqlerrors.log', 'a');
-	// 	fwrite($log, $query."\r\n".db_error()."\r\n\r\n");
-	// }
+	// Break on error
+	if ( !$r ) {
+		echo "<h1>SQL error:</h1>\n";
+		echo "<h2>Query:</h2>\n";
+		echo "<pre>" . htmlspecialchars($query) . "</pre>\n";
+		echo "<h2>Error:</h2>\n";
+		echo "<pre>" . htmlspecialchars(db_error()) . "</pre>\n";
+		exit;
+	}
 
 	@$g_iQueries++;
 	@$g_arrQueries[] = $query;
