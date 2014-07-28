@@ -43,7 +43,7 @@ if ( isset($_POST['check'], $_POST['mode']) && $_POST['mode'] == "login" ) {
 	Go();
 }
 
-if ( !isset($_SESSION[$sessionname.'_ADMIN']) || (md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1 && md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1) )
+if ( !isset($_SESSION[$sessionname.'_ADMIN']) || (md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1 && md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD2) )
 {
 ?>
 <title><?php echo $GAMENAME; ?></title>
