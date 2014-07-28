@@ -45,7 +45,7 @@ print_r($_POST['skills']);
 		$szInserts .= ",(".$iRDId."," . implode("),(".$iRDId.",", $arrRDs) . ")";
 	}
 	echo $szSqlQuery = 'INSERT INTO d_r_d_requires (r_d_id, r_d_requires_id) VALUES '.substr($szInserts, 1).';'."\n";
-	db_query($szSqlQuery) or die("\n\n".mysql_error());
+	db_query($szSqlQuery) or die("\n\n".db_error());
 
 	echo "\n".'TRUNCATE d_r_d_excludes: ';
 	var_dump(db_query("DELETE FROM d_r_d_excludes;"));
@@ -56,7 +56,7 @@ print_r($_POST['skills']);
 		$szInserts .= ",(".$iRDId."," . implode("),(".$iRDId.",", $arrRDs) . ")";
 	}
 	echo $szSqlQuery = 'INSERT INTO d_r_d_excludes (r_d_id, r_d_excludes_id) VALUES '.substr($szInserts, 1).';'."\n";
-	db_query($szSqlQuery) or die("\n\n".mysql_error());
+	db_query($szSqlQuery) or die("\n\n".db_error());
 
 	echo "\n".'TRUNCATE d_r_d_per_race: ';
 	var_dump(db_query("DELETE FROM d_r_d_per_race;"));
@@ -66,16 +66,16 @@ print_r($_POST['skills']);
 		$szInserts .= ",(".$iRDId."," . implode("),(".$iRDId.",", $arrRaces) . ")";
 	}
 	echo $szSqlQuery = 'INSERT INTO d_r_d_per_race (r_d_id, race_id) VALUES '.substr($szInserts, 1).';'."\n";
-	db_query($szSqlQuery) or die("\n\n".mysql_error());
+	db_query($szSqlQuery) or die("\n\n".db_error());
 
 	exit;
 }
 
 else if ( isset($_POST['name'], $_POST['T'], $_POST['eta'], $_POST['explanation'], $_POST['costs']) ) {
-	var_dump(mysql_query("INSERT INTO d_r_d_available (`T`, `name`, `eta`, `explanation`) VALUES ('".$_POST['T']."', '".$_POST['name']."', '".$_POST['eta']."', '".$_POST['explanation']."')"));
-	$iRdId = mysql_insert_id();
+	var_dump(db_query("INSERT INTO d_r_d_available (`T`, `name`, `eta`, `explanation`) VALUES ('".$_POST['T']."', '".$_POST['name']."', '".$_POST['eta']."', '".$_POST['explanation']."')"));
+	$iRdId = db_insert_id();
 	foreach ( $_POST['costs'] AS $iResourceId => $iAmount ) {
-		var_dump(mysql_query("INSERT INTO d_r_d_costs (r_d_id, resource_id, amount) VALUES (".$iRdId.", ".$iResourceId.", ".$iAmount.")"));
+		var_dump(db_query("INSERT INTO d_r_d_costs (r_d_id, resource_id, amount) VALUES (".$iRdId.", ".$iResourceId.", ".$iAmount.")"));
 	}
 	exit;
 }
