@@ -1,6 +1,0 @@
-SELECT resource_id,amount FROM d_r_d_costs WHERE 0 < amount AND r_d_id = 26 ORDER BY resource_id ASC;
-Table 'pornstars.d_r_d_costs' doesn't exist
-
-SELECT resource_id,amount FROM d_r_d_costs WHERE 0 < amount AND r_d_id = 27 ORDER BY resource_id ASC;
-Table 'pornstars.d_r_d_costs' doesn't exist
-
