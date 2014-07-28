@@ -43,23 +43,28 @@ if ( isset($_POST['check'], $_POST['mode']) && $_POST['mode'] == "login" ) {
 	Go();
 }
 
-if ( !isset($_SESSION[$sessionname.'_ADMIN']) || (md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1 && md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD2) )
-{
-?>
-<title><?php echo $GAMENAME; ?></title>
-<form method=post action=?>
-<input type=hidden name=check value=1>
-<input type=hidden name=mode value=login>
-<input type=password name=pwd>
+if ( !isset($_SESSION[$sessionname.'_ADMIN']) || (md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1 && md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD2) ) {
+	?>
+<title><?= $GAMENAME ?></title>
+<form method=post>
+	<input type=hidden name=check value=1 />
+	<input type=hidden name=mode value=login />
+	<input type=password name=pwd />
 
-<input type=submit value=Login>
-<?php
-	die("</form>");
+	<input type=submit value=Login />
+</form>
+	<?php
+
+	exit;
 }
 
-else if ( isset($_POST['pk'], $_POST['tbl'], $_POST[$_POST['pk']], $_POST['changes']) )
-{
+else if ( isset($_POST['pk'], $_POST['tbl'], $_POST[$_POST['pk']], $_POST['changes']) ) {
+	if ( isset($_POST['changes']['password']) ) {
+		$_POST['changes']['password'] = md5($_POST[$_POST['pk']] . ':' . $_POST['changes']['password']);
+	}
+
 	$arrFields = explainTbl($_POST['tbl']);
+
 	foreach ( (array)$_POST['changes'] AS $szField => $mvChange ) {
 		$szField = strtolower($szField);
 		switch ( $arrFields[$szField]['type'] )

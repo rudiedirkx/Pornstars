@@ -13,9 +13,9 @@ if ( '1' !== $GAMEPREFS['general_login'] && empty($_SESSION[$sessionname.'_ADMIN
 	Go();
 }
 
-if ( isset($_POST['u'], $_POST['p']) )
-{
-	$arrUser = db_select('planets', "email = '".addslashes($_POST['u'])."' AND password = MD5(CONCAT(id,':".addslashes($_POST['p'])."'));");
+if ( isset($_POST['u'], $_POST['p']) ) {
+	$arrUser = db_select('planets', "email = '" . addslashes($_POST['u']) . "' AND password = MD5(CONCAT(id,':" . addslashes($_POST['p']) . "'))");
+
 	if ( 1 === count($arrUser) ) {
 		$arrUser = $arrUser[0];
 		if ( time()-$arrUser['lastlogin'] < $CHECK_TIME_BETWEEN_LOGINS ) {
