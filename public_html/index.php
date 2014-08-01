@@ -10,10 +10,16 @@ if ( isset($_GET['ps_page']) && $_GET['ps_page'] == 'playtitelbalk' ) {
 
 if ( logincheck(false) ) {
 	?>
+<!doctype html>
 <html>
+
 <head>
-<title><?php echo $GAMENAME; ?></title>
+	<meta charset="utf-8" />
+	<link rel="shortcut icon" href="/favicon.ico" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title><?= $GAMENAME ?></title>
 </head>
+
 <frameset rows="50,*" frameborder="0" border="0">
 	<frameset cols="220,*" frameborder="0" border="0">
 		<frame name="t0" SRC="<?php echo !empty($_SESSION['ps_is_ticker']) ? 'tickah.php?special=yes' : 'leeg.php'; ?>" noresize="noresize" marginwidth="0" marginheight="0" scrolling="no" frameborder="0">
@@ -24,6 +30,7 @@ if ( logincheck(false) ) {
 		<frame name="a9" SRC="overview.php" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
 	</frameset>
 </frameset>
+
 </html>
 	<?php
 

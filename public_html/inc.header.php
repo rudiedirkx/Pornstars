@@ -10,15 +10,18 @@ if ( logincheck(false) && '1' === $g_arrUser['oldpwd'] && 'preferences' != $st &
 }
 
 ?>
+<!doctype html>
 <html>
 
 <head>
-<title><?php echo $GAMEPREFS['gamename']; ?></title>
+<meta charset="utf-8" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<title><?= $GAMEPREFS['gamename'] ?></title>
 <link type="text/css" rel="stylesheet" href="css/styles.css" />
-<script type="text/javascript" src="general_1_2_6.js"></script>
-<script type="text/javascript" src="ajax_1_3_1.js"></script>
-<script type="text/javascript">
-<!--//
+<script src="general_1_2_6.js"></script>
+<script src="ajax_1_3_1.js"></script>
+<script>
 function TD(o) {
 	var d = $(o).style;
 	d.display = d.display != 'none' ? 'none' : '';
@@ -49,7 +52,6 @@ function H(a) {
 		}
 	}
 }
-//-->
 </script>
 </head>
 
