@@ -1,7 +1,7 @@
 * Same scans, different costs (3x roidscan, 2x power)
 * Serialize schema according to db_generic
 * Convert db to db_generic
-
+* `T` columns to `type`
 
 
 
