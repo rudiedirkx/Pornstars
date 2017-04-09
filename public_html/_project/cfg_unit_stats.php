@@ -4,15 +4,14 @@ require_once('../inc.connect.php');
 
 $arrUnitProps = array('unit', 'unit_plural', 'explanation', 'build_eta', 'COSTS', 'move_eta', 'fuel', 'is_stealth', 'is_mobile', 'is_offensive', 'steals', 'r_d_required_id');
 
-//if ( !empty($_POST) ) {
-//	echo '<pre>';print_r($_POST);exit;
-//}
+// if ( !empty($_POST) ) {
+// 	echo '<pre>';print_r($_POST);exit;
+// }
 
-if ( isset($_POST['unit_id'], $_POST['unit'], $_POST['unit_plural'], $_POST['explanation'], $_POST['build_eta'], $_POST['costs'], $_POST['move_eta'], $_POST['fuel'], $_POST['steals'], $_POST['r_d_required_id'], $_POST['combat_stats']) ) {
+if ( isset($_POST['unit_id'], $_POST['unit'], $_POST['unit_plural'], $_POST['explanation'], $_POST['build_eta'], $_POST['costs'], $_POST['move_eta'], $_POST['fuel'], $_POST['steals'], $_POST['r_d_required_id']) ) {
 	$iUnitId = (int)$_POST['unit_id'];
 	$arrCosts = $_POST['costs'];
-	$arrCombatStats = $_POST['combat_stats'];
-	$arrCosts = $_POST['costs'];
+	$arrCombatStats = @$_POST['combat_stats'];
 	unset($_POST['unit_id'], $_POST['costs'], $_POST['combat_stats']);
 
 	// Attributes
@@ -27,13 +26,15 @@ if ( isset($_POST['unit_id'], $_POST['unit'], $_POST['unit_plural'], $_POST['exp
 	echo "--\n";
 
 	// Combat stats
-	db_delete('d_combat_stats', 'shooting_unit_id = '.$iUnitId);
-	foreach ( $arrCombatStats AS $iToUnitId => $s ) {
-		if ( !empty($s['ratio']) && !empty($s['target_priority']) ) {
-			var_dump(db_insert('d_combat_stats', array('shooting_unit_id' => $iUnitId, 'receiving_unit_id' => $iToUnitId, 'ratio' => 1.0/(float)$s['ratio'], 'target_priority' => $s['target_priority'])));
+	if ( $arrCombatStats ) {
+		db_delete('d_combat_stats', 'shooting_unit_id = '.$iUnitId);
+		foreach ( $arrCombatStats AS $iToUnitId => $s ) {
+			if ( !empty($s['ratio']) && !empty($s['target_priority']) ) {
+				var_dump(db_insert('d_combat_stats', array('shooting_unit_id' => $iUnitId, 'receiving_unit_id' => $iToUnitId, 'ratio' => 1.0/(float)$s['ratio'], 'target_priority' => $s['target_priority'])));
+			}
 		}
+		echo "--\n";
 	}
-	echo "--\n";
 
 	// Costs
 	db_delete('d_unit_costs', 'unit_id = '.$iUnitId);

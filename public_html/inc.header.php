@@ -2,7 +2,7 @@
 
 global $stF, $st, $FLEETNAMES, $arrIncomingFleets, $showcolors, $g_arrResources;
 $stF = str_replace('.php', '', basename($_SERVER['SCRIPT_NAME']));
-$st = reset(explode(".", $stF));
+$st = explode(".", $stF)[0];
 
 if ( logincheck(false) && '1' === $g_arrUser['oldpwd'] && 'preferences' != $st && $GAMEPREFS['must_change_pwd'] ) {
 	Save_Msg('<b>YOU MUST CHANGE YOUR PASSWORD BEFORE STARTING THE GAME!!', 'red');

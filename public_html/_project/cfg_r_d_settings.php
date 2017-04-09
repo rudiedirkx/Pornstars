@@ -86,7 +86,7 @@ $RD = db_select_by_field('d_r_d_available', 'id');
 <style type="text/css">
 select { font-size : 9px; } .rb { border-right : solid 4px black; }
 </style>
-<script type="text/javascript" src="http://localhost/js/mootools_1_11.js"></script>
+<script type="text/javascript" src="/general_1_2_7.js"></script>
 <form method="post" action="" autocomplete="off">
 <table width="100%" border="0" cellpadding="3" cellspacing="0"><tr bgcolor="#dddddd"><th onclick="showColumn('r');" class="rb">RESEARCHES</th><th onclick="showColumn('d');">DEVELOPMENTS</th></tr><tr valign="top"><td class="rb" align="center">
 <?php
@@ -142,21 +142,21 @@ echo '</td></tr><tr bgcolor="#dddddd"><th class="rb">RESEARCHES</th><th>DEVELOPM
 </form>
 
 <script type="text/javascript">
-<!--//
 function showColumn(yes) {
 	var no = 'r' === yes ? 'd' : 'r';
 	doToColumns($('tbl_'+yes), '');
 	doToColumns($('tbl_'+no), 'none');
 }
 function doToColumns(t, w) {
-	$A(t.rows).each(function(r) {
+	[].forEach.call(t.rows, function(r) {
 		for ( var i=1; i<r.cells.length; i++ ) {
 			r.cells[i].style.display = w;
 		}
 	});
 }
-$A(document.forms).each(function(f){f.reset();});
-//-->
+[].forEach.call(document.forms, function(f) {
+	f.reset();
+});
 </script>
 <?php
 
