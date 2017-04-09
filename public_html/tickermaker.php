@@ -8,5 +8,3 @@ while ( true ) {
 	include(dirname(__FILE__).'/tickah.php');
 	sleep((int)$GAMEPREFS['tickertime']);
 }
-
-?>

@@ -7,7 +7,7 @@ if ( isset($_POST['x'], $_POST['y'], $_POST['z'], $_POST['message']) )
 {
 	$iPlanetId = db_select_one('galaxies g, planets p', 'p.id', 'p.galaxy_id = g.id AND g.x = '.(int)$_POST['x'].' AND g.y = '.(int)$_POST['y'].' AND p.z = '.(int)$_POST['z']);
 	if ( false === $iPlanetId ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Planet not found!'),
 		)));
 	}
@@ -18,11 +18,11 @@ if ( isset($_POST['x'], $_POST['y'], $_POST['z'], $_POST['message']) )
 		'myt_sent'			=> $GAMEPREFS['tickcount'],
 		'message'			=> $_POST['message'],
 	)) ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Mail delivery failed!'),
 		)));
 	}
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('msg', 'Mail sent!'),
 	)));
 }

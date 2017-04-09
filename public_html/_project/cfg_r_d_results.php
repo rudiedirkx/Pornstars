@@ -1,37 +1,31 @@
 <?php
 
-require_once('../inc.connect.php');
+require_once '../inc.bootstrap.php';
+
+$types = ['travel_eta', 'r_d_eta', 'r_d_costs', 'fuel_use', 'offense', 'defence'];
+$types = array_merge(array_values($db->select_fields('d_resources', "id, CONCAT('income:', id)", '1')), $types);
 
 if ( isset($_POST['r']) ) {
-	header('Location: '.basename($_SERVER['PHP_SELF']));
-	echo '<pre>';
-	foreach ( $_POST['r'] AS $iResult => $arrResult ) {
-		unset($arrResult['id']);
-		$arrResult['enabled'] = empty($arrResult['enabled']) ? '0' : '1';
-		echo $iResult.': ';
-		var_dump(db_update('d_r_d_results', $arrResult, 'id = '.(int)$iResult));
-		echo db_error();
+	foreach ( $_POST['r'] AS $id => $data ) {
+		$data['enabled'] = !empty($data['enabled']);
+		$db->update('d_r_d_results', $data, compact('id'));
 	}
-//	print_r($_POST['r']);
-	if ( isset($_POST['new'], $_POST['new']['o'], $_POST['new']['type'], $_POST['new']['done_r_d_id'], $_POST['new']['change'], $_POST['new']['unit'], $_POST['new']['explanation']) ) {
-		if ( '0' !== $_POST['new']['o'] && '' !== $_POST['new']['type'] && '' !== $_POST['new']['done_r_d_id'] && '0' !== $_POST['new']['change'] && '' !== $_POST['new']['unit'] && '' !== $_POST['new']['explanation'] ) {
-			echo "\nNEW: ";
-			unset($_POST['new']['id']);
-			$_POST['new']['enabled'] = '1';
-			var_dump(db_insert('d_r_d_results', $_POST['new']));
-			echo db_error();
-			print_r($_POST['new']);
+
+	if ( isset($_POST['new']) ) {
+		$new = array_filter($_POST['new']);
+		if ( isset($new['type'], $new['done_r_d_id'], $new['change'], $new['unit'], $new['explanation']) ) {
+			$new['enabled'] = true;
+			$db->insert('d_r_d_results', $new);
 		}
 	}
-	exit;
+
+	return do_redirect(null);
 }
 
 echo '<title>R&D results</title>';
 
-$types = array('travel_eta', 'r_d_eta', 'metal_income', 'crystal_income', 'energy_income', 'r_d_costs', 'fuel_use', 'offense', 'defence');
-
-$arrRDResults = db_select('d_r_d_results', '1 ORDER BY o ASC, id DESC');
-$RD = db_select_fields('d_r_d_available', 'id, concat(UPPER(T),\' \',id,\'. \',name)', '1 ORDER BY T ASC, id ASC');
+$arrRDResults = $db->select('d_r_d_results', '1 ORDER BY o ASC, id DESC');
+$RD = $db->select_fields('d_r_d_available', 'id, concat(UPPER(T),\' \',id,\'. \',name)', '1 ORDER BY T ASC, id ASC');
 
 echo '<form method="post" action="" autocomplete="off"><table border="1" cellpadding="4" cellspacing="1">';
 foreach ( $arrRDResults AS $k => $r ) {

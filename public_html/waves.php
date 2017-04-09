@@ -15,7 +15,7 @@ if ( isset($_POST['order_units']) && is_array($_POST['order_units']) && 0 < coun
 	foreach ( db_select_fields('planet_resources', 'resource_id,amount', 'planet_id = '.PLANET_ID) AS $iResourceId => $iAmount ) {
 		$arrJson[] = array('html', 'res_amount_'.$iResourceId, nummertje($iAmount));
 	}
-	exit(json::encode($arrJson));
+	exit(json_encode($arrJson));
 }
 
 // SCAN FOR ASTEROIDS //
@@ -25,7 +25,7 @@ else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) )
 	$a = (int)min( $_POST['number_of_asteroid_scans'], $iTotalAsteroidScans );
 
 	if ( 0 >= $a ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Invalid amount!'),
 		)));
 	}
@@ -41,7 +41,7 @@ else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) )
 	}
 	$iScansLefs = db_select_one('waves_on_planets', 'amount', 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$_POST['roid_scan_id'].'');
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('html', 'unit_amount_'.(int)$_POST['roid_scan_id'], nummertje($iScansLefs)),
 		array('msg', 'Your '.nummertje($a).' scans found '.nummertje($iAsteroidsFound).' Asteroids!'),
 	)));
@@ -52,7 +52,7 @@ else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) )
 {
 	$arrScan = db_fetch('SELECT *, u.id AS scan_id FROM d_all_units u WHERE id = '.(int)$_GET['intel_scan_id'].' AND u.T = \'scan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0) AND 0 < (SELECT amount FROM waves_on_planets WHERE planet_id = '.PLANET_ID.' AND wave_id = scan_id)');
 	if ( !$arrScan ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Invalid scan!'),
 		)));
 	}
@@ -60,7 +60,7 @@ else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) )
 
 	$arrTarget = db_select('galaxies g, planets p', 'g.id = p.galaxy_id AND p.z = '.(int)$_GET['z'].' AND g.y = '.(int)$_GET['y'].' AND g.x = '.(int)$_GET['x']);
 	if ( !$arrTarget ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Invalid coordinates!'),
 		)));
 	}
@@ -92,7 +92,7 @@ else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) )
 
 	db_update('waves_on_planets', 'amount=amount-1', 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$arrScan['scan_id'].' AND amount > 0');
 	if ( 0 >= db_affected_rows() ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Invalid scan!'),
 		)));
 	}
@@ -281,7 +281,7 @@ ORDER BY
 			break;
 
 			default:
-				exit(json::encode(array(
+				exit(json_encode(array(
 					array('msg', 'Invalid scan ['.(int)$arrScan['scan_id'].']!'),
 					$arrScansLeftAjaxUpdate,
 				)));
@@ -289,7 +289,7 @@ ORDER BY
 		}
 
 		// PRINT SUCCESS
-		exit(json::encode(array(
+		exit(json_encode(array(
 			$arrScansLeftAjaxUpdate,
 			array('html', 'div_scanresults', $szHTML),
 			array('eval', "$('div_scanresults').style.border='solid 1px red';$('div_scanresults').style.marginBottom='15px;';"),
@@ -300,7 +300,7 @@ ORDER BY
 	if ( (int)$arrTarget['id'] !== PLANET_ID ) {
 		AddNews( NEWS_SUBJECT_WAVES, '<b>'.$g_arrUser['rulername'].' of '.$g_arrUser['planetname'].'</b> ('.$g_arrUser['x'].':'.$g_arrUser['y'].':'.$g_arrUser['z'].') tried to <b>'.$arrScan['unit'].'</b> you, but he failed!', $arrTarget['id']);
 	}
-	exit(json::encode(array(
+	exit(json_encode(array(
 		$arrScansLeftAjaxUpdate,
 		array('msg', 'You failed scanning the target!'),
 	)));

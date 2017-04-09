@@ -1,129 +1,205 @@
 <?php
 
-require_once('../inc.connect.php');
+require_once '../inc.bootstrap.php';
 
-$arrUnitProps = array('unit', 'unit_plural', 'explanation', 'build_eta', 'COSTS', 'move_eta', 'fuel', 'is_stealth', 'is_mobile', 'is_offensive', 'steals', 'r_d_required_id');
+$types = ['ship', 'defence', 'roidscan', 'power', 'scan', 'amp', 'block'];
 
-// if ( !empty($_POST) ) {
-// 	echo '<pre>';print_r($_POST);exit;
-// }
+// Save existing
+if ( isset($_POST['units']) ) {
+	$db->begin();
 
-if ( isset($_POST['unit_id'], $_POST['unit'], $_POST['unit_plural'], $_POST['explanation'], $_POST['build_eta'], $_POST['costs'], $_POST['move_eta'], $_POST['fuel'], $_POST['steals'], $_POST['r_d_required_id']) ) {
-	$iUnitId = (int)$_POST['unit_id'];
-	$arrCosts = $_POST['costs'];
-	$arrCombatStats = @$_POST['combat_stats'];
-	unset($_POST['unit_id'], $_POST['costs'], $_POST['combat_stats']);
+	foreach ( $_POST['units'] as $id => $data ) {
+		$costs = array_filter($data['costs']);
+		$combats = (array) @$data['combat_stats'];
+		unset($data['costs'], $data['combat_stats']);
 
-	// Attributes
-	$_POST['steals'] = '' === $_POST['steals'] ? null : $_POST['steals'];
-	foreach ( $arrUnitProps AS $szProp ) {
-		if ( 0 === strpos($szProp, 'is_') ) {
-			$_POST[$szProp] = !empty($_POST[$szProp]) ? '1' : '0';
+		// properties //
+		$data['is_stealth'] = !empty($data['is_stealth']);
+		$data['is_mobile'] = !empty($data['is_mobile']);
+		$data['is_offensive'] = !empty($data['is_offensive']);
+		$data['steals'] or $data['steals'] = null;
+		$db->update('d_all_units', $data, compact('id'));
+
+		// costs //
+		$db->delete('d_unit_costs', ['unit_id' => $id]);
+		foreach ( $costs as $rid => $amount ) {
+			$db->insert('d_unit_costs', [
+				'unit_id' => $id,
+				'resource_id' => $rid,
+				'amount' => $amount,
+			]);
 		}
-	}
-	var_dump(db_update('d_all_units', $_POST, 'id = '.$iUnitId));
-	echo db_error();
-	echo "--\n";
 
-	// Combat stats
-	if ( $arrCombatStats ) {
-		db_delete('d_combat_stats', 'shooting_unit_id = '.$iUnitId);
-		foreach ( $arrCombatStats AS $iToUnitId => $s ) {
-			if ( !empty($s['ratio']) && !empty($s['target_priority']) ) {
-				var_dump(db_insert('d_combat_stats', array('shooting_unit_id' => $iUnitId, 'receiving_unit_id' => $iToUnitId, 'ratio' => 1.0/(float)$s['ratio'], 'target_priority' => $s['target_priority'])));
+		// combat stats //
+		$db->delete('d_combat_stats', ['shooting_unit_id' => $id]);
+		foreach ( $combats as $otherId => $combat ) {
+			if ( $combat['ratio'] ) {
+				$db->insert('d_combat_stats', [
+					'shooting_unit_id' => $id,
+					'receiving_unit_id' => $otherId,
+					'ratio' => 1 / $combat['ratio'],
+					'target_priority' => $combat['target_priority'] ?: 1,
+				]);
 			}
 		}
-		echo "--\n";
+
 	}
 
-	// Costs
-	db_delete('d_unit_costs', 'unit_id = '.$iUnitId);
-	foreach ( $arrCosts AS $iResourceId => $iAmount ) {
-		var_dump(db_replace_into('d_unit_costs', array('unit_id' => $iUnitId, 'resource_id' => $iResourceId, 'amount' => $iAmount)));
-	}
-	db_delete('d_unit_costs', 'amount = 0');
+	$db->commit();
 
-	exit;
+	return do_redirect(null);
 }
 
-if ( isset($_GET['new_unit_T'], $_GET['required']) ) {
-	var_dump(db_insert('d_all_units', array('T' => $_GET['new_unit_T'], 'unit' => 'NEW', 'r_d_required_id' => $_GET['required'])));
-	echo db_error();
-	header('Location: '.$_SERVER['HTTP_REFERER']);
-	exit;
-}
+// @todo Create new
 
-echo '<title>Units</title>';
+$arrRD = $db->select_fields('d_r_d_available', "id, CONCAT(UPPER(T), ': ', name)", '1 ORDER BY T, id');
 
-$arrRD = db_select_fields('d_r_d_available', 'id, CONCAT(UPPER(T),\': \',name)', '1 ORDER BY T ASC, id ASC');
+$arrUnits = $db->select('d_all_units', '1 ORDER BY FIELD(T, ?), o', [$types]);
 
-?>
-<style type="text/css">
-select, input { font-size : 9px; }
-</style>
+$arrOffensiveTypes = ['ship', 'defence'];
+$arrOffensives = $db->select('d_all_units', 'T IN (?) ORDER BY T, o', [$arrOffensiveTypes])->all();
 
-<div><form action="" method="get">
-	<select name="new_unit_T"><option value="ship">ship</option><option value="defence">defence</option><option value="roidscan">roidscan</option><option value="power">power</option><option value="scan">scan</option><option value="amp">amp</option><option value="block">block</option></select>
-	<select name="required"><?php foreach ( $arrRD AS $id => $name ) { echo '<option value="'.$id.'">'.$name.'</option>'; } ?></select>
-	<input type="submit" value="New" />
-</form></div>
-
-<table border="0">
-<tr>
-	<th></th>
-	<th>SHIP DETAILS</th>
-	<th></th>
-</tr>
-<?php
-
-$arrUnits = db_select('d_all_units', '1 ORDER BY T ASC, o ASC');
-$arrOffensives = db_select('d_all_units', '(T = \'ship\' OR T = \'defence\') ORDER BY T ASC, o ASC');
-
-$arrCombatStats = db_select('d_combat_stats');
+$arrCombatStats = $db->select('d_combat_stats', '1');
 $g_arrCombatStats = array();
 foreach ( $arrCombatStats AS $cs ) {
-	$g_arrCombatStats[(int)$cs['shooting_unit_id']][(int)$cs['receiving_unit_id']] = array((float)$cs['ratio'], $cs['target_priority']);
+	$g_arrCombatStats[$cs->shooting_unit_id][$cs->receiving_unit_id] = [(float) $cs->ratio, (int) $cs->target_priority];
 }
 
-$n=0;
-foreach ( $arrUnits AS $arrUnit ) {
-	echo '<form method="post" action="?submit"><input type="hidden" name="unit_id" value="'.$arrUnit['id'].'" /><tr'.( $n++%2==0 ? ' bgcolor="#eeeeee"' : '' ).' unit_id="'.$arrUnit['id'].'" valign="top">';
-	echo '<th>'.$arrUnit['unit'].'<br />['.$arrUnit['T'].']<br /><br /><input type="submit" value="Save" /></th>';
-	echo '<td><table border="0">';
-	foreach ( $arrUnitProps AS $k => $szProp ) {
-		if ( 'r_d_required_id' != $szProp && 'steals' != $szProp ) {
-			if ( 'COSTS' === $szProp ) {
-				$costs = db_fetch('SELECT *'.( 'NEW' !== $arrUnit['id'] ? ' FROM d_resources r LEFT JOIN d_unit_costs c ON c.resource_id = r.id AND c.unit_id = '.$arrUnit['id'] : ', 0 amount FROM d_resources r' ).' ORDER BY r.id ASC');
-echo db_error();
-				foreach ( $costs AS $c ) {
-					echo '<tr><td align="right">'.$c['resource'].'</td><td>:</td><td><input type="text" name="costs['.$c['id'].']" value="'.(int)$c['amount'].'" size="5" /></td></tr>';
-				}
-			}
-			else {
-				echo '<tr><td>'.$szProp.'</td><td>:</td><td>'.( 0 === strpos($szProp, 'is_') ? '<input type="checkbox" name="'.$szProp.'" value="1"'.( (int)$arrUnit[$szProp] ? ' checked="1"' : '' ).' />' : '<input type="text" name="'.$szProp.'" value="'.$arrUnit[$szProp].'" size="'.( 2 >= $k ? 40 : 5 ).'" />' ).'</td></tr>';
-			}
-		}
-	}
-	echo '<tr><td>Steals</td><td>:</td><td><select name="steals">';
-	foreach ( array(null,'asteroids','resources') AS $s ) {
-		echo '<option'.( $s === $arrUnit['steals'] ? ' selected="1"' : '' ).' value="'.$s.'">'.$s.'</option>';
-	}
-	echo '</select></td></tr>';
-	echo '<tr><td>R&D required</td><td>:</td><td><select name="r_d_required_id">';
-	foreach ( $arrRD AS $iRD => $szRD ) { echo '<option value="'.$iRD.'"'.( (string)$arrUnit['r_d_required_id'] === (string)$iRD ? ' selected="1"' : '' ).'>'.$szRD.'</option>'; }
-	echo '</select></td></tr>';
-	echo '</table></td>';
-	if ( 'NEW' != $arrUnit['id'] && ( 'ship' == $arrUnit['T'] || 'defence' == $arrUnit['T'] ) ) {
-		echo '<td align="center">Units needed to destroy one:<table border="0">';
-		foreach ( $arrOffensives AS $u ) {
-			if ( 'NEW' !== $u['id'] ) {
-				echo '<tr><td nowrap="1" wrap="off">'.$u['unit'].'</td><td>:</td><td><input type="text" name="combat_stats['.$u['id'].'][ratio]" value="'.( isset($g_arrCombatStats[(int)$arrUnit['id']][(int)$u['id']]) ? round(1/$g_arrCombatStats[(int)$arrUnit['id']][(int)$u['id']][0], 2) : '' ).'" size="8" /><input type="text" name="combat_stats['.$u['id'].'][target_priority]" style="text-align:center;" value="'.( isset($g_arrCombatStats[(int)$arrUnit['id']][(int)$u['id']]) ? $g_arrCombatStats[(int)$arrUnit['id']][(int)$u['id']][1] : '' ).'" size="1" /></td></tr>';
-			}
-		}
-		echo '</table></td>';
-	}
-	echo '</tr></form>';
+$arrCosts = $db->select('d_unit_costs', '1');
+$g_arrCosts = array();
+foreach ( $arrCosts as $c ) {
+	$g_arrCosts[$c->unit_id][$c->resource_id] = $c->amount;
 }
+
+$arrResources = $db->select_fields('d_resources', 'id, resource', '1');
+
+$arrSteals = ['asteroids','resources'];
+$arrSteals = array_combine($arrSteals, $arrSteals);
 
 ?>
-</table>
+<title>Units</title>
+
+<form method="post" action>
+	<table border="1" cellpadding="4" cellspacing="1">
+		<tr>
+			<th></th>
+			<th>SHIP DETAILS</th>
+			<th></th>
+		</tr>
+		<?php
+		foreach ( $arrUnits AS $n => $unit ) {
+			echo '<tr valign="top">';
+			echo '<th>' . $unit->id . '. ' . html($unit->unit) . '<br />[' . $unit->T . ']</th>';
+			echo '<td>';
+			echo '<table border="0">';
+
+			// properties //
+
+			echo '<tr>';
+			echo '<th>Name</th>';
+			echo '<td><input name="units['. $unit->id . '][unit]" value="' . html($unit->unit) . '" /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Plural</th>';
+			echo '<td><input name="units['. $unit->id . '][unit_plural]" value="' . html($unit->unit_plural) . '" /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Explanation</th>';
+			echo '<td><input name="units['. $unit->id . '][explanation]" value="' . html($unit->explanation) . '" /></td>';
+			echo '</tr>';
+
+			echo '<tr>';
+			echo '<th>Build ETA</th>';
+			echo '<td><input name="units['. $unit->id . '][build_eta]" value="' . html($unit->build_eta) . '" size="5" /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Travel ETA</th>';
+			echo '<td><input name="units['. $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Fuel usage</th>';
+			echo '<td><input name="units['. $unit->id . '][fuel]" value="' . html($unit->fuel) . '" size="5" /></td>';
+			echo '</tr>';
+
+			echo '<tr>';
+			echo '<th>Stealthy</th>';
+			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_stealth]" ' . ($unit->is_stealth ? 'checked' : '') . ' /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Mobile</th>';
+			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_mobile]" ' . ($unit->is_mobile ? 'checked' : '') . ' /></td>';
+			echo '</tr>';
+			echo '<tr>';
+			echo '<th>Offensive</th>';
+			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_offensive]" ' . ($unit->is_offensive ? 'checked' : '') . ' /></td>';
+			echo '</tr>';
+
+			echo '<tr>';
+			echo '<th>Steals</th>';
+			echo '<td>';
+			echo '<select name="units['. $unit->id . '][steals]">';
+			echo html_options($arrSteals, $unit->steals, '--');
+			echo '</select>';
+			echo '</td>';
+			echo '</tr>';
+
+			echo '<tr>';
+			echo '<th>R&D required</th>';
+			echo '<td>';
+			echo '<select name="units['. $unit->id . '][r_d_required_id]">';
+			echo html_options($arrRD, $unit->r_d_required_id);
+			echo '</select>';
+			echo '</td>';
+			echo '</tr>';
+
+			// costs //
+
+			foreach ( $arrResources as $id => $name ) {
+				echo '<tr>';
+				echo '<th>' . html($name) . '</th>';
+				echo '<td>';
+				echo '<input name="units['. $unit->id . '][costs][' . $id . ']" size="5" value="' . @$g_arrCosts[$unit->id][$id] . '" />';
+				echo '</td>';
+				echo '</tr>';
+			}
+
+			echo '</table>';
+			echo '</td>';
+
+			// combat stats //
+
+			echo '<td align="center">';
+			if ( in_array($unit->T, $arrOffensiveTypes) ) {
+				echo '<strong><em>' . html($unit->unit_plural) . '</em> needed to destroy one:';
+				echo '<table border="0">';
+				foreach ( $arrOffensives AS $unit2 ) {
+					$combat = @$g_arrCombatStats[$unit->id][$unit2->id];
+
+					echo '<tr>';
+					echo '<td nowrap>' . $unit2->unit . '</td>';
+					echo '<td>';
+					echo '<input name="units['. $unit->id . '][combat_stats][' . $unit2->id . '][ratio]" value="' . ( $combat ? round(1 / $combat[0], 2) : '' ) . '" size="5" />';
+					echo '<input name="units['. $unit->id . '][combat_stats][' . $unit2->id . '][target_priority]" value="'.( $combat ? $combat[1] : '' ) . '" size="1" />';
+					echo '</td>';
+					echo '</tr>';
+				}
+				echo '</table>';
+			}
+			echo '</td>';
+			echo '</tr>';
+		}
+
+		?>
+		<tr>
+			<th colspan="3"><input type="submit" value="Opslaan" /></td>
+		</tr>
+	</table>
+</form>
+
+<form method="post" action>
+	<fieldset>
+		<select name="new_unit_T"><?= html_options($types) ?></select>
+		<select name="required"><?php foreach ( $arrRD AS $id => $name ) { echo '<option value="'.$id.'">'.$name.'</option>'; } ?></select>
+		<input type="submit" value="New" />
+	</fieldset>
+</form>

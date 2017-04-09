@@ -14,7 +14,7 @@ if ( isset($_POST['order_units']) )
 	foreach ( db_select_fields('planet_resources', 'resource_id,amount', 'planet_id = '.PLANET_ID) AS $iResourceId => $iAmount ) {
 		$arrJson[] = array('html', 'res_amount_'.$iResourceId, nummertje($iAmount));
 	}
-	exit(json::encode($arrJson));
+	exit(json_encode($arrJson));
 }
 
 _header();

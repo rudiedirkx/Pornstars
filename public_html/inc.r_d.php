@@ -11,7 +11,7 @@ $arrSkills = db_fetch_fields('SELECT s.id, IFNULL((SELECT value FROM planet_skil
 if ( isset($_GET['r_d_id']) ) {
 	// Make sure that R&D exists and none other is busy
 	if ( !count($rd=db_select('d_r_d_available', 'id = '.(int)$_GET['r_d_id'].' AND T = \''.$szType.'\' LIMIT 1')) || db_count('d_r_d_available a, planet_r_d p', 'a.id = p.r_d_id AND p.planet_id = '.PLANET_ID.' AND p.eta <> 0 AND a.T = \''.$rd[0]['T'].'\'') ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Invalid ID!'),
 		)));
 	}
@@ -50,7 +50,7 @@ if ( isset($_GET['r_d_id']) ) {
 		( 0 < (SELECT COUNT(1) FROM d_r_d_per_race WHERE r_d_id = a.id AND race_id = '.$g_arrUser['race_id'].') ) AND
 		a.id NOT IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)') )
 	{
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Requirements error!'),
 		)));
 	}
@@ -60,7 +60,7 @@ if ( isset($_GET['r_d_id']) ) {
 	if ( 0 < count($e=db_select_fields('d_r_d_excludes e', 'r_d_id,r_d_id', 'r_d_excludes_id = '.(int)$rd['id'])) ) {
 		foreach ( $e AS $_eId ) {
 			if ( 0 < (int)db_count('planet_r_d','planet_id = '.PLANET_ID.' AND r_d_id = '.(int)$_eId.'') ) {
-				exit(json::encode(array(
+				exit(json_encode(array(
 					array('msg', 'Exclusions error!'),
 				)));
 			}
@@ -69,7 +69,7 @@ if ( isset($_GET['r_d_id']) ) {
 
 	// check race enabled
 	if ( !db_count('d_r_d_per_race', 'race_id = '.$g_arrUser['race_id'].' AND r_d_id = '.(int)$rd['id']) ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'R&D not included in Race Spectrum!'),
 		)));
 	}
@@ -78,7 +78,7 @@ if ( isset($_GET['r_d_id']) ) {
 	$arrRequiredSkills = db_select_fields('d_skills s, d_skills_per_r_d r', 's.id,r.required_value', 'r.skill_id = s.id AND r.r_d_id = '.(int)$rd['id'].' AND 0 < required_value');
 	foreach ( $arrRequiredSkills AS $iSkill => $iValue ) {
 		if ( (float)$iValue > (float)$arrSkills[$iSkill] ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'You\'re not skilled enough yet!'),
 		)));
 		}
@@ -101,13 +101,13 @@ if ( isset($_GET['r_d_id']) ) {
 		$arrInsert = array('r_d_id' => (int)$rd['id'], 'planet_id' => PLANET_ID, 'eta' => (int)$rd['eta']);
 		db_insert( 'planet_r_d', $arrInsert );
 		// SUCCESS
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('eval', 'document.location.reload();'),
 		)));
 	}
 
 	// FAILED
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('msg', 'You probably don\'t have enough resources!'),
 	)));
 

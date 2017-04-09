@@ -726,5 +726,3 @@ Ticker loaded in <?php echo $load_time; ?> sec
 		print_r($g_arrQueries);
 	}
 }
-
-?>

@@ -35,7 +35,7 @@ if ( isset($_POST['to_'], $_POST['donate_to_fund']) && 'fund' == $_POST['to_'] &
 
 	// You can't donate to The Fund when there's no MoF elected
 	if ( !(int)$g_arrUser['mof_planet_id'] || !db_count('planets', 'id = '.(int)$g_arrUser['mof_planet_id'].' AND galaxy_id = '.(int)$g_arrUser['galaxy_id']) ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', 'Your galaxy has no Minister of Finance!'),
 		)));
 	}
@@ -53,7 +53,7 @@ if ( isset($_POST['to_'], $_POST['donate_to_fund']) && 'fund' == $_POST['to_'] &
 #		AddGalaxyNews( NEWS_SUBJECT_GALAXY, $g_arrUser['rulername'].' of '.$g_arrUser['planetname'].' ('.$g_arrUser['x'].') donated to The Fund:<br />'.implode(', ', $arrDonations), (int)$g_arrUser['galaxy_id'] );
 #	}
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('html', 'res_amount_metal', nummertje(db_select_one('planets', 'metal', 'id = '.PLANET_ID))),
 		array('html', 'res_amount_crystal', nummertje(db_select_one('planets', 'crystal', 'id = '.PLANET_ID))),
 		array('html', 'res_amount_energy', nummertje(db_select_one('planets', 'energy', 'id = '.PLANET_ID))),
@@ -68,7 +68,7 @@ if ( isset($_POST['to_'], $_POST['to_planet_id'], $_POST['donate_to_planet']) &&
 
 	// You can only donate to other planets in this galaxy AND you can only donate when you're out of newbie state
 	if ( 0 < (int)$g_arrUser['newbie_ticks'] || !db_count('planets', 'id = '.(int)$_POST['to_planet_id'].' AND galaxy_id = '.(int)$g_arrUser['galaxy_id'].' AND id <> '.PLANET_ID) ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			array('msg', ( 0 < (int)$g_arrUser['newbie_ticks'] ? 'You can\'t donate whilst in newbie protection!' : 'Invalid planet ID!') ),
 		)));
 	}
@@ -89,7 +89,7 @@ if ( isset($_POST['to_'], $_POST['to_planet_id'], $_POST['donate_to_planet']) &&
 		AddNews( NEWS_SUBJECT_GALAXY, $g_arrUser['rulername'].' of '.$g_arrUser['planetname'].' ('.$g_arrUser['x'].') donated to you:<br />'.implode(', ', $arrDonations), (int)$_POST['to_planet_id'] );
 	}
 
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('html', 'res_amount_metal', nummertje(db_select_one('planets', 'metal', 'id = '.PLANET_ID))),
 		array('html', 'res_amount_crystal', nummertje(db_select_one('planets', 'crystal', 'id = '.PLANET_ID))),
 		array('html', 'res_amount_energy', nummertje(db_select_one('planets', 'energy', 'id = '.PLANET_ID))),
@@ -106,7 +106,7 @@ exit(print_r($arrInitRoids, true));
 
 	$arrResetFormAjaxUpdate = array('eval', "$('f_asteroids').reset();");
 	if ( 0 > min($arrInitRoids) || 0 >= (int)$g_arrUser['inactive_asteroids'] ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			$arrResetFormAjaxUpdate,
 		)));
 	}
@@ -128,7 +128,7 @@ exit(print_r($arrInitRoids, true));
 	}
 
 	if ( 0 == $iTotalInitiated ) {
-		exit(json::encode(array(
+		exit(json_encode(array(
 			$arrResetFormAjaxUpdate,
 		)));
 	}
@@ -146,7 +146,7 @@ exit(print_r($arrInitRoids, true));
 		$arrJson[] = array('html', 'res_amount_'.$r['resource_id'], nummertje($r['amount']));
 	}
 	$arrJson[] = array('html', 'next_roid_init_costs', nummertje(nextRoidCosts($iAsteroids)));
-	exit(json::encode($arrJson));
+	exit(json_encode($arrJson));
 
 }
 

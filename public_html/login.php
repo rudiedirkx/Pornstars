@@ -19,18 +19,18 @@ if ( isset($_POST['u'], $_POST['p']) ) {
 	if ( 1 === count($arrUser) ) {
 		$arrUser = $arrUser[0];
 		if ( time()-$arrUser['lastlogin'] < $CHECK_TIME_BETWEEN_LOGINS ) {
-			exit(json::encode(array(
+			exit(json_encode(array(
 				array('msg', 'There is less time than '.$CHECK_TIME_BETWEEN_LOGINS.' seconds since your last login on this account. You sure you\'re not cheating? Wait longer!!'),
 			)));
 		}
 		else if ( !empty($arrUser['activationcode']) ) {
-			exit(json::encode(array(
+			exit(json_encode(array(
 				array('msg', 'Your account has not been activated yet. Please do so!'),
 				array('location', 'activate.php?email='.urlencode($arrUser['email'])),
 			)));
 		}
 		else if ( '1' === $arrUser['closed'] ) {
-			exit(json::encode(array(
+			exit(json_encode(array(
 				array('msg', 'Your account is closed, probably due to multiing!'),
 			)));
 		}
@@ -40,7 +40,7 @@ if ( isset($_POST['u'], $_POST['p']) ) {
 			$s -= 3600*$h;
 			$m = floor($s/60);
 			$s -= 60*$m;
-			exit(json::encode(array(
+			exit(json_encode(array(
 				array('eval', 'if(confirm(\'You\\\'re in sleepmode! It ends in '.$h.' hours, '.$m.' minutes and '.$s.' seconds. Do you want to deactivate it, so you can login right now!?\')){$(\'f_login\').elements[\'sleepmode_override\'].value=\'1\';$(\'f_login\')[\'onsubmit\']();}'),
 			)));
 		}
@@ -56,7 +56,7 @@ if ( isset($_POST['u'], $_POST['p']) ) {
 			}
 			db_update( 'planets', 'sleep = 0, lastaction = '.time().', lastlogin = '.time().", unihash = '".$save['unihash']."'", 'id = '.(int)$arrUser['id'] );
 			logbook('login', 'unihash='.$save['unihash'].'&sleep='.$arrUser['sleep'].'&nextsleep='.$arrUser['nextsleep'], (int)$save['planet_id']);
-			exit(json::encode(array(
+			exit(json_encode(array(
 				array('eval', 'document.location.reload()'),
 			)));
 		}
@@ -64,7 +64,7 @@ if ( isset($_POST['u'], $_POST['p']) ) {
 	} // END 1 === count($arrUser)
 
 	// No records found for this username & password
-	exit(json::encode(array(
+	exit(json_encode(array(
 		array('msg', 'Invalid login combination!'),
 	)));
 
