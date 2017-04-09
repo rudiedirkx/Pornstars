@@ -27,6 +27,8 @@ if ( isset($_GET['new']) ) {
 	exit;
 }
 
+echo '<title>Resources</title>';
+
 $arrResources = db_select('d_resources', '1 ORDER BY id DESC');
 
 echo '<form method="post" action="" autocomplete="off"><table border="1" cellpadding="4" cellspacing="1">';

@@ -80,13 +80,14 @@ else if ( isset($_POST['name'], $_POST['T'], $_POST['eta'], $_POST['explanation'
 	exit;
 }
 
+echo '<title>R&D</title>';
+
 $RD = db_select_by_field('d_r_d_available', 'id');
 
 ?>
 <style type="text/css">
 select { font-size : 9px; } .rb { border-right : solid 4px black; }
 </style>
-<script type="text/javascript" src="/general_1_2_7.js"></script>
 <form method="post" action="" autocomplete="off">
 <table width="100%" border="0" cellpadding="3" cellspacing="0"><tr bgcolor="#dddddd"><th onclick="showColumn('r');" class="rb">RESEARCHES</th><th onclick="showColumn('d');">DEVELOPMENTS</th></tr><tr valign="top"><td class="rb" align="center">
 <?php
@@ -106,6 +107,10 @@ $g_arrForRaces = array();
 foreach ( $arrForRaces AS $rd ) {
 	$g_arrForRaces[$rd['r_d_id']][$rd['race_id']] = true;
 }
+
+$g_arrAllowsUnits = db_select_fields('d_all_units', 'r_d_required_id, COUNT(*)', '1 GROUP BY r_d_required_id');
+
+$g_arrAllowsRDResults = db_select_fields('d_r_d_results', 'done_r_d_id, COUNT(*)', '1 GROUP BY done_r_d_id');
 
 $arrRaces = db_select_fields('d_races', 'id,race', '1 ORDER BY id ASC');
 $arrSkills = db_select_fields('d_skills', 'id,skill', '1 ORDER BY id ASC');
@@ -162,7 +167,8 @@ function doToColumns(t, w) {
 
 function printRDSelect($RD, $T, $R, $S)
 {
-	global $g_arrRequires, $g_arrExcludes, $g_arrForRaces;
+	global $g_arrRequires, $g_arrExcludes, $g_arrForRaces, $g_arrAllowsRDResults, $g_arrAllowsUnits;
+
 	$szHtml = '';
 	$szHtml .= '<table width="100%" id="tbl_'.$T.'" border="0">';
 	$szHtml .= '<tr><td><br /></td><th>REQUIRED R&D</th><th>EXCLUDED R&D</th><th>ONLY FOR RACES</th><th>REQUIRED SKILLS</th></tr>';
@@ -174,10 +180,12 @@ function printRDSelect($RD, $T, $R, $S)
 		}
 		$szHtml .= '<tr'.( $n2++%2==0 ? ' bgcolor="#eeeeee"' : '' ).' valign="top">';
 
-		$szHtml .= '<td><b>'.$rd['id'].'. '.$rd['name'].'</b><br /><br />';
-		$szHtml .= 'Requires '.( !empty($g_arrRequires[$rd['id']]) ? count($g_arrRequires[$rd['id']]) : '0' ).'<br />';
-		$szHtml .= 'Excludes '.( !empty($g_arrExcludes[$rd['id']]) ? count($g_arrExcludes[$rd['id']]) : '0' ).'<br />';
-		$szHtml .= 'Available to '.( !empty($g_arrForRaces[$rd['id']]) ? count($g_arrForRaces[$rd['id']]) : '0' );
+		$szHtml .= '<td><b>' . $rd['id'] . '. ' . $rd['name'] . '</b><br /><br />';
+		$szHtml .= 'Requires&nbsp;' . count((array) @$g_arrRequires[ $rd['id'] ]) . '<br />';
+		$szHtml .= 'Excludes&nbsp;' . count((array) @$g_arrExcludes[ $rd['id'] ]) . '<br />';
+		$szHtml .= 'Available to&nbsp;' . count((array) @$g_arrForRaces[ $rd['id'] ]) . '<br />';
+		$szHtml .= 'R&D&nbsp;results:&nbsp;' . (int) @$g_arrAllowsRDResults[ $rd['id'] ] . '<br />';
+		$szHtml .= 'Units:&nbsp;' . (int) @$g_arrAllowsUnits[ $rd['id'] ] . '<br />';
 		$szHtml .= '</td>';
 
 		// requires //
@@ -185,7 +193,7 @@ function printRDSelect($RD, $T, $R, $S)
 		$szOptions = '';
 		foreach ( $RD AS $_rd ) {
 			if ( $_rd['id'] !== $rd['id'] ) {
-				$szOptions .= '<option'.( !empty($g_arrRequires[$rd['id']][$_rd['id']]) ? ' selected="selected"' : '' ).' value="'.$_rd['id'].'">'.strtoupper($_rd['T']).' '.$_rd['id'].'. '.$_rd['name'].'</option>';
+				$szOptions .= '<option'.( !empty($g_arrRequires[ $rd['id'] ][$_rd['id']]) ? ' selected="selected"' : '' ).' value="'.$_rd['id'].'">'.strtoupper($_rd['T']).' '.$_rd['id'].'. '.$_rd['name'].'</option>';
 			}
 		}
 		$szHtml .= $szOptions;
@@ -196,7 +204,7 @@ function printRDSelect($RD, $T, $R, $S)
 		$szOptions = '';
 		foreach ( $RD AS $_rd ) {
 			if ( $_rd['id'] !== $rd['id'] ) {
-				$szOptions .= '<option'.( !empty($g_arrExcludes[$rd['id']][$_rd['id']]) ? ' selected="selected"' : '' ).' value="'.$_rd['id'].'">'.strtoupper($_rd['T']).' '.$_rd['id'].'. '.$_rd['name'].'</option>';
+				$szOptions .= '<option'.( !empty($g_arrExcludes[ $rd['id'] ][$_rd['id']]) ? ' selected="selected"' : '' ).' value="'.$_rd['id'].'">'.strtoupper($_rd['T']).' '.$_rd['id'].'. '.$_rd['name'].'</option>';
 			}
 		}
 		$szHtml .= $szOptions;
@@ -206,7 +214,7 @@ function printRDSelect($RD, $T, $R, $S)
 		$szHtml .= '<td align="center"><select size="'.count($R).'" id="for_race_'.$rd['id'].'" name="per_race['.$rd['id'].'][]" multiple="1">';
 		$szOptions = '';
 		foreach ( $R AS $iRace => $szRace ) {
-			$szOptions .= '<option'.( !empty($g_arrForRaces[$rd['id']][$iRace]) ? ' selected="selected"' : '' ).' value="'.$iRace.'">'.$szRace.'</option>';
+			$szOptions .= '<option'.( !empty($g_arrForRaces[ $rd['id'] ][$iRace]) ? ' selected="selected"' : '' ).' value="'.$iRace.'">'.$szRace.'</option>';
 		}
 		$szHtml .= $szOptions;
 		$szHtml .= '</select></td>';

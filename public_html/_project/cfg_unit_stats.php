@@ -53,6 +53,8 @@ if ( isset($_GET['new_unit_T'], $_GET['required']) ) {
 	exit;
 }
 
+echo '<title>Units</title>';
+
 $arrRD = db_select_fields('d_r_d_available', 'id, CONCAT(UPPER(T),\': \',name)', '1 ORDER BY T ASC, id ASC');
 
 ?>
