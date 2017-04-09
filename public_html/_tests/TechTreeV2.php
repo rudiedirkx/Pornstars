@@ -1,67 +1,91 @@
 <?php
 
-require_once('../inc.connect.php');
+require_once '../inc.config.php';
 
 ?>
 <html>
 
 <head>
 <title>TechTree V2</title>
-<style type="text/css">
+<style>
 table {
-	border			: solid 1px #555;
-	border-width	: 0 0 1px 1px;
+	border-collapse: separate;
+	border-spacing: 0 5px;
 }
-td {
-	padding			: 0 4px;
+td, th {
+	border: solid 1px #555;
+	border-width: 1px 1px 1px 0;
+	padding: 3px;
+}
+th {
+	cursor: pointer;
+}
+th:not(.double) {
+	background-color: #eee;
+}
+th.focus {
+	background-color: #ccc;
 }
 </style>
 </head>
 
 <body>
 
-<?php echo getChilds(); ?>
+<?= getChildren() ?>
+
+<script>
+document.onclick = function(e) {
+	var cell = e.target;
+	if (!cell.dataset.rdId) return;
+
+	var unfocus = [].slice.call(document.querySelectorAll('.focus'));
+	unfocus.forEach(function(cell) {
+		cell.classList.remove('focus');
+	});
+
+	if (unfocus.indexOf(cell) < 0) {
+		var focus = [].slice.call(document.querySelectorAll('[data-rd-id="' + cell.dataset.rdId + '"]'));
+		focus.forEach(function(cell) {
+			cell.classList.add('focus');
+		});
+	}
+};
+</script>
 
 </body>
 
 </html>
 <?php
 
-function getChilds( $f_iParent = null, &$arrDone = array() ) {
-	$szHtml = '';
+function getChildren( $f_iParent = null, &$arrDone = array(0) ) {
 	if ( is_null($f_iParent) ) {
-		$RD = db_select('r_d_available a','0=(SELECT COUNT(1) FROM r_d_requires WHERE r_d_id=a.id)');
+		$RD = db_select('d_r_d_available a','NOT EXISTS (SELECT * FROM d_r_d_requires WHERE r_d_id = a.id)');
 	}
 	else {
-		$RD = db_select( 'r_d_available a, r_d_requires r','a.id = r.r_d_id AND r.r_d_requires_id = '.(int)$f_iParent.' AND a.id NOT IN(\''.implode("','", $arrDone).'\')' );
+		$RD = db_select('d_r_d_available a, d_r_d_requires r','a.id = r.r_d_id AND r.r_d_requires_id = ' . $f_iParent . " /*AND a.id NOT IN(" . implode(", ", $arrDone) . ")*/");
 	}
-	if ( count($RD) )
-	{
-		$szHtml .= '<table border="0" cellpadding="0" cellspacing="0">';
+
+	if ( count($RD) ) {
+		$szHtml = '<table>';
 		foreach ( $RD AS $rd ) {
-			$arrDone[$rd['id']] = $rd['id'];
-			$szHtml .= '<tr valign="top"><td><b>'.$rd['name'].'</b></td>';
-			$c = getChilds($rd['id'], $arrDone);
-			if ( $c ) {
-				$szHtml .= '<td>'.$c.'</td>';
+			$name = strtoupper($rd['T']) . '. ' . $rd['name'];
+
+			if ( isset($arrDone[ $rd['id'] ]) ) {
+				$szHtml .= '<tr><th data-rd-id="' . $rd['id'] . '" class="double">' . html($name) . '</th></tr>';
 			}
-			$szHtml .= '</tr>';
+			else {
+				$arrDone[ $rd['id'] ] = $rd['id'];
+				$szHtml .= '<tr><th data-rd-id="' . $rd['id'] . '">' . html($name) . '</th>';
+				$szChildrenHtml = getChildren($rd['id'], $arrDone);
+				if ( $szChildrenHtml ) {
+					$szHtml .= '<td>' . $szChildrenHtml . '</td>';
+				}
+				$szHtml .= '</tr>';
+			}
 		}
 		$szHtml .= '</table>';
+		return $szHtml;
 	}
-	return $szHtml;
-}
 
-function db_select($szTable,$szWhere='') {
-	return db_fetch('SELECT * FROM '.$szTable.''.($szWhere?' WHERE '.$szWhere:'').';');
+	return '';
 }
-function db_fetch($szQuery) {
-	$q = mysql_query($szQuery) or die(mysql_error());
-	$a = array();
-	while ( $r = mysql_fetch_assoc($q) ) {
-		$a[] = $r;
-	}
-	return $a;
-}
-
-?>

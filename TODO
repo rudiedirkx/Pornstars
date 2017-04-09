@@ -1,10 +1,16 @@
-- TICKER
-  - Het combat gedeelte upgraden (kan vast sneller)
-  - Combat: roids verzamelen, ships updaten, etc
+* Same scans, different costs (3x roidscan, 2x power)
 
-- PREFERENCES
-  - To set whether saving INTEL is automatic. If so, every SCAN will be saved, i$
 
-- MULTITRACKER
-  - Inactive planets er in en IP adressen op kleur
+
+
+
+* TICKER
+    * Het combat gedeelte upgraden (kan vast sneller)
+    * Combat: roids verzamelen, ships updaten, etc
+
+* PREFERENCES
+    * To set whether saving INTEL is automatic. If so, every SCAN will be saved, i$
+
+* MULTITRACKER
+    * Inactive planets er in en IP adressen op kleur
 
