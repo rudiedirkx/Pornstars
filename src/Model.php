@@ -25,7 +25,9 @@ class Model {
 
 	protected function fill( array $data = [] ) {
 		foreach ( $data as $key => $value ) {
-			$this->$key = $value;
+			if ( !is_int($key) ) {
+				$this->$key = $value;
+			}
 		}
 	}
 

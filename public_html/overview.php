@@ -111,11 +111,13 @@ _header();
 		<tr>
 			<td><?= html($resource->resource) ?></td>
 			<td><?= nummertje($resource->asteroids) ?></td>
+			<td>+ <?= nummertje($g_user->ticker->getIncome($resource)) ?></td>
 		</tr>
 	<? endforeach ?>
 	<tr>
 		<td>Inactive asteroids</td>
 		<td><?= nummertje($g_user->inactive_asteroids) ?></td>
+		<td></td>
 	</tr>
 </table>
 <br />

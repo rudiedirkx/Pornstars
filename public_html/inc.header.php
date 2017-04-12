@@ -81,7 +81,6 @@ $objLeaderPlanet = Planet::first('1 ORDER BY score DESC');
 $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" href="galaxy.php?x=' . $objLeaderPlanet->x . '&y=' . $objLeaderPlanet->y . '">' . ( PLANET_ID == $objLeaderPlanet->id ? '<b>You</b>' : implode(':', $objLeaderPlanet->coordinates) ) . '</a>';
 
 // @todo Incoming fleets
-
 // $arrIncomingFleets = db_fetch('SELECT f.*, concat(p.rulername,\'</b> of <b>\',p.planetname,\'</b> (\',g.x,\':\',g.y,\':\',p.z,\')\') AS owner, (SELECT IFNULL(SUM(amount),0) FROM ships_in_fleets WHERE fleet_id = f.id) AS num_units FROM planets p, fleets f, galaxies g WHERE f.activated = \'1\' AND g.id = p.galaxy_id AND f.owner_planet_id = p.id AND destination_planet_id = '.PLANET_ID.' AND ( action = \'attack\' OR action = \'defend\' ) ORDER BY action ASC');
 
 ?>
@@ -90,8 +89,15 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 		<td colspan="4" onclick="location.reload()">
 			<?= html(strtoupper($st)) ?>
 		</td>
-		<td colspan="2" <?= $tickdif > $g_prefs->tickertime ? ' style="color: red"' : '' ?>>
-			<?= Verschil_In_Tijd($tickdif) ?> since last tick (<?= $g_prefs->tickertime ?>s)
+		<td colspan="2">
+			<a
+				<?= $tickdif > $g_prefs->tickertime ? 'style="color: red"' : '' ?>
+				href="tick.php"
+				target="_blank"
+				onclick="return (x => { x=new XMLHttpRequest; x.open('get',this.href); x.onload=e=>location.reload(); x.send(); })(), false"
+			>
+				<?= Verschil_In_Tijd($tickdif) ?> since last tick (<?= $g_prefs->tickertime ?>s)
+			</a>
 		</td>
 	</tr>
 	<tr>

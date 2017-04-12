@@ -6,9 +6,11 @@ use rdx\ps\Fleet;
 use rdx\ps\Galaxy;
 use rdx\ps\Mail;
 use rdx\ps\News;
+use rdx\ps\PlanetTicker;
 use rdx\ps\ResearchDevelopment;
 use rdx\ps\Resource;
 use rdx\ps\Skill;
+use rdx\ps\Ticker;
 use rdx\ps\Unit;
 
 class Planet extends Model {
@@ -143,6 +145,10 @@ class Planet extends Model {
 		return Galaxy::find($this->galaxy_id);
 	}
 
+	public function get_ticker() {
+		return new PlanetTicker(Ticker::instance(), $this);
+	}
+
 	/**
 	 * Logic
 	 */
@@ -198,6 +204,14 @@ class Planet extends Model {
 			'params' => [$type, $this->id],
 			'class' => ResearchDevelopment::class,
 		])->first();
+	}
+
+	public function addResource( $rid, $amount ) {
+		global $db;
+		return $db->update('planet_resources', 'amount = amount + ' . (int)$amount, [
+			'planet_id' => $this->id,
+			'resource_id' => $rid,
+		]);
 	}
 
 	public function checkPassword( $password ) {
