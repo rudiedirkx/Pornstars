@@ -1,17 +1,13 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
 ?>
 <title>Manual</title>
 <body bgcolor=black>
-<link type="text/css" rel=stylesheet href="css/styles.css">
+<link rel=stylesheet href="css/styles.css" />
 <center>
 
-I'm still working on the manual...<br />
-<br />
-This is what I have so far:<br />
-<br />
 <br />
 <a href="manual.help.php">H E L P</a><br />
 <br />

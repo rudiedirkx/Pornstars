@@ -1,6 +1,6 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
 function makeRDcell( $rd, $extra = '', $w = 0 ) {
 	$html = '';
@@ -197,7 +197,7 @@ foreach ( $arrTable AS $arrRow ) {
 			$arrEnables = array();
 			if ( $u=db_select_fields('d_all_units', 'id,unit', 'r_d_required_id = '.(int)$rd['id']) && 0 < count($u) ) {
 var_dump($u);
-				$ena = $u;	
+				$ena = $u;
 				$r = array_pop($ena);
 				$arrEnables[] = 'Enables ' . ( count($ena) ? '`'.implode('`, `', $ena) . '` and ' : '' ) . '`' . $r . '`';
 			}

@@ -1,49 +1,24 @@
 <?php
 
-require_once('inc.config.php');
-
+require 'inc.bootstrap.php';
 
 if ( isset($_GET['ps_page']) && $_GET['ps_page'] == 'playtitelbalk' ) {
 	die("<html><head><title>".$GAMENAME."</title><link rel=stylesheet href=\"css/styles.css\" /></head><body bgcolor=\"black\"><base target=\"_parent\" /><table border=\"0\" cellpadding=\"5\" cellspacing=\"0\" width=\"828\" height=\"100%\" style=\"border-bottom:solid 0px #444444;\"><tr><td align=\"center\"><a href=\"./\">Index</a> &nbsp; || &nbsp; <a href=\"login.php\">Login</a> &nbsp; || &nbsp; <a href=\"signup.php\">Signup</a> &nbsp;||&nbsp; <a href=\"./\"><b>Play</b></a> &nbsp;||&nbsp; Ticker: <a href=\"tickah.php?SET_USER_IS_TICKER=1\" target=\"t0\">ON</a> / <a href=\"tickah.php?SET_USER_IS_TICKER=0\" target=\"t0\">OFF</a> &nbsp;||&nbsp; <a href=\"comp.php\" target=\"_parent\">Administration</a></td></tr></table></body></html>");
 }
 
-
 if ( logincheck(false) ) {
-	?>
-<!doctype html>
-<html>
-
-<head>
-	<meta charset="utf-8" />
-	<link rel="shortcut icon" href="/favicon.ico" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-	<title><?= $GAMENAME ?></title>
-</head>
-
-<frameset rows="50,*" frameborder="0" border="0">
-	<frameset cols="220,*" frameborder="0" border="0">
-		<frame name="t0" SRC="<?php echo !empty($_SESSION['ps_is_ticker']) ? 'tickah.php?special=yes' : 'leeg.php'; ?>" noresize="noresize" marginwidth="0" marginheight="0" scrolling="no" frameborder="0">
-		<frame name="a0" SRC="index.php?ps_page=playtitelbalk" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
-	</frameset>
-	<frameset cols="220,*" frameborder="0" border="0">
-		<frame name="a1" SRC="menu.php" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
-		<frame name="a9" SRC="overview.php" noresize="noresize" marginwidth="0" marginheight="0" scrolling="auto" frameborder="0">
-	</frameset>
-</frameset>
-
-</html>
-	<?php
-
-	exit;
+	return do_redirect('overview');
 }
 
 
 echo $indextitel;
 
-if ($tickdif > $TICKERTIME)
+if ($tickdif > $TICKERTIME) {
 	$tickertimetxt = "<font color=red>".(($tickdif>=24*3600)?(date("d",$tickdif)-1)." dagen, ":"").(date("H",$tickdif)-1)."h ".date("i\m s\s",$tickdif)."</font>";
-else
+}
+else {
 	$tickertimetxt = "$tickdif seconds";
+}
 
 $tickertimetxt = (($tickdif > $TICKERTIME)?"<font color=red>":"") . Verschil_In_Tijd($tickdif,' days',' hours',' minutes',' seconds') . (($tickdif > $TICKERTIME)?"</font>":"");
 
@@ -75,10 +50,8 @@ MyT = <?php echo $MyT; ?><br />
 <br />
 <?php
 
-echo db_count('planets').' registered accounts<br />';
-
-echo db_count('planets', 'lastaction > '.(time()-180))." online users.<br />Time: ".date('H:i:s')."<br />";
+echo $db->count('planets') . ' registered accounts<br />';
+echo $db->count('planets', 'lastaction > ?', [time()-180]) . " online users.<br />";
+echo "Time: " . date('H:i:s') . "<br />";
 
 unset($_SESSION['ps_msg']);
-
-?>

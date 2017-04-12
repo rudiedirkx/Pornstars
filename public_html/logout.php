@@ -1,11 +1,10 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
 if ( logincheck(false) ) {
-	db_update('planets', "unihash = ''", 'id = '.PLANET_ID);
-	unset($_SESSION[$sessionname]);
+	$g_user->update(['unihash' => '']);
+	$_SESSION = [];
 }
 
-?>
-<script type="text/javascript">top.location = './';</script>
+return do_redirect('index');

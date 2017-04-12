@@ -1,12 +1,10 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
+
 logincheck();
 
-$szType = 'd';
-$szName = 'Constructions';
-$szAllRDDone = 'All constructions done!';
+$rdType = 'd';
+$pageTitle = 'Construction';
 
-require_once('inc.r_d.php');
-
-?>
+include 'inc.r_d.php';

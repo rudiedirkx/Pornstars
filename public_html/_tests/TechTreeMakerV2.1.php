@@ -1,8 +1,6 @@
 <?php
 
-require_once '../inc.config.php';
-
-// @todo
+require '../inc.bootstrap.php';
 
 ?>
 <html>
@@ -41,6 +39,10 @@ body, table {
 	text-align: center;
 	font-weight: bold;
 	vertical-align: middle;
+}
+#techtree td.tt-cell.r:before,
+#techtree td.tt-cell.d:before {
+	content: attr(data-rd-id) ". ";
 }
 #techtree td.tt-cell.r {
 	background-color: #ffb0b0;

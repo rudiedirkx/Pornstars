@@ -1,10 +1,5 @@
 <?php
 
-require_once('inc.config.php');
-
-$defaultTitle	= '';
-$defaultTarget	= 'a9';
-
 $menu = array(
 	array( 'Overview',			'overview.php',			'Overview :: check it!' ),
 	array( 'Manual',			'manual.php',			'Overview of the manual' ),
@@ -36,40 +31,14 @@ $menu = array(
 );
 
 ?>
-<html>
-
-<head>
-<link rel="stylesheet" type="text/css" href="css/styles.css" />
-<style type="text/css">
-ul#mmenu,
-ul#mmenu li {
-	list-style			: none;
-	margin				: 0;
-	padding				: 0;
-}
-ul#mmenu {
-	margin				: 5px;
-}
-ul#mmenu li {
-	margin-top			: 1px;
-}
-ul#mmenu li a {
-	display				: block;
-	background-color	: #111;
-	padding				: 3px;
-}
-ul#mmenu li a:hover {
-	background-color	: #e80;
-	color				: #111;
-}
-</style>
-</head>
-
-<body style="margin:0;background-color:black;">
-<img src="images/pornstars.jpg" border="0" onclick="window.location.reload();"><br />
-<ul id="mmenu"><?php foreach ( $menu AS $r ) {
-	echo '<li>'.( is_array($r) ? '<a href="'.$r[1].'" target="'.( empty($r[3]) ? 'a9' : $r[3] ).'">'.$r[0].'</a>' : '<br />' ).'</li>';
-} ?></ul>
-</body>
-
-</html>
+<ul id="mmenu">
+	<? foreach ( $menu AS $item ): ?>
+		<li>
+			<? if ( $item ): ?>
+				<a href="<?= html($item[1]) ?>"><?= html($item[0]) ?></a>
+			<? else: ?>
+				&nbsp;
+			<? endif ?>
+		</li>
+	<? endforeach ?>
+</ul>

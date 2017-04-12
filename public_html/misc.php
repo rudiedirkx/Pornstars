@@ -17,7 +17,7 @@ if ( isset($_GET['pwdvergeten'], $_GET['email'], $_GET['password']) )
 	$save['uid'] = $UID;
 	$save['ingelogd'] = TRUE;
 	$save['uniek'] = md5(time());
-	$_SESSION[$sessionname] = $save;
+	$_SESSION = $save + $_SESSION;
 
 	if ($i['sleep']>time())
 		db_query("UPDATE $TABLE[users] SET nextsleep=".($time+14*3600)." WHERE id='$UID'");

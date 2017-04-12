@@ -1,5 +1,7 @@
 <?php
 
+use rdx\ps\Planet;
+
 function html( $text ) {
 	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
 }
@@ -10,9 +12,16 @@ function get_url( $path, $query = array() ) {
 	return $path . $query;
 }
 
-function do_redirect( $path, $query = array() ) {
+function do_json( $data ) {
+	header('Content-type: text/json; charset=utf-8');
+	echo json_encode($data);
+	exit;
+}
+
+function do_redirect( $path = null, $query = array() ) {
 	$url = get_url($path, $query);
 	header('Location: ' . $url);
+	exit;
 }
 
 function html_options( $options, $selected = null, $empty = '', $datalist = false ) {
@@ -27,6 +36,32 @@ function html_options( $options, $selected = null, $empty = '', $datalist = fals
 		$html .= '<option value="' . $value . '"' . $isSelected . '>' . $label . '</option>';
 	}
 	return $html;
+}
+
+
+
+function createToken( $name ) {
+	if ( $_SESSION['unihash'] ) {
+		return sha1($name . ':' . $_SESSION['unihash']);
+	}
+
+	return '';
+}
+
+function checkToken( $name, $token = null ) {
+	$token === null and $token = (string) $_GET['_token'];
+	return strlen($token) && $token === createToken($name);
+}
+
+function validTokenOrFail( $name, $token = null ) {
+	if ( !checkToken($name, $token) ) {
+		accessFail('token');
+	}
+}
+
+function accessFail( $message ) {
+	echo "Access denied: $message\n";
+	exit;
 }
 
 
@@ -50,12 +85,16 @@ function db_transaction_update( $f_arrUpdates, $f_szIfField, $f_szUpdateField ) 
 
 
 function _footer() {
-	global $g_arrUser, $st, $stF, $titlearray;
-	require_once('inc.footer.php');
+	global $g_user, $g_prefs;
+
+	include 'inc.footer.php';
 }
+
 function _header() {
-	global $g_arrUser, $tickdif, $GAMEPREFS, $titlearray;
-	require_once('inc.header.php');
+	global $g_user, $g_prefs;
+	global $tickdif, $GAMEPREFS;
+
+	include 'inc.header.php';
 }
 
 function rand_string( $f_iLength = 8 )
@@ -118,25 +157,39 @@ function moveShipsFromFleetToFleet( $f_iShipId, $f_iAmount, $f_szFromFleet, $f_s
 
 
 function logincheck( $f_bAct = true ) {
-	global $sessionname, $g_arrUser, $g_arrResources;
+	global $g_user;
+
 	if ( defined('PLANET_ID') ) {
 		return true;
 	}
-	if ( !isset($_SESSION[$sessionname]['planet_id'], $_SESSION[$sessionname]['unihash']) || !count($arrUsers=db_select('d_races r, galaxies g, planets p', "g.id = p.galaxy_id AND r.id = p.race_id AND p.id = ".(int)$_SESSION[$sessionname]['planet_id']." AND p.unihash = '".addslashes($_SESSION[$sessionname]['unihash'])."' AND closed != '1' LIMIT 1")) ) {
-		unset($_SESSION[$sessionname]);
-		if ( $f_bAct ) {
-			exit('<a href="./login.php">Invalid session!</a>');
+
+	if ( isset($_SESSION['planet_id'], $_SESSION['unihash']) ) {
+		if ( $objPlanet = Planet::find($_SESSION['planet_id']) ) {
+			if ( $objPlanet->unihash == $_SESSION['unihash'] && !$objPlanet->closed ) {
+
+				// @todo Global user
+				// @todo Global resources
+				$g_user = $objPlanet;
+
+				define( 'PLANET_ID', (int) $objPlanet->id);
+
+				if ( $objPlanet->lastaction < time() - 60 ) {
+					$objPlanet->update(['lastaction' => time()]);
+				}
+
+				return true;
+
+			}
 		}
-		return false;
 	}
-	$g_arrUser = $arrUsers[0];
-	if ( !defined('PLANET_ID') ) {
-		define( 'PLANET_ID', (int)$g_arrUser['id'] );
+
+	$_SESSION = [];
+
+	if ( $f_bAct ) {
+		exit('<a href="login.php">Invalid session!</a>');
 	}
-	$g_arrResources = db_select_by_field('d_resources r, planet_resources p', 'id', 'p.planet_id = '.PLANET_ID.' AND p.resource_id = r.id ORDER BY r.id ASC');
-echo db_error();
-	db_update('planets', 'lastaction = '.time(), 'id = '.PLANET_ID);
-	return true;
+
+	return false;
 }
 
 
@@ -494,8 +547,8 @@ function getProductionForm( $f_szTypes, $f_iPlanetId = PLANET_ID ) {
 } // END getProductionForm()
 
 
-function Go( $to = PARENT_SCRIPT_NAME, $die = 0 )
-{
+function Go( $to = PARENT_SCRIPT_NAME, $die = 0 ) {
+	// @todo Replace by do_redirect()
 	if ($die)
 	{
 		die("$to<br><a href=\"$to\">Go There</a>");

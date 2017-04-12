@@ -1,12 +1,9 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
-$ADMINPWD1 = "8007db9d948c88b6495a56fbe91b560f";
-$ADMINPWD2 = "e3c2f9720cfc394a8975a1c87f3d949f";
-
-if ( !isset($_SESSION[$sessionname.'_ADMIN']) || (md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1 && md5($_SESSION[$sessionname.'_ADMIN']) != $ADMINPWD1) ) {
-	Go('comp.php');
+if ( !validateAdminPassword($_SESSION['ADMIN']) ) {
+	return do_redirect('comp');
 }
 
 if ( isset($_GET['gethostbyaddr']) ) {

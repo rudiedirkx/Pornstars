@@ -1,126 +1,90 @@
-pre.phperror b {
-	/*display : none;*/
+/**
+ * LAYOUT
+ */
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	max-width: 1000px;
+}
+body > .flex {
+	display: flex;
+}
+#right {
+	flex: 1;
 }
 
-form {
-	margin				: 0;
-	padding				: 0;
-}
-table.widecells td,
-table.widecells th {
-	padding				: 3px 7px;
-}
-div.header {
-	padding				: 3px;
-	background-color	: #111111;
-	border				: solid 1px #444444;
-	color				: #3388dd;
-	font-size			: 11px;
-	font-weight			: bold;
-	text-align			: center;
-}
-.b {
-	font-weight			: bold;
-}
-.c {
-	text-align			: center;
-}
-.right {
-	text-align			: right;
-}
-.left {
-	text-align			: left;
-}
-.h {
-	cursor				: pointer;
-}
-.bt,
-.bt td,
-.bt th {
-	border-top			: solid 1px #333;
-}
-.bb,
-.bb td,
-.bb th {
-	border-bottom		: solid 1px #333;
-}
-.br {
-	border-right		: solid 1px #333;
-}
-.bl {
-	border-left			: solid 1px #333;
+/**
+ * COMMONS
+ */
+
+html, body, table {
+	background: black;
+	color: white;
+	font-family: sans-serif;
 }
 
-body,table {
-	font-family			: verdana;
-	font-size			: 11px;
-	color				: #ddd;
-	background-color	: #000;
-	cursor				: default;
+a,
+label {
+	color: #e80;
+	text-decoration: none;
+	cursor: pointer;
 }
-input,
-select {
-	background-color	: #111;
-	font-family			: verdana;
-	font-size			: 10px;
-	color				: #ccc;
-	cursor				: default;
-	padding				: 1px 2px;
-}
-textarea {
-	font-family:courier new;
-	font-size:10pt;
-	background-color:#111;
-	color:#ccc;
-	overflow:auto;
-}
-a, label {
-	color:#e80;
-	text-decoration:none;
-	cursor:pointer;
-}
-a:hover {
-	color:#888;
-	text-decoration:none;
-	cursor:pointer;
-}
-.m {
-	cursor:pointer;
-	text-align:center;
-}
-.n {
-	cursor:pointer;
-	text-align:center;
-}
-.over {
-	cursor:pointer;
-	text-align:center;
-	color:black;
-	background:#ee8800;
-}
-.mout {
-	cursor:pointer;
-	text-align:center;
-}
-.b4 {
-	border:solid 1px #444444;
-}
-.title {
-	border-bottom: solid 1px #444444;
+a:hover,
+a:focus {
+	color: #888;
+	text-decoration: none;
 }
 
-.totals {
-	border-top: solid 1px #444444;
+/**
+ * MAIN MENU
+ */
+
+ul#mmenu,
+ul#mmenu li {
+     list-style          : none;
+     margin              : 0;
+     padding             : 0;
+}
+ul#mmenu {
+     margin              : 5px;
+}
+ul#mmenu li {
+     margin-top          : 1px;
+}
+ul#mmenu li a {
+     display             : block;
+     background-color    : #111;
+     padding             : 3px;
+}
+ul#mmenu li a:hover {
+     background-color    : #e80;
+     color               : #111;
 }
 
-div.header {
-	border:solid 1px #444444;
-	background:#111111;
-	color:#3388dd;
-	font-size:11px;
-	font-weight:bold;
-	text-align:center;
+/**
+ * TABLES
+ */
+
+table {
+	border-collapse: collapse;
+	width: 100%;
 }
-td.header {
-	background-color	: lime;
+td, th {
+	border: solid 2px #444;
+	padding: 4px 6px;
+}
+
+/**
+ * HEADINGS
+ */
+
+h1,
+h2 {
+	border: solid 1px #444444;
+	background: #111111;
+	color: #3388dd;
+	font-weight: bold;
+	text-align: center;
 }

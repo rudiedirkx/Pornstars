@@ -1,6 +1,6 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
 ?>
 

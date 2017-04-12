@@ -6,8 +6,7 @@ if ( logincheck(false) ) {
 	Go('./');
 }
 
-if ( !$GAMEPREFS['general_signup'] && !$_SESSION[$sessionname.'_ADMIN'] )
-{
+if ( !$GAMEPREFS['general_signup'] && !$_SESSION['ADMIN'] ) {
 	$tickerstatus = ($GAMEPREFS['ticker_on']) ? "ON" : "OFF";
 	$loginstatus = ($GAMEPREFS['general_login']) ? "" : "NOT";
 	Save_Msg("<b>Signup is closed for the moment.</b><br>Ticker is <b>$tickerstatus</b>!<br>To login is <b>$loginstatus possible</b>!","red");

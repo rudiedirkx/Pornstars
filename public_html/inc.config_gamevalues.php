@@ -1,16 +1,18 @@
 <?php
 
+use rdx\ps\Resource;
+
 $indextitel = '<table border="0" cellpadding="5" cellspacing="0" width="100%"><tr valign="middle"><td align="center"><a href="./">Index</a> &nbsp; || &nbsp; <a href="login.php">Login</a> &nbsp; || &nbsp; <a href="signup.php">Signup</a> &nbsp;||&nbsp; <a href="./"><b>Play</b></a> &nbsp;||&nbsp; <a href="comp.php" target="_parent">Administration</a></td></tr></table>';
 
 // Misc
-$PWD_MUST_CHANGE			= (bool)(int)$GAMEPREFS['must_change_pwd'];			// Password must be changed in order to play when set to TRUE
-$CHECK_TIME_BETWEEN_LOGINS	= (int)$GAMEPREFS['between_logins_time'];			// If 0, disabled. Else you can't login for this amount of seconds after your last login
-$PLANETS_IN_ONE_GALAXY		= (int)$GAMEPREFS['planets_per_galaxy'];			// Duh
-$RESCON_NEWS_ON				= (bool)(int)$GAMEPREFS['news_for_done_rd'];			// If TRUE, the engine will check R&D per planet (takes a bit longer, but sends a Msg when finished)
-$GALFORUM_WAIT_FOR_TURN		= (bool)(int)$GAMEPREFS['galaxy_forum_wait_for_turn'];	// If TRUE, you cant post 2 posts after eachother without anyone posting in between
+$PWD_MUST_CHANGE			= (bool) $g_prefs->must_change_pwd;			// Password must be changed in order to play when set to TRUE
+$CHECK_TIME_BETWEEN_LOGINS	= (int) $g_prefs->between_logins_time;			// If 0, disabled. Else you can't login for this amount of seconds after your last login
+$PLANETS_IN_ONE_GALAXY		= (int) $g_prefs->planets_per_galaxy;			// Duh
+$RESCON_NEWS_ON				= (bool)(int) $g_prefs->news_for_done_rd;			// If TRUE, the engine will check R&D per planet (takes a bit longer, but sends a Msg when finished)
+$GALFORUM_WAIT_FOR_TURN		= (bool)(int) $g_prefs->galaxy_forum_wait_for_turn;	// If TRUE, you cant post 2 posts after eachother without anyone posting in between
 
-$FLEETNAMES					= explode(',', (trim($GAMEPREFS['fleetnames'])?$GAMEPREFS['fleetnames']:'Base'));			// The names for BASEFLEET and $NUM_OUTGOING_FLEETS outgoing fleets
-$NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$GAMEPREFS['num_outgoing_fleets']);			// Duh
+$FLEETNAMES					= explode(',', (trim($g_prefs->fleetnames) ? $g_prefs->fleetnames : 'Base'));			// The names for BASEFLEET and $NUM_OUTGOING_FLEETS outgoing fleets
+$NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$g_prefs->num_outgoing_fleets);			// Duh
 
 
 // foreach ( db_select_fields( 'd_news_subjects', 'id,const_name', '1 ORDER BY id ASC' ) AS $iSubjectId => $szConstant ) {
@@ -19,10 +21,10 @@ $NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$GAMEPREFS['num_outgoing_
 
 
 // Preferences
-$TICKERTIME		= $GAMEPREFS['tickertime'];
-$tickertime		= $GAMEPREFS['tickertime'];
-$MyT			= $GAMEPREFS['tickcount'];
-$GAMENAME		= $GAMEPREFS['gamename'];
+$TICKERTIME		= $g_prefs->tickertime;
+$tickertime		= $g_prefs->tickertime;
+$MyT			= $g_prefs->tickcount;
+$GAMENAME		= $g_prefs->gamename;
 
 $showcolors['metal']	= '#555555';
 $showcolors['crystal']	= '#2244dd';
@@ -40,10 +42,10 @@ $scansavecosts['crystal']	= 20000;
 $scansavecosts['energy']	= 50000;
 
 // Spec Ops
-$HAVOC_RESDEV		= (bool)(int)$GAMEPREFS['havoc_r_d'];
-$HAVOC_RESDEV_ETA	= max(0, (int)$GAMEPREFS['r_d_eta_in_havoc']);
-$HAVOC_MILITARY		= (bool)(int)$GAMEPREFS['havoc_military'];
-$HAVOC_PRODUCTION	= (bool)(int)$GAMEPREFS['havoc_production'];
+$HAVOC_RESDEV		= (bool)(int)$g_prefs->havoc_r_d;
+$HAVOC_RESDEV_ETA	= max(0, (int)$g_prefs->r_d_eta_in_havoc);
+$HAVOC_MILITARY		= (bool)(int)$g_prefs->havoc_military;
+$HAVOC_PRODUCTION	= (bool)(int)$g_prefs->havoc_production;
 
 $titlearray = array(
 	'communication'	=> 'messages',
@@ -55,3 +57,9 @@ $titlearray = array(
 );
 
 $szRDExcludes = '<span style="color:red;font-weight:bold;">!!</span>';
+
+
+
+
+
+$g_resources = Resource::all();

@@ -1,6 +1,6 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
 
 if ( isset($_POST['subject'], $_POST['message']) && ( isset($_POST['from_planet_id'], $_POST['password']) || logincheck(false) ) ) {
 	if ( !trim($_POST['message']) ) {

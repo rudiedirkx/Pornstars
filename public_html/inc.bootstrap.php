@@ -1,5 +1,7 @@
 <?php
 
+use rdx\ps\Prefs;
+
 $iUtcStartTime = microtime(true);
 
 define( 'PARENT_SCRIPT_NAME',	$_SERVER['SCRIPT_NAME'] );
@@ -12,8 +14,25 @@ define( 'PROJECT_LOGS',		PROJECT_RUNTIME.'/logs' );
 session_start();
 error_reporting(2047);
 
-$sessionname = 'PS_SESSION';
-$prefix = '';
+$_adminPasswords = ['$2y$10$FTKrlmfnxEWzokWQaQvr5.K56d.qrwNSa.2/nei6esxseJbIQBDlu'];
+
+function validateAdminPassword( $password ) {
+	global $_adminPasswords;
+	foreach ( $_adminPasswords as $valid) {
+		if ( password_verify($password, $valid) ) {
+			return true;
+		}
+	}
+}
+
+spl_autoload_register(function($class) {
+	$prefix = 'rdx\\ps\\';
+	if ( strpos($class, $prefix) === 0 ) {
+		if ( file_exists($file = dirname(__DIR__) . '/src/' . str_replace($prefix, '', $class) . '.php') ) {
+			include $file;
+		}
+	}
+});
 
 require_once __DIR__ . '/env.php';
 require_once PROJECT_DB_LOCATION . '/db_mysql.php';
@@ -25,17 +44,15 @@ $db = db_mysql::open([
 ]);
 
 function prepSomeGameStuff() {
-	global $db, $GAMEPREFS, $ticktime, $tickdif;
+	global $db, $g_prefs;
+	global $ticktime, $tickdif;
 
-	// TABLE `prefs` maken
-	$gp = $db->select('prefs', '1 ORDER BY id DESC LIMIT 1')->first();
-	if ( !$gp ) {
+	$g_prefs = Prefs::first('1 ORDER BY id DESC');
+	if ( !$g_prefs ) {
 		exit('No current game exists...');
 	}
-	$GAMEPREFS = (array) $gp;
-	$GAMEPREFS['admins'] = array_map('intval', explode(',', $GAMEPREFS['admin_planet_ids']));
 
-	$ticktime = $GAMEPREFS['last_tick'];
+	$ticktime = $g_prefs->last_tick;
 	$tickdif = time() - $ticktime;
 }
 

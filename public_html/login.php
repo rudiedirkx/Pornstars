@@ -1,77 +1,88 @@
 <?php
 
-require_once('inc.config.php');
+use rdx\ps\Planet;
+
+require 'inc.bootstrap.php';
 
 if ( logincheck(false) ) {
-	Go('./');
+	return do_redirect('index');
 }
 
-if ( '1' !== $GAMEPREFS['general_login'] && empty($_SESSION[$sessionname.'_ADMIN']) ) {
-	$tickerstatus = '1' === $GAMEPREFS['ticker_on'] ? "ON" : "OFF";
-	$signupmsg = '1' === $GAMEPREFS['general_signup'] ? "YOU CAN SIGN UP ALREADY, for the next round of course!" : "Sign up is also closed!";
+// LOGIN CLOSED
+if ( !$g_prefs->general_login && empty($_SESSION['ADMIN']) ) {
+	$tickerstatus = $g_prefs->ticker_on ? "ON" : "OFF";
+	$signupmsg = $g_prefs->general_signup ? "YOU CAN SIGN UP ALREADY, for the next round of course!" : "Sign up is also closed!";
 	Save_Msg("<b>Login is closed for the moment.</b> That doesnt mean the ticker isnt working.<br>Ticker is <b>$tickerstatus</b>!<br><br><b>$signupmsg</b>","red");
-	Go();
+
+	return do_redirect('index');
 }
 
+// LOG IN
 if ( isset($_POST['u'], $_POST['p']) ) {
-	$arrUser = db_select('planets', "email = '" . addslashes($_POST['u']) . "' AND password = MD5(CONCAT(id,':" . addslashes($_POST['p']) . "'))");
+	$objPlanet = Planet::first(['email' => $_POST['u']]);
 
-	if ( 1 === count($arrUser) ) {
-		$arrUser = $arrUser[0];
-		if ( time()-$arrUser['lastlogin'] < $CHECK_TIME_BETWEEN_LOGINS ) {
-			exit(json_encode(array(
-				array('msg', 'There is less time than '.$CHECK_TIME_BETWEEN_LOGINS.' seconds since your last login on this account. You sure you\'re not cheating? Wait longer!!'),
-			)));
-		}
-		else if ( !empty($arrUser['activationcode']) ) {
-			exit(json_encode(array(
-				array('msg', 'Your account has not been activated yet. Please do so!'),
-				array('location', 'activate.php?email='.urlencode($arrUser['email'])),
-			)));
-		}
-		else if ( '1' === $arrUser['closed'] ) {
-			exit(json_encode(array(
-				array('msg', 'Your account is closed, probably due to multiing!'),
-			)));
-		}
-		else if ( $arrUser['sleep']>time() && empty($_POST['sleepmode_override']) ) {
-			$s = $arrUser['sleep'] - time();
-			$h = floor($s/3600);
-			$s -= 3600*$h;
-			$m = floor($s/60);
-			$s -= 60*$m;
-			exit(json_encode(array(
-				array('eval', 'if(confirm(\'You\\\'re in sleepmode! It ends in '.$h.' hours, '.$m.' minutes and '.$s.' seconds. Do you want to deactivate it, so you can login right now!?\')){$(\'f_login\').elements[\'sleepmode_override\'].value=\'1\';$(\'f_login\')[\'onsubmit\']();}'),
-			)));
-		}
-		else {
-			$save = array(
-				'planet_id'	=> $arrUser['id'],
-				'unihash'	=> rand_string(16),
-			);
-			$_SESSION[$sessionname] = $save;
-			if ( $arrUser['sleep']>time() ) {
-				db_update('planets', 'nextsleep='.(time()+14*3600).' WHERE id = '.(int)$arrUser['id'].';');
-				$arrUser['nextsleep'] = (time()+14*3600);
-			}
-			db_update( 'planets', 'sleep = 0, lastaction = '.time().', lastlogin = '.time().", unihash = '".$save['unihash']."'", 'id = '.(int)$arrUser['id'] );
-			logbook('login', 'unihash='.$save['unihash'].'&sleep='.$arrUser['sleep'].'&nextsleep='.$arrUser['nextsleep'], (int)$save['planet_id']);
-			exit(json_encode(array(
-				array('eval', 'document.location.reload()'),
-			)));
-		}
+	// Invalid login
+	if ( !$objPlanet || !$objPlanet->checkPassword($_POST['p']) ) {
+		return do_json([
+			['msg', 'Invalid login combination!'],
+		]);
+	}
 
-	} // END 1 === count($arrUser)
+	// Need activation
+	if ( $objPlanet->activationcode ) {
+		return do_json([
+			['msg', 'Your account has not been activated yet. Please do so!'],
+			['location', 'activate.php?email=' . urlencode($objPlanet->email)],
+		]);
+	}
 
-	// No records found for this username & password
-	exit(json_encode(array(
-		array('msg', 'Invalid login combination!'),
-	)));
+	// Need activation
+	if ( $objPlanet->closed ) {
+		return do_json([
+			['msg', 'Your account is closed, probably due to multiing!'],
+		]);
+	}
 
-} // END if ( isset($_POST['u'], $_POST['p']) )
+	// Sleep mode
+	if ( $objPlanet->sleep > time() && empty($_POST['sleepmode_override']) ) {
+		$s = $objPlanet->sleep - time();
+		$h = floor($s/3600);
+		$s -= 3600*$h;
+		$m = floor($s/60);
+		$s -= 60*$m;
+		return do_json([
+			array('eval', 'if(confirm(\'You\\\'re in sleepmode! It ends in '.$h.' hours, '.$m.' minutes and '.$s.' seconds. Do you want to deactivate it, so you can login right now!?\')){$(\'f_login\').elements[\'sleepmode_override\'].value=\'1\';$(\'f_login\')[\'onsubmit\']();}'),
+		]);
+	}
 
-else if ( isset($_POST['pwdvergeten']) )
-{
+	// Success!
+
+	$save = array(
+		'planet_id'	=> $objPlanet->id,
+		'unihash'	=> rand_string(16),
+	);
+	$_SESSION = $save + $_SESSION;
+
+	if ( $objPlanet->sleep > time() ) {
+		$objPlanet->update(['nextsleep' => time() + 14*3600]);
+	}
+
+	$objPlanet->update([
+		'sleep' => 0,
+		'lastaction' => time(),
+		'lastlogin' => time(),
+		'unihash' => $save['unihash'],
+	]);
+
+	// logbook('login', 'unihash='.$save['unihash'].'&sleep='.$objPlanet->sleep.'&nextsleep='.$objPlanet->nextsleep, (int)$save['planet_id']);
+
+	return do_json([
+		array('eval', 'location.reload()'),
+	]);
+}
+
+// PASSWORD RESET
+else if ( isset($_POST['pwdvergeten']) ) {
 	$q = db_query("SELECT id,email,password FROM planets WHERE email = '$_POST[email]';");
 	if ( 0 < mysql_num_rows($q) )
 	{
@@ -92,8 +103,10 @@ else if ( isset($_POST['pwdvergeten']) )
 		Save_Msg($msg,$color);
 		Go();
 	}
+
 	Save_Msg("Cant find the emailaddress \"<b>".htmlspecialchars($_POST['email'])."</b>\"","red");
-	Go();
+
+	return do_redirect('index');
 }
 
 ?>
@@ -101,11 +114,10 @@ else if ( isset($_POST['pwdvergeten']) )
 
 <head>
 <title><?php echo $GAMENAME; ?></title>
-<script type="text/javascript" src="general_1_2_6.js"></script>
-<script type="text/javascript" src="ajax_1_3_1.js"></script>
-<link rel="stylesheet" type="text/css" href="css/styles.css" />
-<script type="text/javascript">
-<!--//
+<script src="general_1_2_6.js"></script>
+<script src="ajax_1_3_1.js"></script>
+<link rel="stylesheet" href="css/styles.css" />
+<script>
 function L(a) {
 	var t = a.responseText;
 	try {
@@ -129,41 +141,58 @@ function L(a) {
 		}
 	} catch(e) { alert(t); }
 }
-//-->
 </script>
 </head>
 
-<body onload="$('login_u').focus();">
+<body>
+
 <?php echo $indextitel; ?>
+
 <center>
+
 <br />
+
 <?php echo (isset($_SESSION['ps_msg']))?"<font color=\"".$_SESSION['ps_msg']['color']."\">".$_SESSION['ps_msg']['msg']."</font>":""?><br>
-<?php echo (!$GAMEPREFS['general_login'])?"<font color=red><b>LOGIN HAS BEEN DISABLED</b></font><br>":""?>
+
+<?php echo (!$g_prefs->general_login)?"<font color=red><b>LOGIN HAS BEEN DISABLED</b></font><br>":""?>
+
 <br />
+
 <b>LOGIN</b><br />
+
 <br />
 <br />
+
 <form id="f_login" method="post" action="login.php" onsubmit="return postForm(this,L);" />
-<input type="hidden" name="sleepmode_override" value="" />
-E-mail address<br>
-<input type="text" id="login_u" name="u" style="width:200;" /><br>
-<br />
-Password<br>
-<input type="password" id="login_p" name="p" style="width:200;" onfocus="this.select();" /><br>
-<br />
-<br />
-<input type="submit" value="login" style="width:200px;" /><br />
+	<input type="hidden" name="sleepmode_override" value="" />
+
+	E-mail address<br>
+	<input type="text" autofocus name="u" /><br>
+	<br />
+
+	Password<br>
+	<input type="password" name="p" onfocus="this.select();" /><br>
+	<br />
+	<br />
+
+	<button>LOG IN</button>
 </form>
+
 <br />
 <br />
 <br />
 <br />
-<form method=post><input type=hidden name=pwdvergeten value=1>
-<b>Forgot your password? Dont worry!<br />
-<br />
-Email: <input type=text name=email style='width:200;'><br />
-<br />
-<input type=submit value="Create new password!" style='width:200;'>
+
+<form method="post">
+	<input type="hidden" name="pwdvergeten" value="1" />
+
+	<b>Forgot your password? Dont worry!<br />
+	<br />
+
+	Email: <input type="text" name="email" /><br />
+	<br />
+
+	<button>Create new password!</button>
 </form>
 
 </body>
@@ -172,5 +201,3 @@ Email: <input type=text name=email style='width:200;'><br />
 <?php
 
 unset($_SESSION['ps_msg']);
-
-?>
