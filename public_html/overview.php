@@ -105,12 +105,12 @@ _header();
 <br />
 
 
-<h2>.: Asteroids (<?= nummertje($g_user->total_asteroids) ?>) :.</h2>
+<h2>.: Resources :.</h2>
 <table>
 	<? foreach ( $g_user->resources AS $resource ): ?>
 		<tr>
 			<td><?= html($resource->resource) ?></td>
-			<td><?= nummertje($resource->asteroids) ?></td>
+			<td><?= nummertje($resource->display_number) ?> <?= $resource->display_name ?></td>
 			<td>+ <?= nummertje($g_user->ticker->getIncome($resource)) ?></td>
 		</tr>
 	<? endforeach ?>

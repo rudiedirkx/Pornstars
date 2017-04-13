@@ -7,7 +7,10 @@ use rdx\ps\Resource;
 
 class Ticker {
 
+	static $instance;
+
 	protected $rd_results;
+	protected $power_map;
 
 	public $planets;
 	public $resources;
@@ -16,10 +19,21 @@ class Ticker {
 		$this->planets = $planets;
 
 		// @todo Preload R & D
+		// @todo Preload Power
 	}
 
 	public function setResources( array $resources ) {
 		$this->resources = $resources;
+	}
+
+	public function getPowerMap() {
+		if ( !$this->power_map ) {
+			global $db;
+
+			$this->power_map = $db->select_fields('d_all_units', 'id, power', 'T = ?', ['power']);
+		}
+
+		return $this->power_map;
 	}
 
 	public function getRDResultsByTypeAndRD( $type, array $rd ) {
@@ -38,7 +52,7 @@ class Ticker {
 			$results = [];
 			foreach ( $this->rd_results[$type] as $rdId => $typeResults ) {
 				if ( isset($rd[$rdId]) ) {
-					$results =array_merge($results, $typeResults);
+					$results = array_merge($results, $typeResults);
 				}
 			}
 
@@ -47,8 +61,6 @@ class Ticker {
 
 		return [];
 	}
-
-	static $instance;
 
 	static public function instance() {
 		if ( !self::$instance ) {

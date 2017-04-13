@@ -117,8 +117,8 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			echo '<td><input name="units['. $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
 			echo '</tr>';
 			echo '<tr>';
-			echo '<th>Fuel usage</th>';
-			echo '<td><input name="units['. $unit->id . '][fuel]" value="' . html($unit->fuel) . '" size="5" /></td>';
+			echo '<th>Power</th>';
+			echo '<td><input name="units['. $unit->id . '][power]" value="' . html($unit->power) . '" size="5" /></td>';
 			echo '</tr>';
 
 			echo '<tr>';

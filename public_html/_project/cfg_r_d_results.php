@@ -2,7 +2,7 @@
 
 require_once '../inc.bootstrap.php';
 
-$types = ['travel_eta', 'r_d_eta', 'r_d_costs', 'fuel_use', 'offense', 'defence'];
+$types = ['travel_eta', 'r_d_eta', 'r_d_costs', 'power_usage', 'offense', 'defence'];
 $types = $db->select_fields('d_resources', "CONCAT('income:', id), CONCAT(resource, ' income')", '1') + array_combine($types, $types);
 
 $units = ['real', 'pct'];
@@ -15,7 +15,7 @@ if ( isset($_POST['r']) ) {
 		if ( $id ) {
 			$db->update('d_r_d_results', $data, compact('id'));
 		}
-		elseif ( $data['type'] && $data['done_r_d_id'] && $data['explanation'] ) {
+		elseif ( $data['type'] && $data['done_r_d_id'] ) {
 			$data['o'] or $data['o'] = $db->max('d_r_d_results', 'o') + 1;
 			$db->insert('d_r_d_results', $data);
 		}

@@ -15,7 +15,13 @@ class PlanetTicker {
 	}
 
 	public function getIncome( Resource $resource ) {
-		$income = $this->asteroidIncome($resource);
+		if ( $resource->is_power ) {
+			$income = $this->powerIncome();
+		}
+		else {
+			$income = $this->asteroidIncome($resource);
+		}
+
 		$income = $this->rdResultIncome($resource, $income);
 		return $income;
 	}
@@ -26,6 +32,20 @@ class PlanetTicker {
 		if ( $income > 0 ) {
 			$this->planet->addResource($resource->id, $income);
 		}
+	}
+
+	public function powerIncome() {
+		global $db;
+
+		$powerMap = $this->ticker->getPowerMap();
+		$planetPower = $db->select_fields('power_on_planets', 'power_id, amount', 'planet_id = ?', [$this->planet->id]);
+
+		$power = 0;
+		foreach ( $planetPower as $id => $amount ) {
+			$power += $powerMap[$id] * $amount;
+		}
+
+		return 0;
 	}
 
 	public function asteroidIncome( Resource $resource ) {
