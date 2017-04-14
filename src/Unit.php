@@ -62,7 +62,19 @@ class Unit extends Model {
 	 */
 
 	public function get_costs() {
+		global $db;
+		$costs = $db->select('d_unit_costs', 'unit_id = ? ORDER BY variant', [$this->id]);
 
+		$variants = [];
+		foreach ( $costs as $cost ) {
+			$variants[$cost->variant][$cost->resource_id] = Resource::find($cost->resource_id)->decorate(['amount' => $cost->amount]);
+		}
+
+		if ( !$variants ) {
+			$variants[0] = [];
+		}
+
+		return $variants;
 	}
 
 	public function get_number_owmed() {

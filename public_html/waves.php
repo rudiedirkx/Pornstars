@@ -15,6 +15,7 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 }
 
 // SCAN FOR ASTEROIDS //
+// @todo
 else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) ) {
 	$iTotalAsteroidScans = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = '.(int)$_POST['roid_scan_id'].' AND u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.PLANET_ID.' AND u.T = \'roidscan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)' );
 	$a = (int)min( $_POST['number_of_asteroid_scans'], $iTotalAsteroidScans );
@@ -43,8 +44,8 @@ else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) ) {
 }
 
 // INTELLIGENCE SCAN A PLANET //
-else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) )
-{
+// @todo
+else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) ) {
 	$arrScan = db_fetch('SELECT *, u.id AS scan_id FROM d_all_units u WHERE id = '.(int)$_GET['intel_scan_id'].' AND u.T = \'scan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0) AND 0 < (SELECT amount FROM waves_on_planets WHERE planet_id = '.PLANET_ID.' AND wave_id = scan_id)');
 	if ( !$arrScan ) {
 		exit(json_encode(array(

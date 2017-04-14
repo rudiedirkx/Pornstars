@@ -206,14 +206,17 @@ function addProductions( $units, ...$bases ) {
 
 	$allUnits = Unit::all();
 
-	foreach ( array_filter($units) as $id => $amount ) {
-		if ( isint($amount) && $amount > 0 ) {
-			if ( isset($allUnits[$id]) && in_array($allUnits[$id]->T, $types) ) {
-				$unit = $allUnits[$id];
+	foreach ( $units as $id => $variants ) {
+		if ( isset($allUnits[$id]) && in_array($allUnits[$id]->T, $types) ) {
+			$unit = $allUnits[$id];
+			foreach ( $variants as $variant => $amount ) {
+				if ( isint($amount) && $amount > 0 ) {
+					$costs = $unit->costs[$variant];
 
-				// @todo Check costs & pay
+					// @todo Check costs & pay
 
-				$unit->produce($g_user, $amount);
+					$unit->produce($g_user, $amount);
+				}
 			}
 		}
 	}
@@ -460,55 +463,59 @@ function getProductionForm( ...$bases ) {
 	])->all();
 
 	$szHtml = '
-<form method="post" action="" autocomplete="off">
+<form method="post" action autocomplete="off">
 <input type="hidden" name="_token" value="' . createToken('production') . '" />
-<table border="0" cellpadding="3" cellspacing="0" width="90%" align="center" class="widecells">
+<table>
 <tr>
-	<th>&nbsp;</th>
-	<th class="left">Name</th>
+	<th></th>
+	<th>Name</th>
 	<th>ETA</th>
-	<th class="right">Costs</th>
-	<th class="right">In&nbsp;stock</th>
+	<th>In stock</th>
+	<th>Costs</th>
 	<th>Order</th>
 </tr>';
 
 	foreach ( $units AS $unit ) {
+		$rowspan = count($unit->costs);
+
 		$szHtml .= '<tr>';
-		// ID
-		$szHtml .= '<td>' . $unit->id . '</td>';
-		// Name
-		$szHtml .= '<td>' . html($unit->unit_plural) . '<br />' . html($unit->explanation) . '</td>';
-		// ETA
-		$szHtml .= '<td>' . $unit->build_eta . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->id . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . html($unit->unit_plural) . '<br />' . html($unit->explanation) . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->build_eta . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->number_owmed . '</td>';
 
-		// Costs
-		// $arrPreCosts = db_select_fields('d_unit_costs', 'resource_id,amount', '0 < amount AND unit_id = '.(int)$unit->id.' ORDER BY resource_id ASC');
-		// $arrCosts = array();
-		// foreach ( $arrPreCosts AS $iResourceId => $iAmount ) {
-		// 	$iAmount = (int)$iAmount;
-		// 	$arrCosts[] = '<span style="color:'.$g_arrResources[$iResourceId]['color'].';">'.nummertje($iAmount).'&nbsp;'.strtolower($g_arrResources[$iResourceId]['resource']).'</span>';
-		// }
-		// $szCosts = $arrCosts ? implode('<br />', $arrCosts) : '-';
-		$szHtml .= '<td width="10%" class="right">costs</td>';
+		// Costs & order
+		$szHtml .= '<td nowrap>' . renderCostsVariant($unit->costs[0]) . '</td>';
+		$szHtml .= '<td><input class="costs" name="order_units[' . $unit->id . '][0]" /></td>';
 
-		// In stock
-		// $iInStock = (int)db_select_one($szSqlTable, 'SUM(amount)', str_replace('__UNIT_ID__', (int)$unit->id, $szSqlWhere));
-		$szHtml .= '<td width="10%" class="right" id="unit_amount_' . $unit->id . '">' . $unit->number_owmed . '</td>';
-
-		// Order
-		$szHtml .= '<td width="10%" class="c"><input autocomplete="off" type="text" name="order_units['.$unit->id.']" value="" style="width:45px;text-align:right;padding:2px;" maxlength="5" /></td>';
 		$szHtml .= '</tr>';
+
+		// More cost variants
+		foreach ( array_slice($unit->costs, 1) as $variant => $costs ) {
+			$szHtml .= '<tr>';
+			$szHtml .= '<td nowrap>' . renderCostsVariant($costs) . '</td>';
+			$szHtml .= '<td><input class="costs" name="order_units[' . $unit->id . '][' . ($variant+1) . ']" /></td>';
+			$szHtml .= '</tr>';
+		}
 	}
 	$szHtml .= '
 <tr>
 	<td colspan="5">&nbsp;</td>
-	<td class="c"><button>Order</button></td>
+	<td><button>Order</button></td>
 </tr>
 </table>
 </form>';
 	return $szHtml;
 
 } // END getProductionForm()
+
+
+function renderCostsVariant( array $costs ) {
+	$labels = array_map(function($cost) {
+		return '<span class="resource" style="background: ' . $cost->color . '">' . $cost->amount . '</span>';
+	}, $costs);
+	return implode(' + ', $labels);
+}
 
 
 function Go( $to = PARENT_SCRIPT_NAME, $die = 0 ) {

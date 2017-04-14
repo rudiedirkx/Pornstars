@@ -19,10 +19,30 @@ body > .flex {
  * COMMONS
  */
 
-html, body, table {
+html, body, table,
+button, input, select, textarea {
 	background: black;
 	color: white;
 	font-family: sans-serif;
+}
+
+button, input, select, textarea {
+	border: solid 1px white;
+	padding: 2px 4px;
+}
+button:focus, input:focus, select:focus, textarea:focus {
+	border-color: lightblue;
+	box-shadow: 0 0 3px lightblue;
+	background: #222;
+}
+button {
+	border-width: 2px;
+	cursor: pointer;
+	background: #222;
+	padding: 4px 9px;
+}
+button:focus {
+	color: lightblue;
 }
 
 a,
@@ -38,29 +58,42 @@ a:focus {
 }
 
 /**
+ * RESOURCES
+ */
+
+span.resource {
+	padding: 1px 3px;
+}
+input.costs {
+	width: 3em;
+	text-align: center;
+}
+
+/**
  * MAIN MENU
  */
 
 ul#mmenu,
 ul#mmenu li {
-     list-style          : none;
-     margin              : 0;
-     padding             : 0;
+     list-style: none;
+     margin: 0;
+     padding: 0;
 }
 ul#mmenu {
-     margin              : 5px;
+     margin: 5px;
 }
 ul#mmenu li {
-     margin-top          : 1px;
+     margin-top: 1px;
 }
 ul#mmenu li a {
-     display             : block;
-     background-color    : #111;
-     padding             : 3px;
+     display: block;
+     background-color: #111;
+     padding: 3px;
 }
+ul#mmenu li a:focus,
 ul#mmenu li a:hover {
-     background-color    : #e80;
-     color               : #111;
+     background-color: #e80;
+     color: #111;
 }
 
 /**

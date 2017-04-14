@@ -12,6 +12,12 @@ class Model {
 	 * Methods
 	 */
 
+	public function decorate( array $data ) {
+		$object = clone $this;
+		$object->fill($data);
+		return $object;
+	}
+
 	public function update( array $data ) {
 		global $db;
 		$this->presave($data);

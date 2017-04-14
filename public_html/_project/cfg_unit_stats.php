@@ -12,7 +12,9 @@ if ( isset($_POST['units']) ) {
 	$db->begin();
 
 	foreach ( $_POST['units'] as $id => $data ) {
-		$costs = array_filter($data['costs']);
+		$variants = array_values(array_filter($data['costs'], function($cost) {
+			return array_filter($cost);
+		}));
 		$combats = (array) @$data['combat_stats'];
 		unset($data['costs'], $data['combat_stats']);
 
@@ -24,12 +26,15 @@ if ( isset($_POST['units']) ) {
 
 		// costs //
 		$db->delete('d_unit_costs', ['unit_id' => $id]);
-		foreach ( $costs as $rid => $amount ) {
-			$db->insert('d_unit_costs', [
-				'unit_id' => $id,
-				'resource_id' => $rid,
-				'amount' => $amount,
-			]);
+		foreach ( $variants as $variant => $costs ) {
+			foreach ( array_filter($costs) as $rid => $amount ) {
+				$db->insert('d_unit_costs', [
+					'unit_id' => $id,
+					'variant' => $variant,
+					'resource_id' => $rid,
+					'amount' => $amount,
+				]);
+			}
 		}
 
 		// combat stats //
@@ -70,7 +75,7 @@ foreach ( $arrCombatStats AS $cs ) {
 $arrCosts = $db->select('d_unit_costs', '1');
 $g_arrCosts = array();
 foreach ( $arrCosts as $c ) {
-	$g_arrCosts[$c->unit_id][$c->resource_id] = $c->amount;
+	$g_arrCosts[$c->unit_id][$c->variant][$c->resource_id] = $c->amount;
 }
 
 $arrResources = $db->select_fields('d_resources', 'id, resource', '1');
@@ -93,44 +98,44 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			echo '<tr valign="top">';
 			echo '<th>' . $unit->id . '. ' . html($unit->unit) . '<br />[' . $unit->T . ']</th>';
 			echo '<td>';
-			echo '<table border="0">';
+			echo '<table>';
 
 			// properties //
 
 			echo '<tr>';
 			echo '<th>Name</th>';
-			echo '<td><input name="units[' . $unit->id . '][unit]" value="' . html($unit->unit) . '" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][unit]" value="' . html($unit->unit) . '" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Plural</th>';
-			echo '<td><input name="units[' . $unit->id . '][unit_plural]" value="' . html($unit->unit_plural) . '" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][unit_plural]" value="' . html($unit->unit_plural) . '" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Explanation</th>';
-			echo '<td><input name="units[' . $unit->id . '][explanation]" value="' . html($unit->explanation) . '" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][explanation]" value="' . html($unit->explanation) . '" /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Build ETA</th>';
-			echo '<td><input name="units[' . $unit->id . '][build_eta]" value="' . html($unit->build_eta) . '" size="5" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][build_eta]" value="' . html($unit->build_eta) . '" size="5" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Travel ETA</th>';
-			echo '<td><input name="units[' . $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Power</th>';
-			echo '<td><input name="units[' . $unit->id . '][power]" value="' . html($unit->power) . '" size="5" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][power]" value="' . html($unit->power) . '" size="5" /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Stealthy</th>';
-			echo '<td><input type="checkbox" name="units[' . $unit->id . '][is_stealth]" ' . ($unit->is_stealth ? 'checked' : '') . ' /></td>';
+			echo '<td colspan="9"><input type="checkbox" name="units[' . $unit->id . '][is_stealth]" ' . ($unit->is_stealth ? 'checked' : '') . ' /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Steals</th>';
-			echo '<td>';
+			echo '<td colspan="9">';
 			echo '<select name="units[' . $unit->id . '][steals]">';
 			echo html_options($arrSteals, $unit->steals, '--');
 			echo '</select>';
@@ -142,7 +147,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			}, ARRAY_FILTER_USE_BOTH));
 			echo '<tr>';
 			echo '<th>Sub type</th>';
-			echo '<td>';
+			echo '<td colspan="9">';
 			echo '<select name="units[' . $unit->id . '][subtype]">';
 			echo html_options(array_combine($_subtypes, $_subtypes), $unit->subtype, '--');
 			echo '</select>';
@@ -151,7 +156,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 			echo '<tr>';
 			echo '<th>R&D required</th>';
-			echo '<td>';
+			echo '<td colspan="9">';
 			echo '<select name="units[' . $unit->id . '][r_d_required_id]">';
 			echo html_options($arrRD, $unit->r_d_required_id);
 			echo '</select>';
@@ -160,18 +165,21 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 			// costs //
 
-			foreach ( $arrResources as $id => $name ) {
+			$variants = count((array) @$g_arrCosts[$unit->id]) + 1;
+			foreach ( $arrResources as $rid => $name ) {
 				echo '<tr>';
 				echo '<th>' . html($name) . '</th>';
-				echo '<td>';
-				echo '<input name="units[' . $unit->id . '][costs][' . $id . ']" size="5" value="' . @$g_arrCosts[$unit->id][$id] . '" />';
-				echo '</td>';
+				for ($variant = 0; $variant < $variants; $variant++) {
+					echo '<td>';
+					echo '<input name="units[' . $unit->id . '][costs][' . $variant . '][' . $rid . ']" size="5" value="' . @$g_arrCosts[$unit->id][$variant][$rid] . '" />';
+					echo '</td>';
+				}
 				echo '</tr>';
 			}
 
 			echo '<tr>';
 			echo '<th>Order</th>';
-			echo '<td><input name="units[' . $unit->id . '][o]" value="' . $unit->o . '" size="5" /></td>';
+			echo '<td colspan="9"><input name="units[' . $unit->id . '][o]" value="' . $unit->o . '" size="5" /></td>';
 			echo '</tr>';
 
 			echo '</table>';
@@ -209,8 +217,8 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 <form method="post" action>
 	<fieldset>
-		<select name="new_unit_T"><?= html_options($types) ?></select>
-		<select name="required"><?php foreach ( $arrRD AS $id => $name ) { echo '<option value="'.$id.'">'.$name.'</option>'; } ?></select>
+		<select name="new_unit_type"><?= html_options($types) ?></select>
+		<select name="r_d_required"><?= html_options($arrRD) ?></select>
 		<input type="submit" value="New" />
 	</fieldset>
 </form>

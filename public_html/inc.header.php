@@ -2,7 +2,6 @@
 
 use rdx\ps\Planet;
 
-// global $stF, $st, $FLEETNAMES, $arrIncomingFleets, $showcolors, $g_arrResources;
 $stF = str_replace('.php', '', basename($_SERVER['SCRIPT_NAME']));
 $st = explode(".", $stF)[0];
 
@@ -115,8 +114,8 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 				<tr>
 					<?php
 					foreach ( $g_user->resources AS $resource ) {
-						echo '<td style="background-color: ' . html($resource->color)  . '" title="' . html($resource->resource) . '">';
-						echo '<span id="res_amount_' . $resource->id . '">' . nummertje($resource->amount) . '</span>';
+						echo '<td style="background: ' . html($resource->color)  . '" title="' . html($resource->resource) . '">';
+						echo html($resource->resource) . ': ' . nummertje($resource->amount);
 						echo '</td>';
 					}
 					?>
