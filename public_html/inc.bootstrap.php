@@ -42,6 +42,7 @@ $db = db_mysql::open([
 	'pass' => PROJECT_DB_PASS,
 	'db' => PROJECT_DB_NAME,
 ]);
+$db->returnAffectedRows = true;
 
 function prepSomeGameStuff() {
 	global $db, $g_prefs;

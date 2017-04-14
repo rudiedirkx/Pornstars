@@ -7,11 +7,50 @@ use rdx\ps\Resource;
 
 class PlanetTicker {
 
+	protected $ticker;
 	protected $planet;
+	protected $fleets;
 
 	public function __construct( Ticker $ticker, Planet $planet ) {
+		global $db;
+
 		$this->ticker = $ticker;
 		$this->planet = $planet;
+
+		$this->fleets = array_values($db->select_fields('fleets', 'id', 'owner_planet_id = ? ORDER BY fleetname ASC', [$planet->id]));
+	}
+
+	public function addProduction( $unitId, $amount ) {
+		$unit = $this->ticker->getUnit($unitId);
+		switch ( $unit->base_type ) {
+			case 'ship':
+				return $this->addShipsToFleet($unitId, $amount);
+
+			case 'wave':
+				return $this->addUnitsToPlanet('waves_on_planets', $unitId, $amount);
+
+			case 'defence':
+				return $this->addUnitsToPlanet('defence_on_planets', $unitId, $amount);
+
+			case 'power':
+				return $this->addUnitsToPlanet('power_on_planets', $unitId, $amount);
+		}
+	}
+
+	public function addShipsToFleet( $unitId, $amount ) {
+		global $db;
+		return $db->update('ships_in_fleets', 'amount = amount + ' . (int) $amount, [
+			'fleet_id' => $this->fleets[0],
+			'unit_id' => $unitId,
+		]);
+	}
+
+	public function addUnitsToPlanet( $table, $unitId, $amount ) {
+		global $db;
+		return $db->update($table, 'amount = amount + ' . (int) $amount, [
+			'fleet_id' => $this->fleets[0],
+			'unit_id' => $unitId,
+		]);
 	}
 
 	public function getIncome( Resource $resource ) {
@@ -30,7 +69,11 @@ class PlanetTicker {
 		$income = $this->getIncome($resource);
 
 		if ( $income > 0 ) {
-			$this->planet->addResource($resource->id, $income);
+			global $db;
+			return $db->update('planet_resources', 'amount = amount + ' . (int) $income, [
+				'planet_id' => $this->planet->id,
+				'resource_id' => $resource->id,
+			]);
 		}
 	}
 
@@ -38,7 +81,7 @@ class PlanetTicker {
 		global $db;
 
 		$powerMap = $this->ticker->getPowerMap();
-		$planetPower = $db->select_fields('power_on_planets', 'power_id, amount', 'planet_id = ?', [$this->planet->id]);
+		$planetPower = $db->select_fields('power_on_planets', 'unit_id, amount', 'planet_id = ?', [$this->planet->id]);
 
 		$power = 0;
 		foreach ( $planetPower as $id => $amount ) {

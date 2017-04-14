@@ -1,41 +1,35 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
+
 logincheck();
 
-if ( isset($_POST['order_units']) )
-{
-	addProductions('ship,defence', $_POST['order_units']);
-	$arrJson = array(
-		array('eval', "$('f_order_units').reset();"),
-		array('html', 'div_productionlist', getProductionList('ship,defence')),
-		array('msg', 'Productions added!'),
-	);
-	foreach ( db_select_fields('planet_resources', 'resource_id,amount', 'planet_id = '.PLANET_ID) AS $iResourceId => $iAmount ) {
-		$arrJson[] = array('html', 'res_amount_'.$iResourceId, nummertje($iAmount));
-	}
-	exit(json_encode($arrJson));
+if ( isset($_POST['order_units'], $_POST['_token']) ) {
+
+	validTokenOrFail('production');
+
+	addProductions($_POST['order_units'], 'ship', 'defence');
+
+	return do_redirect();
 }
 
 _header();
 
 ?>
-<div class="header">Production<?php if ( (int)$GAMEPREFS['havoc_production'] ) { echo ' (<b style="color:red;">HAVOC!</b>)'; } ?></div>
+<h1>Production</h1>
+
+<h2>Order new</h2>
+<div id="div_productionform">
+	<?= getProductionForm('ship', 'defence') ?>
+</div>
 
 <br />
 
-<?php echo getProductionForm('ship,defence'); ?>
-
-<br />
-
+<h2>Production progress</h2>
 <div id="div_productionlist">
+	<?= getProductionList('ship', 'defence') ?>
+</div>
+
 <?php
 
-echo getProductionList('ship,defence');
-
-echo '</div><br />';
-
-
 _footer();
-
-?>

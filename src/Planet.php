@@ -55,7 +55,7 @@ class Planet extends Model {
 		return $db->fetch('
 			SELECT a.*, amount AS planet_amount
 			FROM d_all_units a
-			LEFT JOIN defence_on_planets p ON p.defence_id = a.id AND p.planet_id = ?
+			LEFT JOIN defence_on_planets p ON p.unit_id = a.id AND p.planet_id = ?
 			WHERE a.T = ?
 		', [
 			'params' => [$this->id, 'defence'],
@@ -77,7 +77,7 @@ class Planet extends Model {
 		return $db->fetch('
 			SELECT a.*, SUM(s.amount) AS planet_amount
 			FROM d_all_units a
-			LEFT JOIN ships_in_fleets s ON s.ship_id = a.id
+			LEFT JOIN ships_in_fleets s ON s.unit_id = a.id
 			LEFT JOIN fleets f ON f.id = s.fleet_id AND f.owner_planet_id = ?
 			WHERE a.T = ?
 			GROUP BY a.id
@@ -118,7 +118,7 @@ class Planet extends Model {
 	}
 
 	public function get_coordinates() {
-		return [$this->galaxy->x, $this->galaxy->y, $this->galaxy->z];
+		return [$this->galaxy->x, $this->galaxy->y, $this->z];
 	}
 
 	public function get_x() {
@@ -204,14 +204,6 @@ class Planet extends Model {
 			'params' => [$type, $this->id],
 			'class' => ResearchDevelopment::class,
 		])->first();
-	}
-
-	public function addResource( $rid, $amount ) {
-		global $db;
-		return $db->update('planet_resources', 'amount = amount + ' . (int)$amount, [
-			'planet_id' => $this->id,
-			'resource_id' => $rid,
-		]);
 	}
 
 	public function checkPassword( $password ) {

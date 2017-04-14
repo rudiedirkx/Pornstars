@@ -1,6 +1,7 @@
 <?php
 
 use rdx\ps\Planet;
+use rdx\ps\Unit;
 
 function html( $text ) {
 	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
@@ -49,7 +50,7 @@ function createToken( $name ) {
 }
 
 function checkToken( $name, $token = null ) {
-	$token === null and $token = (string) $_GET['_token'];
+	$token === null and $token = (string) @$_REQUEST['_token'];
 	return strlen($token) && $token === createToken($name);
 }
 
@@ -198,38 +199,24 @@ function nummertje($n) {
 }
 
 
-function addProductions( $f_szType, $f_arrUnits ) {
-	global $GAMEPREFS;
-	$arrUnits = array();
-	foreach ( $f_arrUnits AS $iUnit => $iAmount ) {
-		if ( 0 < (int)trim($iAmount) && count($u=db_select('d_all_units u, planet_r_d p','u.id = '.$iUnit.' AND p.r_d_id = u.r_d_required_id AND p.eta = 0 AND p.planet_id = '.PLANET_ID.' AND u.T IN (\''.str_replace(',', "','", $f_szType)."')")) ) {
-			$arrUnit = $u[0];
-			$arrAmounts = array((int)$iAmount);
-			$arrFunds = db_select_fields('planet_resources', 'resource_id,amount', 'planet_id = '.PLANET_ID);
-			$arrUnitCosts = db_select_fields('d_unit_costs', 'resource_id,amount', 'unit_id = '.$iUnit.' AND 0 < amount');
-			foreach ( $arrUnitCosts AS $iResourceId => $iCosts ) {
-				$arrAmounts[] = floor($arrFunds[$iResourceId]/$iCosts);
-			}
-			$iAmount = min($arrAmounts);
-			if ( 0 < $iAmount ) {
-				$arrCosts = array();
-				foreach ( $arrUnitCosts AS $iResourceId => $iCosts ) {
-					$arrCosts[$iResourceId] = $iAmount*$iCosts;
-				}
-				if ( 0 === array_sum($arrCosts) || db_transaction_update($arrCosts, 'resource_id', 'amount') ) {
-					$arrInsert = array(
-						'planet_id'	=> PLANET_ID,
-						'unit_id'	=> $iUnit,
-						'eta'		=> ( (int)$GAMEPREFS['havoc_production'] ? 0 : (int)$arrUnit['build_eta'] ),
-						'amount'	=> $iAmount,
-					);
-					db_insert('planet_production', $arrInsert);
-				}
+function addProductions( $units, ...$types ) {
+	global $g_user;
+
+	$allUnits = Unit::all();
+
+	foreach ( array_filter($units) as $id => $amount ) {
+		if ( isint($amount) && $amount > 0 ) {
+			if ( isset($allUnits[$id]) && in_array($allUnits[$id]->T, $types) ) {
+				$unit = $allUnits[$id];
+
+				// @todo Check costs & pay
+
+				$unit->produce($g_user, $amount);
 			}
 		}
 	}
 
-} // END addProductions()
+}
 
 
 function applyRDChange( $f_szType, $f_iInitialValue, $f_iPlanetId = PLANET_ID ) {
@@ -386,57 +373,52 @@ ORDER BY
 }
 
 
-function getProductionList( $f_szTypes, $f_iPlanetId = PLANET_ID ) {
-	$szSqlQuery = '
-	SELECT
-		u.id,
-		u.unit_plural,
-		sum(p.amount) AS amount
-	FROM
-		d_all_units u,
-		planet_production p
-	WHERE
-		u.id = p.unit_id AND
-		p.planet_id = '.(int)$f_iPlanetId.' AND
-		p.eta >= 0 AND
-		u.T IN (\''.str_replace(',', "','", $f_szTypes).'\')
-	GROUP BY
-		unit_id
-	ORDER BY
-		u.T ASC,
-		u.o ASC;
-	';
-	$arrUnits = db_fetch($szSqlQuery);
+function getProductionList( ...$types ) {
+	global $g_user, $db;
 
-	if ( !count($arrUnits) ) {
+	$units = $db->fetch('
+		SELECT u.*, p.eta AS planet_eta, SUM(p.amount) AS planet_building
+		FROM d_all_units u
+		JOIN planet_production p ON p.unit_id = u.id AND p.planet_id = ?
+		WHERE u.T IN (?)
+		GROUP BY u.id, p.eta
+		ORDER BY u.T ASC, u.o ASC, p.eta ASC
+	', [
+		'params' => [$g_user->id, $types],
+		'class' => Unit::class,
+	])->all();
+
+	if ( !$units ) {
 		return '';
 	}
 
-	$szHtml = '<table border="0" cellpadding="2" cellspacing="0" class="widecells"><tr><td class="right"><i>ETAs:</i></td>';
+	$etas = array_column($units, 'planet_eta');
+	$maxEta = max($etas);
+	$minEta = min(1, min($etas));
 
-	$arrETAs = array_values(db_select_fields('d_all_units u, planet_production p', 'p.eta,p.eta', 'u.id = p.unit_id AND u.T IN (\''.str_replace(',', "','", $f_szTypes).'\') AND p.planet_id = '.$f_iPlanetId.' AND p.eta >= 0 ORDER BY p.eta ASC'));
-	$arrHorMatrix = array();
-	foreach ( $arrETAs AS $k => $iETA ) {
-		if ( $k && $iETA-1 > $arrETAs[$k-1] ) {
-			$szHtml .= '<td>..</td>';
-			$arrHorMatrix[] = '-';
+	$matrix = [];
+	foreach ( $units as $unit ) {
+		if ( !isset($matrix[$unit->id]) ) {
+			$matrix[$unit->id] = [
+				'unit' => $unit,
+				'etas' => [],
+			];
 		}
-		$szHtml .= '<th class="right">'.$iETA.'</th>';
-		$arrHorMatrix[] = (int)$iETA;
-	}
-	$szHtml .= '</tr';
-
-	$t_arrProductions = db_fetch('SELECT unit_id, eta, SUM(amount) AS amount FROM planet_production WHERE planet_id = '.$f_iPlanetId.' GROUP BY unit_id, eta HAVING amount > 0 AND eta >= 0');
-	$arrProductions = array();
-	foreach ( $t_arrProductions AS $r ) {
-		$arrProductions[(int)$r['unit_id']][(int)$r['eta']] = $r['amount'];
+		$matrix[$unit->id]['etas'][$unit->planet_eta] = $unit->planet_building;
 	}
 
-	foreach ( $arrUnits AS $arrUnit ) {
-		$szHtml .= '<tr class="bt">';
-		$szHtml .= '<th class="right" nowrap="nowrap" wrap="off">'.$arrUnit['unit_plural'].'</th>';
-		foreach ( $arrHorMatrix AS $iETA ) {
-			$szHtml .= '<td class="right">'.( isset($arrProductions[(int)$arrUnit['id']][(int)$iETA]) ? nummertje($arrProductions[(int)$arrUnit['id']][(int)$iETA]) : '&nbsp;' ).'</td>';
+	$szHtml  = '<table>';
+	$szHtml .= '<tr>';
+	$szHtml .= '<td></td>';
+	for ( $eta = $minEta; $eta <= $maxEta; $eta++ ) {
+		$szHtml .= '<td>' . $eta . '</td>';
+	}
+	$szHtml .= '</tr>';
+	foreach ( $matrix as $line ) {
+		$szHtml .= '<tr>';
+		$szHtml .= '<th>' . html($line['unit']->unit_plural) . '</th>';
+		for ( $eta = $minEta; $eta <= $maxEta; $eta++ ) {
+			$szHtml .= '<td>' . @$line['etas'][$eta] . '</td>';
 		}
 		$szHtml .= '</tr>';
 	}
@@ -447,29 +429,23 @@ function getProductionList( $f_szTypes, $f_iPlanetId = PLANET_ID ) {
 } // END getProductionList()
 
 
-function getProductionForm( $f_szTypes, $f_iPlanetId = PLANET_ID ) {
-	$szSqlQuery = '
-	SELECT
-		u.*
-	FROM
-		d_all_units u,
-		planet_r_d p
-	WHERE
-		u.r_d_required_id = p.r_d_id AND
-		p.planet_id = '.(int)$f_iPlanetId.' AND
-		p.eta = 0 AND
-		u.T IN (\''.str_replace(',', "','", $f_szTypes).'\')
-	ORDER BY
-		u.T ASC,
-		u.o ASC;
-	';
-	$arrUnits = db_fetch($szSqlQuery);
+function getProductionForm( ...$types ) {
+	global $g_user, $db;
 
-	global $showcolors, $GAMEPREFS, $g_arrResources;
-	$szHtml = $szLastType = '';
+	$units = $db->fetch('
+		SELECT u.*, rd.planet_id
+		FROM d_all_units u
+		JOIN planet_r_d rd ON rd.r_d_id = u.r_d_required_id AND rd.planet_id = ? AND eta = 0
+		WHERE u.T IN (?)
+		ORDER BY u.T ASC, u.o ASC
+	', [
+		'params' => [$g_user->id, $types],
+		'class' => Unit::class,
+	])->all();
 
-	$szHtml .= '
-<form id="f_order_units" method="post" action="" autocomplete="off" onsubmit="return postForm(this,H);">
+	$szHtml = '
+<form method="post" action="" autocomplete="off">
+<input type="hidden" name="_token" value="' . createToken('production') . '" />
 <table border="0" cellpadding="3" cellspacing="0" width="90%" align="center" class="widecells">
 <tr>
 	<th>&nbsp;</th>
@@ -480,65 +456,37 @@ function getProductionForm( $f_szTypes, $f_iPlanetId = PLANET_ID ) {
 	<th>Order</th>
 </tr>';
 
-	foreach ( $arrUnits AS $k => $arrUnit ) {
-		if ( $szLastType !== $arrUnit['T'] ) {
-			if ( $k ) {
-				$szHtml .= '<tr class="bt"><td colspan="6">&nbsp;</td></tr>';
-			}
-			switch ( $arrUnit['T'] )
-			{
-				case 'ship':
-					$szSqlTable = 'ships_in_fleets s, fleets f';
-					$szSqlWhere = 's.ship_id = __UNIT_ID__ AND f.id = s.fleet_id AND f.owner_planet_id = '.(int)$f_iPlanetId;
-				break;
-				case 'defence':
-					$szSqlTable = 'defence_on_planets';
-					$szSqlWhere = 'defence_id = __UNIT_ID__ AND planet_id = '.(int)$f_iPlanetId;
-				break;
-				case 'roidscan':
-				case 'scan':
-				case 'block':
-				case 'amp':
-					$szSqlTable = 'waves_on_planets';
-					$szSqlWhere = 'wave_id = __UNIT_ID__ AND planet_id = '.(int)$f_iPlanetId;
-				break;
-				case 'power':
-					$szSqlTable = 'power_on_planets';
-					$szSqlWhere = 'power_id = __UNIT_ID__ AND planet_id = '.(int)$f_iPlanetId;
-				break;
-				default:
-					return '';
-				break;
-			}
-			$szLastType = $arrUnit['T'];
-		}
-		$szHtml .= '<tr valign="top" class="bt">';
+	foreach ( $units AS $unit ) {
+		$szHtml .= '<tr>';
 		// ID
-		$szHtml .= '<td width="10%" align="right">'.$arrUnit['id'].'</td>';
+		$szHtml .= '<td>' . $unit->id . '</td>';
 		// Name
-		$szHtml .= '<td width="100%"><i onclick="TD(this.parentNode.getElementsByTagName(\'div\')[0]);" style="cursor:pointer;">'.$arrUnit['unit_plural'].'</i><div style="display:none;font-size:10px;">'.$arrUnit['explanation'].'</div></td>';
+		$szHtml .= '<td>' . html($unit->unit_plural) . '<br />' . html($unit->explanation) . '</td>';
 		// ETA
-		$szHtml .= '<td width="10%" align="center">'.( (int)$GAMEPREFS['havoc_production'] ? '0' : $arrUnit['build_eta'] ).'</td>';
-		$arrPreCosts = db_select_fields('d_unit_costs', 'resource_id,amount', '0 < amount AND unit_id = '.(int)$arrUnit['id'].' ORDER BY resource_id ASC');
-		$arrCosts = array();
-		foreach ( $arrPreCosts AS $iResourceId => $iAmount ) {
-			$iAmount = (int)$iAmount;
-			$arrCosts[] = '<span style="color:'.$g_arrResources[$iResourceId]['color'].';">'.nummertje($iAmount).'&nbsp;'.strtolower($g_arrResources[$iResourceId]['resource']).'</span>';
-		}
-		$szCosts = $arrCosts ? implode('<br />', $arrCosts) : '-';
+		$szHtml .= '<td>' . $unit->build_eta . '</td>';
+
 		// Costs
-		$szHtml .= '<td width="10%" class="right">'.$szCosts.'</td>';
-		$iInStock = (int)db_select_one($szSqlTable, 'SUM(amount)', str_replace('__UNIT_ID__', (int)$arrUnit['id'], $szSqlWhere));
+		// $arrPreCosts = db_select_fields('d_unit_costs', 'resource_id,amount', '0 < amount AND unit_id = '.(int)$unit->id.' ORDER BY resource_id ASC');
+		// $arrCosts = array();
+		// foreach ( $arrPreCosts AS $iResourceId => $iAmount ) {
+		// 	$iAmount = (int)$iAmount;
+		// 	$arrCosts[] = '<span style="color:'.$g_arrResources[$iResourceId]['color'].';">'.nummertje($iAmount).'&nbsp;'.strtolower($g_arrResources[$iResourceId]['resource']).'</span>';
+		// }
+		// $szCosts = $arrCosts ? implode('<br />', $arrCosts) : '-';
+		$szHtml .= '<td width="10%" class="right">costs</td>';
+
 		// In stock
-		$szHtml .= '<td width="10%" class="right" id="unit_amount_'.$arrUnit['id'].'">'.nummertje($iInStock).'</td>';
+		// $iInStock = (int)db_select_one($szSqlTable, 'SUM(amount)', str_replace('__UNIT_ID__', (int)$unit->id, $szSqlWhere));
+		$szHtml .= '<td width="10%" class="right" id="unit_amount_' . $unit->id . '">' . $unit->number_owmed . '</td>';
+
 		// Order
-		$szHtml .= '<td width="10%" class="c"><input autocomplete="off" type="text" name="order_units['.$arrUnit['id'].']" value="" style="width:45px;text-align:right;padding:2px;" maxlength="5" /></td>';
+		$szHtml .= '<td width="10%" class="c"><input autocomplete="off" type="text" name="order_units['.$unit->id.']" value="" style="width:45px;text-align:right;padding:2px;" maxlength="5" /></td>';
 		$szHtml .= '</tr>';
 	}
 	$szHtml .= '
 <tr>
 	<td colspan="5">&nbsp;</td>
-	<td class="c"><input type="submit" value="Order" /></td>
+	<td class="c"><button>Order</button></td>
 </tr>
 </table>
 </form>';
@@ -740,8 +688,8 @@ function Make_GC( $f_iGalaxyId )
 	}
 }
 
-function isint($x) {
-	return (string)(int)$x === (string)$x;
+function isint( $x ) {
+	return (string) (int) $x === (string) $x;
 }
 
 function flip2darray($f_arr) {

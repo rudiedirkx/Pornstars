@@ -14,6 +14,7 @@ class Ticker {
 
 	public $planets;
 	public $resources;
+	public $units;
 
 	public function setPlanets( array $planets ) {
 		$this->planets = $planets;
@@ -24,6 +25,18 @@ class Ticker {
 
 	public function setResources( array $resources ) {
 		$this->resources = $resources;
+	}
+
+	public function setUnits( array $units ) {
+		$this->units = $units;
+	}
+
+	public function getPlanet( $id ) {
+		return $this->planets[$id];
+	}
+
+	public function getUnit( $id ) {
+		return $this->units[$id];
 	}
 
 	public function getPowerMap() {
