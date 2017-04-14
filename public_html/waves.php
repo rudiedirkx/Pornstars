@@ -1,26 +1,21 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
+
 logincheck();
 
 // ORDER UNITS //
-if ( isset($_POST['order_units']) && is_array($_POST['order_units']) && 0 < count($_POST['order_units']) )
-{
-	addProductions('roidscan,scan,amp,block', $_POST['order_units']);
-	$arrJson = array(
-		array('eval', "$('f_order_units').reset();"),
-		array('html', 'div_productionlist', getProductionList('roidscan,scan,amp,block')),
-		array('msg', 'Productions added!'),
-	);
-	foreach ( db_select_fields('planet_resources', 'resource_id,amount', 'planet_id = '.PLANET_ID) AS $iResourceId => $iAmount ) {
-		$arrJson[] = array('html', 'res_amount_'.$iResourceId, nummertje($iAmount));
-	}
-	exit(json_encode($arrJson));
+if ( isset($_POST['order_units'], $_POST['_token']) ) {
+
+	validTokenOrFail('production');
+
+	addProductions($_POST['order_units'], 'wave');
+
+	return do_redirect();
 }
 
 // SCAN FOR ASTEROIDS //
-else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) )
-{
+else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) ) {
 	$iTotalAsteroidScans = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = '.(int)$_POST['roid_scan_id'].' AND u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.PLANET_ID.' AND u.T = \'roidscan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)' );
 	$a = (int)min( $_POST['number_of_asteroid_scans'], $iTotalAsteroidScans );
 
@@ -305,121 +300,68 @@ ORDER BY
 		array('msg', 'You failed scanning the target!'),
 	)));
 
-} // END if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) )
+}
 
 _header();
 
 ?>
-<div id="div_scanresults"></div>
+<h1>Waves</h1>
 
-<div class="header">Scans</div>
+<h2>Order new</h2>
+<div id="div_productionform">
+	<?= getProductionForm('wave') ?>
+</div>
 
-<br />
-
-<table border="0" cellpadding="4" cellspacing="0" width="600" align="center">
-<tr class="bb">
-	<th>Type</th>
-	<th>Number&nbsp;/&nbsp;Target</th>
-	<td>&nbsp;</td>
-</tr>
-<form method="post" action="" autocomplete="off" onsubmit="return postForm(this,H);">
-<tr class="bb">
-	<td class="c"><select name="roid_scan_id"><option value="">--</option>
-<?php
-$arrScans = db_fetch_fields('
-SELECT
-	u.id,
-	CONCAT(u.id,\'. \',u.unit_plural)
-FROM
-	d_all_units u,
-	planet_r_d p
-WHERE
-	u.r_d_required_id = p.r_d_id AND
-	p.planet_id = '.PLANET_ID.' AND
-	p.eta = 0 AND
-	u.T = \'roidscan\' AND
-	0 < IFNULL((SELECT SUM(amount) FROM waves_on_planets WHERE planet_id = '.PLANET_ID.' AND wave_id = u.id),0)
-ORDER BY
-	u.o ASC;
-');
-foreach ( $arrScans AS $iScan => $szScan ) {
-	echo '<option value="'.$iScan.'">'.$szScan.'</option>';
-}
-?>
-	</select></td>
-	<td><input type="text" name="number_of_asteroid_scans" style="width:100%;text-align:center;" value="" /></td>
-	<td><input type="submit" value="Search" style="width:100%;" /></td>
-</tr>
-</form>
-<form method="get" action="" autocomplete="off" onsubmit="return postForm(this,H);">
-<tr>
-	<td width="40%" class="c"><select name="intel_scan_id"><option value="">--</option>
-<?php
-$arrScans = db_fetch_fields('
-SELECT
-	u.id,
-	CONCAT(u.id,\'. \',u.unit_plural)
-FROM
-	d_all_units u,
-	planet_r_d p
-WHERE
-	u.r_d_required_id = p.r_d_id AND
-	p.planet_id = '.PLANET_ID.' AND
-	p.eta = 0 AND
-	u.T = \'scan\' AND
-	u.is_mobile = \'1\' AND
-	0 < IFNULL((SELECT SUM(amount) FROM waves_on_planets WHERE planet_id = '.PLANET_ID.' AND wave_id = u.id),0)
-ORDER BY
-	u.o ASC;
-');
-foreach ( $arrScans AS $iScan => $szScan ) {
-	echo '<option'.( isset($_GET['intel_scan_id']) && $_GET['intel_scan_id'] == $iScan ? ' selected="1"' : '' ).' value="'.$iScan.'">'.$szScan.'</option>';
-}
-?>
-	</select></td>
-	<td width="40%" class="c">
-		<input type="text" name="x" value="<?php echo isset($_GET['x']) ? (int)$_GET['x'] : 'X'; ?>" onfocus="this.select();" class="c" size="3" />
-		<input type="text" name="y" value="<?php echo isset($_GET['y']) ? (int)$_GET['y'] : 'Y'; ?>" onfocus="this.select();" class="c" size="3" />
-		<input type="text" name="z" value="<?php echo isset($_GET['z']) ? (int)$_GET['z'] : 'Z'; ?>" onfocus="this.select();" class="c" size="3" />
-	</td>
-	<td width="20%"><input type="submit" value="Scan" style="width:100%;" /></td>
-</tr>
-</form>
-</table>
-
-<br />
-<br />
-
-<div class="header">Order waves<?php if ( (int)$GAMEPREFS['havoc_production'] ) { echo ' (<b style="color:red;">HAVOC!</b>)'; } ?></div>
-
-<br />
-
-<?php echo getProductionForm('roidscan,scan,amp,block'); ?>
-
-<br />
-
+<h2>Production progress</h2>
 <div id="div_productionlist">
+	<?= getProductionList('wave') ?>
+</div>
+
+<h2>Commands</h2>
+<form method="post" action autocomplete="off">
+	<table>
+		<tr>
+			<th>Type</th>
+			<th>Number / Target</th>
+			<td></td>
+		</tr>
+		<tr>
+			<td>
+				<select name="roid_scan_id">
+					<option value="">--</option>
+					<!-- @todo roidscan -->
+				</select>
+			</td>
+			<td>
+				<input type="text" name="number_of_asteroid_scans" /></td>
+			<td>
+				<button>Search</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
+<form method="get" action autocomplete="off">
+	<table>
+		<tr>
+			<td>
+				<select name="intel_scan_id">
+					<option value="">--</option>
+					<!-- @todo Mobile scans -->
+				</select>
+			</td>
+			<td>
+				<input name="x" size="3" />
+				<input name="y" size="3" />
+				<input name="z" size="3" />
+			</td>
+			<td>
+				<button>Scan</button>
+			</td>
+		</tr>
+	</table>
+</form>
+
 <?php
-
-echo getProductionList('roidscan,scan,amp,block');
-
-echo '</div><br />';
 
 _footer();
-
-
-function calcres( $f_iScansUsed, $f_iPlanetSize, $f_iWaveAmps ) {
-	$nr = $a = 0;
-	if ( $a != $f_iScansUsed ) {
-		while ( $a < $f_iScansUsed ) {
-			$a++;
-			$rnd = rand(0, $f_iPlanetSize+$nr)*0.5;
-			if ( $rnd < 50*(1+sqrt($f_iWaveAmps))/max(1,$f_iPlanetSize+$nr) ) {
-				$nr++;
-			}
-		}
-	}
-	return $nr;
-}
-
-?>

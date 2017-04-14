@@ -63,6 +63,22 @@ class Planet extends Model {
 		])->all();
 	}
 
+	public function get_waves() {
+
+		// @todo Filter on R & D
+
+		global $db;
+		return $db->fetch('
+			SELECT a.*, amount AS planet_amount
+			FROM d_all_units a
+			LEFT JOIN waves_on_planets p ON p.unit_id = a.id AND p.planet_id = ?
+			WHERE a.T IN (?)
+		', [
+			'params' => [$this->id, Unit::baseToTypes('wave')],
+			'class' => Unit::class,
+		])->all();
+	}
+
 	public function get_total_ships() {
 		return array_reduce($this->ships, function($total, $unit) {
 			return $total + $unit->planet_amount;

@@ -199,8 +199,10 @@ function nummertje($n) {
 }
 
 
-function addProductions( $units, ...$types ) {
+function addProductions( $units, ...$bases ) {
 	global $g_user;
+
+	$types = Unit::basesToTypes(...$bases);
 
 	$allUnits = Unit::all();
 
@@ -373,8 +375,10 @@ ORDER BY
 }
 
 
-function getProductionList( ...$types ) {
+function getProductionList( ...$bases ) {
 	global $g_user, $db;
+
+	$types = Unit::basesToTypes(...$bases);
 
 	$units = $db->fetch('
 		SELECT u.*, p.eta AS planet_eta, SUM(p.amount) AS planet_building
@@ -407,17 +411,27 @@ function getProductionList( ...$types ) {
 		$matrix[$unit->id]['etas'][$unit->planet_eta] = $unit->planet_building;
 	}
 
+	$matrixEtas = [];
+	for ( $eta = $minEta; $eta <= $maxEta; $eta++ ) {
+		if ( $eta <= 1 || in_array($eta, $etas) || in_array($eta-1, $etas) || in_array($eta+1, $etas) ) {
+			$matrixEtas[] = $eta;
+		}
+		elseif ( end($matrixEtas) !== null ) {
+			$matrixEtas[] = null;
+		}
+	}
+
 	$szHtml  = '<table>';
 	$szHtml .= '<tr>';
 	$szHtml .= '<td></td>';
-	for ( $eta = $minEta; $eta <= $maxEta; $eta++ ) {
-		$szHtml .= '<td>' . $eta . '</td>';
+	foreach ( $matrixEtas as $eta ) {
+		$szHtml .= '<td>' . ( $eta ?? '...' ) . '</td>';
 	}
 	$szHtml .= '</tr>';
 	foreach ( $matrix as $line ) {
 		$szHtml .= '<tr>';
 		$szHtml .= '<th>' . html($line['unit']->unit_plural) . '</th>';
-		for ( $eta = $minEta; $eta <= $maxEta; $eta++ ) {
+		foreach ( $matrixEtas as $eta ) {
 			$szHtml .= '<td>' . @$line['etas'][$eta] . '</td>';
 		}
 		$szHtml .= '</tr>';
@@ -429,8 +443,10 @@ function getProductionList( ...$types ) {
 } // END getProductionList()
 
 
-function getProductionForm( ...$types ) {
+function getProductionForm( ...$bases ) {
 	global $g_user, $db;
+
+	$types = Unit::basesToTypes(...$bases);
 
 	$units = $db->fetch('
 		SELECT u.*, rd.planet_id

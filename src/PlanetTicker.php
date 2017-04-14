@@ -48,7 +48,7 @@ class PlanetTicker {
 	public function addUnitsToPlanet( $table, $unitId, $amount ) {
 		global $db;
 		return $db->update($table, 'amount = amount + ' . (int) $amount, [
-			'fleet_id' => $this->fleets[0],
+			'planet_id' => $this->planet->id,
 			'unit_id' => $unitId,
 		]);
 	}

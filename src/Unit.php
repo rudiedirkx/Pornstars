@@ -8,6 +8,55 @@ class Unit extends Model {
 
 	static protected $table = 'd_all_units';
 
+	static public $types = [
+		'ship' => 'ship',
+		'defence' => 'defence',
+		'power' => 'power',
+		'roidscan' => 'wave',
+		'scan' => 'wave',
+		'amp' => 'wave',
+		'block' => 'wave',
+	];
+
+	static public $tables = [
+		'ship' => 'd_ships',
+		'defence' => 'd_defence',
+		'power' => 'd_power',
+		'wave' => 'd_waves',
+	];
+
+	static public $subtypes = [
+		'sectorscan' => 'scan',
+		'unitscan' => 'scan',
+		'defencescan' => 'scan',
+		'fleetscan' => 'scan',
+		'newsscan' => 'scan',
+		'productionscan' => 'scan',
+		'politicalscan' => 'scan',
+	];
+
+	/**
+	 * Static
+	 */
+
+	static public function typeToBase( $type ) {
+		return self::$types[$type];
+	}
+
+	static public function baseToTypes( $fromBase ) {
+		return array_keys(array_filter(self::$types, function($base, $type) use ($fromBase) {
+			return $base == $fromBase;
+		}, ARRAY_FILTER_USE_BOTH));
+	}
+
+	static public function basesToTypes( ...$fromBases ) {
+		$types = [];
+		foreach ( $fromBases as $base ) {
+			$types = array_merge($types, self::baseToTypes($base));
+		}
+		return $types;
+	}
+
 	/**
 	 * Getters
 	 */
@@ -33,18 +82,7 @@ class Unit extends Model {
 	}
 
 	public function get_base_type() {
-		switch ( $this->T ) {
-			case 'amp':
-			case 'block':
-			case 'roidscan':
-			case 'scan':
-				return 'wave';
-
-			case 'defence':
-			case 'power':
-			case 'ship':
-				return $this->T;
-		}
+		return self::typeToBase($this->T);
 	}
 
 	/**
@@ -53,12 +91,11 @@ class Unit extends Model {
 
 	public function produce( Planet $planet, $amount ) {
 		global $db;
-		// @todo ETA
 		return $db->insert('planet_production', [
 			'planet_id' => $planet->id,
 			'unit_id' => $this->id,
 			'amount' => $amount,
-			'eta' => 1,
+			'eta' => $this->build_eta,
 		]);
 	}
 

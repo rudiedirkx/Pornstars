@@ -1,8 +1,11 @@
 <?php
 
+use rdx\ps\Unit;
+
 require_once '../inc.bootstrap.php';
 
-$types = ['ship', 'defence', 'roidscan', 'power', 'scan', 'amp', 'block'];
+$types = array_keys(Unit::$types);
+$subtypes = Unit::$subtypes;
 
 // Save existing
 if ( isset($_POST['units']) ) {
@@ -15,9 +18,8 @@ if ( isset($_POST['units']) ) {
 
 		// properties //
 		$data['is_stealth'] = !empty($data['is_stealth']);
-		$data['is_mobile'] = !empty($data['is_mobile']);
-		$data['is_offensive'] = !empty($data['is_offensive']);
 		$data['steals'] or $data['steals'] = null;
+		$data['subtype'] or $data['subtype'] = null;
 		$db->update('d_all_units', $data, compact('id'));
 
 		// costs //
@@ -50,14 +52,14 @@ if ( isset($_POST['units']) ) {
 	return do_redirect(null);
 }
 
-// @todo Create new
+// @todo Create new. Incl type-table, see Unit::$tables
 
 $arrRD = $db->select_fields('d_r_d_available', "id, CONCAT(UPPER(T), ': ', name)", '1 ORDER BY T, id');
 
 $arrUnits = $db->select('d_all_units', '1 ORDER BY FIELD(T, ?), o', [$types]);
 
 $arrOffensiveTypes = ['ship', 'defence'];
-$arrOffensives = $db->select('d_all_units', 'T IN (?) ORDER BY T, o', [$arrOffensiveTypes])->all();
+$arrOffensives = $db->select('d_all_units', 'T IN (?) ORDER BY FIELD(T, ?), o', [$arrOffensiveTypes, $types])->all();
 
 $arrCombatStats = $db->select('d_combat_stats', '1');
 $g_arrCombatStats = array();
@@ -97,48 +99,52 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 			echo '<tr>';
 			echo '<th>Name</th>';
-			echo '<td><input name="units['. $unit->id . '][unit]" value="' . html($unit->unit) . '" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][unit]" value="' . html($unit->unit) . '" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Plural</th>';
-			echo '<td><input name="units['. $unit->id . '][unit_plural]" value="' . html($unit->unit_plural) . '" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][unit_plural]" value="' . html($unit->unit_plural) . '" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Explanation</th>';
-			echo '<td><input name="units['. $unit->id . '][explanation]" value="' . html($unit->explanation) . '" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][explanation]" value="' . html($unit->explanation) . '" /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Build ETA</th>';
-			echo '<td><input name="units['. $unit->id . '][build_eta]" value="' . html($unit->build_eta) . '" size="5" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][build_eta]" value="' . html($unit->build_eta) . '" size="5" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Travel ETA</th>';
-			echo '<td><input name="units['. $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][move_eta]" value="' . html($unit->move_eta) . '" size="5" /></td>';
 			echo '</tr>';
 			echo '<tr>';
 			echo '<th>Power</th>';
-			echo '<td><input name="units['. $unit->id . '][power]" value="' . html($unit->power) . '" size="5" /></td>';
+			echo '<td><input name="units[' . $unit->id . '][power]" value="' . html($unit->power) . '" size="5" /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Stealthy</th>';
-			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_stealth]" ' . ($unit->is_stealth ? 'checked' : '') . ' /></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<th>Mobile</th>';
-			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_mobile]" ' . ($unit->is_mobile ? 'checked' : '') . ' /></td>';
-			echo '</tr>';
-			echo '<tr>';
-			echo '<th>Offensive</th>';
-			echo '<td><input type="checkbox" name="units['. $unit->id . '][is_offensive]" ' . ($unit->is_offensive ? 'checked' : '') . ' /></td>';
+			echo '<td><input type="checkbox" name="units[' . $unit->id . '][is_stealth]" ' . ($unit->is_stealth ? 'checked' : '') . ' /></td>';
 			echo '</tr>';
 
 			echo '<tr>';
 			echo '<th>Steals</th>';
 			echo '<td>';
-			echo '<select name="units['. $unit->id . '][steals]">';
+			echo '<select name="units[' . $unit->id . '][steals]">';
 			echo html_options($arrSteals, $unit->steals, '--');
+			echo '</select>';
+			echo '</td>';
+			echo '</tr>';
+
+			$_subtypes = array_keys(array_filter($subtypes, function($type, $subtype) use ($unit) {
+				return $type == $unit->T;
+			}, ARRAY_FILTER_USE_BOTH));
+			echo '<tr>';
+			echo '<th>Sub type</th>';
+			echo '<td>';
+			echo '<select name="units[' . $unit->id . '][subtype]">';
+			echo html_options(array_combine($_subtypes, $_subtypes), $unit->subtype, '--');
 			echo '</select>';
 			echo '</td>';
 			echo '</tr>';
@@ -146,7 +152,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			echo '<tr>';
 			echo '<th>R&D required</th>';
 			echo '<td>';
-			echo '<select name="units['. $unit->id . '][r_d_required_id]">';
+			echo '<select name="units[' . $unit->id . '][r_d_required_id]">';
 			echo html_options($arrRD, $unit->r_d_required_id);
 			echo '</select>';
 			echo '</td>';
@@ -158,10 +164,15 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 				echo '<tr>';
 				echo '<th>' . html($name) . '</th>';
 				echo '<td>';
-				echo '<input name="units['. $unit->id . '][costs][' . $id . ']" size="5" value="' . @$g_arrCosts[$unit->id][$id] . '" />';
+				echo '<input name="units[' . $unit->id . '][costs][' . $id . ']" size="5" value="' . @$g_arrCosts[$unit->id][$id] . '" />';
 				echo '</td>';
 				echo '</tr>';
 			}
+
+			echo '<tr>';
+			echo '<th>Order</th>';
+			echo '<td><input name="units[' . $unit->id . '][o]" value="' . $unit->o . '" size="5" /></td>';
+			echo '</tr>';
 
 			echo '</table>';
 			echo '</td>';
@@ -178,8 +189,8 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 					echo '<tr>';
 					echo '<td nowrap>' . $unit2->unit . '</td>';
 					echo '<td>';
-					echo '<input name="units['. $unit->id . '][combat_stats][' . $unit2->id . '][ratio]" value="' . ( $combat ? round(1 / $combat[0], 2) : '' ) . '" size="5" />';
-					echo '<input name="units['. $unit->id . '][combat_stats][' . $unit2->id . '][target_priority]" value="'.( $combat ? $combat[1] : '' ) . '" size="1" />';
+					echo '<input name="units[' . $unit->id . '][combat_stats][' . $unit2->id . '][ratio]" value="' . ( $combat ? round(1 / $combat[0], 2) : '' ) . '" size="5" />';
+					echo '<input name="units[' . $unit->id . '][combat_stats][' . $unit2->id . '][target_priority]" value="'.( $combat ? $combat[1] : '' ) . '" size="1" />';
 					echo '</td>';
 					echo '</tr>';
 				}

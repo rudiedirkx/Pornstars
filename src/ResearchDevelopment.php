@@ -91,12 +91,10 @@ class ResearchDevelopment extends Model {
 	public function start( Planet $planet ) {
 		global $db;
 
-		// @todo ETA
-
 		$db->insert('planet_r_d', [
 			'planet_id' => $planet->id,
 			'r_d_id' => $this->id,
-			'eta' => 1,
+			'eta' => $this->eta,
 		]);
 	}
 
