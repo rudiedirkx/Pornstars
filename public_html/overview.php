@@ -81,28 +81,32 @@ _header();
 <br />
 
 
-<h2>.: Mobile units (<?= nummertje($g_user->total_ships) ?>) :.</h2>
-<table>
-	<? foreach ( $g_user->ships as $ship ): ?>
-		<tr>
-			<td><?= html($ship->unit) ?></td>
-			<td><?= nummertje($ship->planet_amount) ?></td>
-		</tr>
-	<? endforeach ?>
-</table>
-<br />
+<? if ( $g_user->ships ): ?>
+	<h2>.: Mobile units (<?= nummertje($g_user->total_ships) ?>) :.</h2>
+	<table>
+		<? foreach ( $g_user->ships as $ship ): ?>
+			<tr>
+				<td><?= html($ship->unit) ?></td>
+				<td><?= nummertje($ship->planet_amount) ?></td>
+			</tr>
+		<? endforeach ?>
+	</table>
+	<br />
+<? endif ?>
 
 
-<h2>.: Static units (<?= nummertje($g_user->total_defences) ?>) :.</h2>
-<table>
-	<? foreach ( $g_user->defences as $defence ): ?>
-		<tr>
-			<td><?= html($defence->unit) ?></td>
-			<td><?= nummertje($defence->planet_amount) ?></td>
-		</tr>
-	<? endforeach ?>
-</table>
-<br />
+<? if ( $g_user->defences ): ?>
+	<h2>.: Static units (<?= nummertje($g_user->total_defences) ?>) :.</h2>
+	<table>
+		<? foreach ( $g_user->defences as $defence ): ?>
+			<tr>
+				<td><?= html($defence->unit) ?></td>
+				<td><?= nummertje($defence->planet_amount) ?></td>
+			</tr>
+		<? endforeach ?>
+	</table>
+	<br />
+<? endif ?>
 
 
 <h2>.: Resources :.</h2>

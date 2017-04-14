@@ -25,6 +25,12 @@ class Unit extends Model {
 		'wave' => 'd_waves',
 	];
 
+	static public $planetTables = [
+		'defence' => 'defence_on_planets',
+		'power' => 'power_on_planets',
+		'wave' => 'waves_on_planets',
+	];
+
 	static public $subtypes = [
 		'sectorscan' => 'scan',
 		'unitscan' => 'scan',
@@ -38,6 +44,12 @@ class Unit extends Model {
 	/**
 	 * Static
 	 */
+
+	static public function typeFilter( ...$types ) {
+		return function($unit) use ($types) {
+			return in_array($unit->T, $types);
+		};
+	}
 
 	static public function typeToBase( $type ) {
 		return self::$types[$type];
@@ -77,7 +89,7 @@ class Unit extends Model {
 		return $variants;
 	}
 
-	public function get_number_owmed() {
+	public function get_number_owned() {
 		switch ( $this->base_type ) {
 			case 'wave':
 				return $this->numberOnPlanet('waves_on_planets', $this->id, $this->planet_id);
@@ -129,6 +141,10 @@ class Unit extends Model {
 			's.fleet_id = f.id AND f.owner_planet_id = ? AND s.unit_id = ?',
 			[$planetId, $unitId]
 		);
+	}
+
+	public function __toString() {
+		return $this->unit;
 	}
 
 }

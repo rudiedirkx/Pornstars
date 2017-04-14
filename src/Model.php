@@ -18,11 +18,12 @@ class Model {
 		return $object;
 	}
 
-	public function update( array $data ) {
+	public function update( $data ) {
 		global $db;
-		$this->presave($data);
+
+		is_array($data) and $this->presave($data);
 		$db->update(static::$table, $data, ['id' => $this->id]);
-		$this->fill($data);
+		is_array($data) and $this->fill($data);
 	}
 
 	protected function presave( array &$data ) {
@@ -40,6 +41,17 @@ class Model {
 	/**
 	 * Static
 	 */
+
+	static public function _options( $objects, $label = null ) {
+		return array_reduce($objects, function($list, $object) use ($label) {
+			return $list + [$object->id => $label ? $object->$label : (string) $object];
+		}, []);
+	}
+
+	static public function options( ...$args ) {
+		$objects = static::all(...$args);
+		return static::_options($objects);
+	}
 
 	static public function first( $conditions, $params = [] ) {
 		global $db;

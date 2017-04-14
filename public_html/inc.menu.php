@@ -34,12 +34,6 @@ $menu = array(
 ?>
 <ul id="mmenu">
 	<? foreach ( $menu AS $item ): ?>
-		<li>
-			<? if ( $item ): ?>
-				<a href="<?= html($item[1]) ?>"><?= html($item[0]) ?></a>
-			<? else: ?>
-				&nbsp;
-			<? endif ?>
-		</li>
+		<li><?= $item ? '<a href="' . html($item[1]) . '">' . html($item[0]) . '</a>' : '&nbsp;' ?></li>
 	<? endforeach ?>
 </ul>

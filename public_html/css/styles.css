@@ -44,6 +44,11 @@ button {
 button:focus {
 	color: lightblue;
 }
+button:disabled {
+	cursor: not-allowed;
+	border-color: #777;
+	color: #777;
+}
 
 a,
 label {
@@ -64,8 +69,16 @@ a:focus {
 span.resource {
 	padding: 1px 3px;
 }
+input[type="number"] {
+	width: 3.5em;
+	text-align: center;
+}
 input.costs {
-	width: 3em;
+	width: 2.75em;
+	text-align: center;
+}
+input.coord {
+	width: 2em;
 	text-align: center;
 }
 
@@ -120,4 +133,21 @@ h2 {
 	color: #3388dd;
 	font-weight: bold;
 	text-align: center;
+}
+
+
+
+
+
+/**
+ * FIXES
+ */
+
+input[type="number"] {
+	-moz-appearance:textfield;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
 }

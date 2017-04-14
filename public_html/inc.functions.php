@@ -67,6 +67,22 @@ function accessFail( $message ) {
 
 
 
+function scanForAsteroids( $scans, $size, $amps ) {
+	$nr = $a = 0;
+	if ( $a != $scans ) {
+		while ( $a < $scans ) {
+			$a++;
+			$rnd = rand(0, $size+$nr)*0.5;
+			if ( $rnd < 50 * (1 + sqrt($amps)) / max(1, $size + $nr) ) {
+				$nr++;
+			}
+		}
+	}
+	return $nr;
+}
+
+
+
 function db_transaction_update( $f_arrUpdates, $f_szIfField, $f_szUpdateField ) {
 	db_query("BEGIN;");
 	$szIfClause = '__N__';
@@ -423,6 +439,9 @@ function getProductionList( ...$bases ) {
 			$matrixEtas[] = null;
 		}
 	}
+	if ( count($matrixEtas) > 1 && $matrixEtas[0] === 1 && $matrixEtas[1] === null && !in_array(1, $etas) ) {
+		array_shift($matrixEtas);
+	}
 
 	$szHtml  = '<table>';
 	$szHtml .= '<tr>';
@@ -456,7 +475,7 @@ function getProductionForm( ...$bases ) {
 		FROM d_all_units u
 		JOIN planet_r_d rd ON rd.r_d_id = u.r_d_required_id AND rd.planet_id = ? AND eta = 0
 		WHERE u.T IN (?)
-		ORDER BY u.T ASC, u.o ASC
+		ORDER BY u.o ASC
 	', [
 		'params' => [$g_user->id, $types],
 		'class' => Unit::class,
@@ -482,7 +501,7 @@ function getProductionForm( ...$bases ) {
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->id . '</td>';
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . html($unit->unit_plural) . '<br />' . html($unit->explanation) . '</td>';
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->build_eta . '</td>';
-		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->number_owmed . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->number_owned . '</td>';
 
 		// Costs & order
 		$szHtml .= '<td nowrap>' . renderCostsVariant($unit->costs[0]) . '</td>';

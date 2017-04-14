@@ -21,6 +21,36 @@ class Planet extends Model {
 	 * Getters
 	 */
 
+	public function get_asteroid_scans() {
+		foreach ( $this->waves as $wave ) {
+			if ( $wave->T == 'roidscan' ) {
+				return (int) $wave->planet_amount;
+			}
+		}
+
+		return 0;
+	}
+
+	public function get_wave_amps() {
+		foreach ( $this->waves as $wave ) {
+			if ( $wave->T == 'amp' ) {
+				return (int) $wave->planet_amount;
+			}
+		}
+
+		return 0;
+	}
+
+	public function get_wave_blockers() {
+		foreach ( $this->waves as $wave ) {
+			if ( $wave->T == 'blocker' ) {
+				return (int) $wave->planet_amount;
+			}
+		}
+
+		return 0;
+	}
+
 	public function get_doing_rd() {
 		global $db;
 		return $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
@@ -48,35 +78,15 @@ class Planet extends Model {
 	}
 
 	public function get_defences() {
-
-		// @todo Filter on R & D
-
-		global $db;
-		return $db->fetch('
-			SELECT a.*, amount AS planet_amount
-			FROM d_all_units a
-			LEFT JOIN defence_on_planets p ON p.unit_id = a.id AND p.planet_id = ?
-			WHERE a.T = ?
-		', [
-			'params' => [$this->id, 'defence'],
-			'class' => Unit::class,
-		])->all();
+		return $this->getUnits('defence');
 	}
 
 	public function get_waves() {
+		return $this->getUnits('wave');
+	}
 
-		// @todo Filter on R & D
-
-		global $db;
-		return $db->fetch('
-			SELECT a.*, amount AS planet_amount
-			FROM d_all_units a
-			LEFT JOIN waves_on_planets p ON p.unit_id = a.id AND p.planet_id = ?
-			WHERE a.T IN (?)
-		', [
-			'params' => [$this->id, Unit::baseToTypes('wave')],
-			'class' => Unit::class,
-		])->all();
+	public function get_power() {
+		return $this->getUnits('power');
 	}
 
 	public function get_total_ships() {
@@ -86,15 +96,13 @@ class Planet extends Model {
 	}
 
 	public function get_ships() {
-
-		// @todo Filter on R & D
-
 		global $db;
 		return $db->fetch('
 			SELECT a.*, SUM(s.amount) AS planet_amount
 			FROM d_all_units a
+			JOIN planet_r_d rd ON rd.r_d_id = a.r_d_required_id AND rd.planet_id = ? AND eta = 0
 			LEFT JOIN ships_in_fleets s ON s.unit_id = a.id
-			LEFT JOIN fleets f ON f.id = s.fleet_id AND f.owner_planet_id = ?
+			LEFT JOIN fleets f ON f.id = s.fleet_id AND f.owner_planet_id = rd.planet_id
 			WHERE a.T = ?
 			GROUP BY a.id
 		', [
@@ -168,6 +176,24 @@ class Planet extends Model {
 	/**
 	 * Logic
 	 */
+
+	public function getUnits( $baseType ) {
+		global $db;
+
+		$table = Unit::$planetTables[$baseType];
+		$types = Unit::baseToTypes($baseType);
+
+		return $db->fetch("
+			SELECT a.*, p.amount AS planet_amount
+			FROM d_all_units a
+			JOIN planet_r_d rd ON rd.r_d_id = a.r_d_required_id AND rd.planet_id = ? AND eta = 0
+			LEFT JOIN {$table} p ON p.unit_id = a.id AND p.planet_id = rd.planet_id
+			WHERE a.T IN (?)
+		", [
+			'params' => [$this->id, $types],
+			'class' => Unit::class,
+		])->all();
+	}
 
 	public function canRD( $type, $id ) {
 		$doing = $this->getRD($type);

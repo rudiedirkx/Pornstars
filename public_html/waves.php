@@ -1,5 +1,7 @@
 <?php
 
+use rdx\ps\Unit;
+
 require 'inc.bootstrap.php';
 
 logincheck();
@@ -15,32 +17,25 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 }
 
 // SCAN FOR ASTEROIDS //
-// @todo
-else if ( isset($_POST['number_of_asteroid_scans'], $_POST['roid_scan_id']) ) {
-	$iTotalAsteroidScans = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = '.(int)$_POST['roid_scan_id'].' AND u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.PLANET_ID.' AND u.T = \'roidscan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)' );
-	$a = (int)min( $_POST['number_of_asteroid_scans'], $iTotalAsteroidScans );
-
-	if ( 0 >= $a ) {
-		exit(json_encode(array(
-			array('msg', 'Invalid amount!'),
-		)));
+else if ( isset($_POST['asteroid_scans']) ) {
+	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] < $g_user->asteroid_scans ) {
+		return do_json([
+			['msg', 'Invalid amount!'],
+		]);
 	}
 
-	$iTotalWaveAmps = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.PLANET_ID.' AND u.T = \'amp\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)' );
+	$amps = $g_user->wave_amps;
+	$roids = $g_user->inactive_asteroids + array_sum(array_column($g_user->resources, 'asteroids'));
 
-	$iAsteroids = $g_arrUser['inactive_asteroids'];
-	foreach ( $g_arrResources AS $r ) { $iAsteroids += $r['asteroids']; }
-	$iAsteroidsFound = calcres( $a, $iAsteroids, $iTotalWaveAmps );
+	$found = scanForAsteroids($_POST['asteroid_scans'], $roids, $amps);
 
-	if ( db_update('waves_on_planets', 'amount = amount-'.$a, 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$_POST['roid_scan_id'].'') && 0 < db_affected_rows() ) {
-		db_update( 'planets', 'inactive_asteroids = inactive_asteroids+'.$iAsteroidsFound, 'id = '.PLANET_ID );
-	}
-	$iScansLefs = db_select_one('waves_on_planets', 'amount', 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$_POST['roid_scan_id'].'');
+	// @todo Update available asteroid scans
 
-	exit(json_encode(array(
-		array('html', 'unit_amount_'.(int)$_POST['roid_scan_id'], nummertje($iScansLefs)),
-		array('msg', 'Your '.nummertje($a).' scans found '.nummertje($iAsteroidsFound).' Asteroids!'),
-	)));
+	$g_user->update('inactive_asteroids = inactive_asteroids + ' . (int) $found);
+
+	return do_json([
+		['msg', 'Found ' . $found . ' asteroids.'],
+	]);
 }
 
 // INTELLIGENCE SCAN A PLANET //
@@ -305,63 +300,68 @@ ORDER BY
 
 _header();
 
+$intelScans = Unit::_options(array_filter($g_user->waves, Unit::typeFilter('scan')));
+
 ?>
 <h1>Waves</h1>
+
+<!-- <h2>Intelligence</h2> -->
+<form method="post" action autocomplete="off">
+	<table>
+		<tr>
+			<th>Type</th>
+			<th>Target</th>
+			<th>Number</th>
+			<th></th>
+		</tr>
+		<tr>
+			<td><select name="intel_scan_id"><?= html_options($intelScans) ?></select></td>
+			<td>
+				<input class="coord" type="number" name="x" placeholder="x" />
+				<input class="coord" type="number" name="y" placeholder="y" />
+				<input class="coord" type="number" name="z" placeholder="z" />
+			</td>
+			<td><input type="number" name="amount" /></td>
+			<td><button>Search</button></td>
+		</tr>
+	</table>
+</form>
+<br />
+
+<h2>Asteroids</h2>
+<form method="post" action autocomplete="off">
+	<table>
+		<tr>
+			<th>Inactive asteroids</th>
+			<td><?= nummertje($g_user->inactive_asteroids) ?></td>
+			<td colspan="2"></td>
+		</tr>
+		<tr>
+			<th>Wave amps</th>
+			<td><?= nummertje($g_user->wave_amps) ?></td>
+			<td colspan="2"></td>
+		</tr>
+		<tr>
+			<th>Asteroid scans</th>
+			<td><?= nummertje($g_user->asteroid_scans) ?></td>
+			<td><input type="number" name="asteroid_scans" max="<?= $g_user->asteroid_scans ?>" /></td>
+			<td><button <?= !$g_user->asteroid_scans ? 'disabled' : '' ?>>Scan</button></td>
+		</tr>
+	</table>
+</form>
+<br />
 
 <h2>Order new</h2>
 <div id="div_productionform">
 	<?= getProductionForm('wave') ?>
 </div>
+<br />
 
 <h2>Production progress</h2>
 <div id="div_productionlist">
 	<?= getProductionList('wave') ?>
 </div>
-
-<h2>Commands</h2>
-<form method="post" action autocomplete="off">
-	<table>
-		<tr>
-			<th>Type</th>
-			<th>Number / Target</th>
-			<td></td>
-		</tr>
-		<tr>
-			<td>
-				<select name="roid_scan_id">
-					<option value="">--</option>
-					<!-- @todo roidscan -->
-				</select>
-			</td>
-			<td>
-				<input type="text" name="number_of_asteroid_scans" /></td>
-			<td>
-				<button>Search</button>
-			</td>
-		</tr>
-	</table>
-</form>
-
-<form method="get" action autocomplete="off">
-	<table>
-		<tr>
-			<td>
-				<select name="intel_scan_id">
-					<option value="">--</option>
-					<!-- @todo Mobile scans -->
-				</select>
-			</td>
-			<td>
-				<input name="x" size="3" />
-				<input name="y" size="3" />
-				<input name="z" size="3" />
-			</td>
-			<td>
-				<button>Scan</button>
-			</td>
-		</tr>
-	</table>
-</form>
+<br />
 
 <?php
 
