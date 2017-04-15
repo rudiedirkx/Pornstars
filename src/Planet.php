@@ -177,19 +177,42 @@ class Planet extends Model {
 	 * Logic
 	 */
 
+	public function createSectorScanReport( Planet $scanner ) {
+		// @todo Skip stealth units
+
+		return [
+			'Score' => nummertje($this->score),
+			'Asteroids' => nummertje($this->total_asteroids),
+			'Resources' => nummertje(Unit::countReduce($this->resources, 'amount')),
+		] + array_reduce($this->resources, function($list, $resource) {
+				return $list + [$resource->resource => nummertje($resource->amount)];
+			}, [])
+		+ [
+			'Ships' => nummertje(Unit::countReduce($this->ships, 'planet_amount')),
+			'Defences' => nummertje(Unit::countReduce($this->defences, 'planet_amount')),
+		];
+	}
+
+	public function createScanReport( Unit $scan, Planet $scanner ) {
+		$function = "create{$scan->subtype}Report";
+		if ( is_callable($method = [$this, $function]) ) {
+			return call_user_func($method, $scanner);
+		}
+	}
+
 	public function getUnits( $baseType ) {
 		global $db;
 
 		$table = Unit::$planetTables[$baseType];
 		$types = Unit::baseToTypes($baseType);
 
-		return $db->fetch("
+		return $db->fetch_by_field("
 			SELECT a.*, p.amount AS planet_amount
 			FROM d_all_units a
 			JOIN planet_r_d rd ON rd.r_d_id = a.r_d_required_id AND rd.planet_id = ? AND eta = 0
 			LEFT JOIN {$table} p ON p.unit_id = a.id AND p.planet_id = rd.planet_id
 			WHERE a.T IN (?)
-		", [
+		", 'id', [
 			'params' => [$this->id, $types],
 			'class' => Unit::class,
 		])->all();
@@ -254,6 +277,16 @@ class Planet extends Model {
 
 	public function __toString() {
 		return "{$this->rulername} of {$this->planetname}";
+	}
+
+	/**
+	 * Static
+	 */
+
+	static public function fromCoordinates( $x, $y, $z ) {
+		if ( $galaxy = Galaxy::fromCoordinates($x, $y) ) {
+			return self::first(['galaxy_id' => $galaxy->id, 'z' => $z]);
+		}
 	}
 
 	/**

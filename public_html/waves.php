@@ -1,5 +1,6 @@
 <?php
 
+use rdx\ps\Planet;
 use rdx\ps\Unit;
 
 require 'inc.bootstrap.php';
@@ -18,6 +19,9 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 
 // SCAN FOR ASTEROIDS //
 else if ( isset($_POST['asteroid_scans']) ) {
+
+	validTokenOrFail('scan');
+
 	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] < $g_user->asteroid_scans ) {
 		return do_json([
 			['msg', 'Invalid amount!'],
@@ -40,84 +44,60 @@ else if ( isset($_POST['asteroid_scans']) ) {
 
 // INTELLIGENCE SCAN A PLANET //
 // @todo
-else if ( isset($_GET['intel_scan_id'], $_GET['x'], $_GET['y'], $_GET['z']) ) {
-	$arrScan = db_fetch('SELECT *, u.id AS scan_id FROM d_all_units u WHERE id = '.(int)$_GET['intel_scan_id'].' AND u.T = \'scan\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0) AND 0 < (SELECT amount FROM waves_on_planets WHERE planet_id = '.PLANET_ID.' AND wave_id = scan_id)');
-	if ( !$arrScan ) {
-		exit(json_encode(array(
-			array('msg', 'Invalid scan!'),
-		)));
+else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) ) {
+
+	validTokenOrFail('scan');
+
+	$intelScans = array_filter($g_user->waves, Unit::typeFilter('scan'));
+	if ( !isset($intelScans[ $_POST['intel_scan_id'] ]) ) {
+		return accessFail('scan');
 	}
-	$arrScan = $arrScan[0];
 
-	$arrTarget = db_select('galaxies g, planets p', 'g.id = p.galaxy_id AND p.z = '.(int)$_GET['z'].' AND g.y = '.(int)$_GET['y'].' AND g.x = '.(int)$_GET['x']);
-	if ( !$arrTarget ) {
-		exit(json_encode(array(
-			array('msg', 'Invalid coordinates!'),
-		)));
+	$scan = $intelScans[ $_POST['intel_scan_id'] ];
+
+	$planet = Planet::fromCoordinates($_POST['x'], $_POST['y'], $_POST['z']);
+	if ( !$planet ) {
+		return accessFail('planet');
 	}
-	$arrTarget = $arrTarget[0];
 
-	$iMyWaveAmps = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.PLANET_ID.' AND u.T = \'amp\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.PLANET_ID.' AND eta = 0)' );
-	$iMyAsteroids = $g_arrUser['inactive_asteroids'];
-	foreach ( $g_arrResources AS $r ) { $iMyAsteroids += $r['asteroids']; }
+	$amps = $g_user->wave_amps;
+	$roids = $g_user->total_asteroids;
 
-	$iTargetWaveBlockers = (int)db_select_one( 'd_all_units u, d_waves w, waves_on_planets p', 'IFNULL(SUM(amount),0)', 'u.id = w.id AND w.id = p.wave_id AND p.planet_id = '.(int)$arrTarget['id'].' AND u.T = \'block\' AND u.r_d_required_id IN (SELECT r_d_id FROM planet_r_d WHERE planet_id = '.(int)$arrTarget['id'].' AND eta = 0)' );
-	$iTargetAsteroids = $arrTarget['inactive_asteroids'];
-	foreach ( db_select('planet_resources', 'planet_id = '.$arrTarget['id']) AS $r ) { $iTargetAsteroids += $r['asteroids']; }
+	$targetBlockers = $planet->wave_blockers;
+	$targetRoids = $planet->total_asteroids;
 
-	// kansen berekenen
-	$chance = 30 * (1 + $iMyWaveAmps/max(1, $iMyAsteroids) - $iTargetWaveBlockers/max(1,$iTargetAsteroids));
-	$rval = rand(0, 100);
-	$scan_fact = $arrScan['fuel'];
-	$blocked = $noticed = false;
-	if ( $rval < $chance ) {
-		if ($rval+5*$scan_fact > $chance ) {
-			$noticed = true;
-		}
+	// @todo Incorporate $scan->fuel into $chance
+
+	$chance = 10 * (1 + $amps / max(1, $roids) - $targetBlockers / max(1, $targetRoids));
+	$luck = rand(0, 100);
+	$blocked = $luck < $chance;
+	$noticed = $luck * 3 < $chance && intval($chance) % 10 == 1;
+
+	// @todo Update available scans
+
+	if ( $noticed ) {
+		// @todo Planet news
+		// $planet->createNews('waves', "{$g_user} " . ( $blocked ? " tried to {$scan} you, but failed." : "scanned you ({$scan})." ));
+	}
+
+	// @todo Prettify and save results
+
+	$_SESSION['last_scanned'] = $planet->coordinates;
+
+	if ( $blocked ) {
+		sessionWarning("You failed to scan {$planet}.");
 	}
 	else {
-		$blocked = true;
-		$noticed = true;
+		$report = $planet->createScanReport($scan, $g_user);
+		sessionSuccess(html("{$scan} for {$planet}") . ':<br /><pre>' . print_r($report, 1) . '</pre>');
 	}
 
-
-	db_update('waves_on_planets', 'amount=amount-1', 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$arrScan['scan_id'].' AND amount > 0');
-	if ( 0 >= db_affected_rows() ) {
-		exit(json_encode(array(
-			array('msg', 'Invalid scan!'),
-		)));
-	}
-	$iScansLefs = db_select_one('waves_on_planets', 'amount', 'planet_id = '.PLANET_ID.' AND wave_id = '.(int)$arrScan['scan_id']);
-	$arrScansLeftAjaxUpdate = array('html', 'unit_amount_'.(int)$_GET['intel_scan_id'], nummertje($iScansLefs));
-
+	return do_redirect();
 
 	$szHTML = '';
 	if ( !$blocked ) {
-		if ( $noticed) {
-			if ( (int)$arrTarget['id'] !== PLANET_ID ) {
-				AddNews( NEWS_SUBJECT_WAVES, '<b>'.$g_arrUser['rulername'].' of '.$g_arrUser['planetname'].'</b> ('.$g_arrUser['x'].':'.$g_arrUser['y'].':'.$g_arrUser['z'].') tried to <b>'.$arrScan['unit'].'</b> you and succeeded!!', $arrTarget['id']);
-			}
-		}
 		switch ( (int)$arrScan['scan_id'] )
 		{
-			case 15: // sector
-				$iDefence = (int)db_select_one( 'defence_on_planets', 'sum(amount)', 'planet_id = '.(int)$arrTarget['id'] );
-				$iShips = (int)db_select_one( 'fleets f, ships_in_fleets s', 'sum(s.amount)', 's.fleet_id = f.id AND f.owner_planet_id = '.(int)$arrTarget['id'] );
-
-				$szHTML .= "<table border=0 cellpadding=2 cellspacing=0 width=100% class=\"widecells\">\n";
-				$szHTML .= '<tr><td colspan="2"><center><b>BASIC Infiltration Report on '.$arrTarget['rulername'].' of '.$arrTarget['planetname'].' ('.$arrTarget['x'].':'.$arrTarget['y'].':'.$arrTarget['z'].')</b></td></tr>';
-				$szHTML .= "<tr class=\"bt\"><td align=right width=\"50%\">Score</td><td>".nummertje($arrTarget['score'])."</td></tr>\n";
-				$szAsteroids = '';
-				foreach ( db_select('d_resources r, planet_resources pr', 'r.id = pr.resource_id AND pr.planet_id = '.$arrTarget['id']) AS $r ) {
-					$szHTML .= "<tr class=\"bt\"><td align=right>".$r['resource']."</td><td>".nummertje($r['amount'])."</td></tr>\n";
-					$szAsteroids .= "<tr class=\"bt\"><td align=right>".$r['resource']." asteroids</td><td>".nummertje($r['asteroids'])."</td></tr>\n";
-				}
-				$szHTML .= $szAsteroids;
-				$szHTML .= "<tr class=\"bt\"><td align=right>Inactive Asteroids</td><td>".nummertje($arrTarget['inactive_asteroids'])."</td></tr>\n";
-				$szHTML .= "<tr class=\"bt\"><td align=right># Ships</td><td>".nummertje($iShips)."</td></tr>\n";
-				$szHTML .= "<tr class=\"bt\"><td align=right># Defence</td><td>".nummertje($iDefence)."</td></tr>\n";
-				$szHTML .= "</table>\n";
-			break;
 
 			case 16: // unit
 				$arrShips = db_fetch_fields('
@@ -270,32 +250,10 @@ ORDER BY
 				}
 				$szHTML .= '</table>';
 			break;
-
-			default:
-				exit(json_encode(array(
-					array('msg', 'Invalid scan ['.(int)$arrScan['scan_id'].']!'),
-					$arrScansLeftAjaxUpdate,
-				)));
-			break;
 		}
-
-		// PRINT SUCCESS
-		exit(json_encode(array(
-			$arrScansLeftAjaxUpdate,
-			array('html', 'div_scanresults', $szHTML),
-			array('eval', "$('div_scanresults').style.border='solid 1px red';$('div_scanresults').style.marginBottom='15px;';"),
-		)));
 	}
 
-	// YOU FAILED
-	if ( (int)$arrTarget['id'] !== PLANET_ID ) {
-		AddNews( NEWS_SUBJECT_WAVES, '<b>'.$g_arrUser['rulername'].' of '.$g_arrUser['planetname'].'</b> ('.$g_arrUser['x'].':'.$g_arrUser['y'].':'.$g_arrUser['z'].') tried to <b>'.$arrScan['unit'].'</b> you, but he failed!', $arrTarget['id']);
-	}
-	exit(json_encode(array(
-		$arrScansLeftAjaxUpdate,
-		array('msg', 'You failed scanning the target!'),
-	)));
-
+	exit;
 }
 
 _header();
@@ -307,21 +265,22 @@ $intelScans = Unit::_options(array_filter($g_user->waves, Unit::typeFilter('scan
 
 <!-- <h2>Intelligence</h2> -->
 <form method="post" action autocomplete="off">
+	<input type="hidden" name="_token" value="<?= createToken('scan') ?>" />
 	<table>
 		<tr>
 			<th>Type</th>
 			<th>Target</th>
-			<th>Number</th>
+			<!-- <th>Number</th> -->
 			<th></th>
 		</tr>
 		<tr>
 			<td><select name="intel_scan_id"><?= html_options($intelScans) ?></select></td>
 			<td>
-				<input class="coord" type="number" name="x" placeholder="x" />
-				<input class="coord" type="number" name="y" placeholder="y" />
-				<input class="coord" type="number" name="z" placeholder="z" />
+				<input class="coord" type="number" name="x" placeholder="x" value="<?= @$_SESSION['last_scanned'][0] ?>" />
+				<input class="coord" type="number" name="y" placeholder="y" value="<?= @$_SESSION['last_scanned'][1] ?>" />
+				<input class="coord" type="number" name="z" placeholder="z" value="<?= @$_SESSION['last_scanned'][2] ?>" />
 			</td>
-			<td><input type="number" name="amount" /></td>
+			<!-- <td><input type="number" name="amount" /></td> -->
 			<td><button>Search</button></td>
 		</tr>
 	</table>
@@ -330,6 +289,7 @@ $intelScans = Unit::_options(array_filter($g_user->waves, Unit::typeFilter('scan
 
 <h2>Asteroids</h2>
 <form method="post" action autocomplete="off">
+	<input type="hidden" name="_token" value="<?= createToken('scan') ?>" />
 	<table>
 		<tr>
 			<th>Inactive asteroids</th>

@@ -83,6 +83,24 @@ function scanForAsteroids( $scans, $size, $amps ) {
 
 
 
+function sessionMessage( $message, $type = 'notice' ) {
+	$_SESSION['ps_msg'] = [$type, $message];
+}
+
+function sessionSuccess( $message ) {
+	return sessionMessage($message, 'success');
+}
+
+function sessionWarning( $message ) {
+	return sessionMessage($message, 'warning');
+}
+
+function sessionError( $message ) {
+	return sessionMessage($message, 'error');
+}
+
+
+
 function db_transaction_update( $f_arrUpdates, $f_szIfField, $f_szUpdateField ) {
 	db_query("BEGIN;");
 	$szIfClause = '__N__';
@@ -562,12 +580,6 @@ function Verschil_In_Tijd( $tijd ) {
 	$seconden = $tijd-$minuten*60;
 
 	return ( 0 < $dagen ? $dagen.'d ' : '' ) . str_pad((string)$uren, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string)$minuten, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string)$seconden, 2, '0', STR_PAD_LEFT);
-}
-
-function Save_Msg( $msg, $color = 'red' )
-{
-	$_SESSION['ps_msg']['msg'] = $msg;
-	$_SESSION['ps_msg']['color'] = $color;
 }
 
 

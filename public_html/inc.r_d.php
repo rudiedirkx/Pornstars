@@ -66,7 +66,7 @@ tr.doing {
 					</span>
 				<? endif ?>
 			</td>
-			<td><?= $rd->is_doing ? "{$rd->planet_eta} / {$rd->eta}" : $rd->eta ?></td>
+			<td><?= $rd->is_doing ? $rd->planet_eta : $rd->eta ?></td>
 			<td><?= $rd->is_doing ? $rd->pct_done . ' %' : '' ?></td>
 			<td>
 				<? if ( !$rd->is_done && !$rd->is_doing && !$inProgress ): ?>

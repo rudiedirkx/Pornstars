@@ -46,7 +46,7 @@ else if ( isset($_POST['resend_code']) ) {
 <body bgcolor="black">
 <center>
 
-<?php echo isset($_SESSION['ps_msg']['msg']) ? '<span style="color:'.$_SESSION['ps_msg']['color'].';">'.$_SESSION['ps_msg']['msg'].'</span>' : ''; ?><br />
+<?php include 'inc.message.php'; ?>
 
 <h1>ACTIVATION</h1><br />
 <br />

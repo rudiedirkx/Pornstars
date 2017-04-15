@@ -32,7 +32,9 @@ $tickertimetxt = (($tickdif > $TICKERTIME)?"<font color=red>":"") . Verschil_In_
 <body bgcolor="black">
 <center>
 <br />
-<?php echo (isset($_SESSION['ps_msg']))?"<font color=\"".$_SESSION['ps_msg']['color']."\">".$_SESSION['ps_msg']['msg']."</font>":""?><br>
+
+<?php include 'inc.message.php'; ?>
+
 <br />
 <br />
 <a href="manual.php">Manual</a><br />

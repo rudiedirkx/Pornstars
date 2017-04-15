@@ -47,7 +47,7 @@ class ResearchDevelopment extends Model {
 		elseif ( !$this->is_done ) {
 			return $this->id + 100;
 		}
-		return $this->id + 10000;
+		return 10000 - $this->o;
 	}
 
 	public function get_is_done() {

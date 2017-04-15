@@ -152,7 +152,7 @@ function L(a) {
 
 <br />
 
-<?php echo (isset($_SESSION['ps_msg']))?"<font color=\"".$_SESSION['ps_msg']['color']."\">".$_SESSION['ps_msg']['msg']."</font>":""?><br>
+<?php include 'inc.message.php'; ?>
 
 <?php echo (!$g_prefs->general_login)?"<font color=red><b>LOGIN HAS BEEN DISABLED</b></font><br>":""?>
 

@@ -45,6 +45,12 @@ class Unit extends Model {
 	 * Static
 	 */
 
+	static public function countReduce( $units, $column, $base = 0 ) {
+		return array_reduce($units, function($total, $unit) use ($column) {
+			return $total + $unit->$column;
+		}, 0);
+	}
+
 	static public function typeFilter( ...$types ) {
 		return function($unit) use ($types) {
 			return in_array($unit->T, $types);

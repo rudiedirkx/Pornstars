@@ -70,7 +70,9 @@ if ( isset($_GET['action']) && $_GET['action'] == 'activate' )
 	?>
 <table border=0 cellpadding=5 cellspacing=0 width=100%><tr><td><center><a href="./?changepage=index">Index</a> &nbsp; || &nbsp; <a href="./?changepage=login">Login</a> &nbsp; || &nbsp; <a href="./?changepage=signup">Signup</a> &nbsp;||&nbsp; <a href="./?changepage=menu"><b>Play</b></a> &nbsp;||&nbsp; <a href="./comp.php" target=_parent>Administrate</a></td></tr></table>
 <center><br>
-<font color="<?=$_SESSION['ps_msg']['color']?>"><?=$_SESSION['ps_msg']['msg']?></font><br>
+
+<?php include 'inc.message.php'; ?>
+
 <br>
 <b style='font-size:30px;'>ACTIVATION</b><br>
 <br>
@@ -90,7 +92,9 @@ else if ( isset($_GET['action']) && $_GET['action'] == 'new_email' )
 	?>
 <table border=0 cellpadding=5 cellspacing=0 width=100%><tr><td><center><a href="./?changepage=index">Index</a> &nbsp; || &nbsp; <a href="./?changepage=login">Login</a> &nbsp; || &nbsp; <a href="./?changepage=signup">Signup</a> &nbsp;||&nbsp; <a href="./?changepage=menu"><b>Play</b></a> &nbsp;||&nbsp; <a href="./comp.php" target=_parent>Administrate</a></td></tr></table>
 <center><br>
-<font color="<?=$_SESSION['ps_msg']['color']?>"><?=$_SESSION['ps_msg']['msg']?></font><br>
+
+<?php include 'inc.message.php'; ?>
+
 <br>
 <b style='font-size:30px;'>NEW E-MAIL ADDRESS</b><br>
 <br>

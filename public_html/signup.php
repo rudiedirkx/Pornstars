@@ -149,8 +149,11 @@ $arrRaces = db_select_fields('d_races', 'id,race', '1 ORDER BY id ASC');
 
 <center>
 <br>
-<?php echo (isset($_SESSION['ps_msg']))?"<font color=\"".$_SESSION['ps_msg']['color']."\">".$_SESSION['ps_msg']['msg']."</font>":""?><br>
+
+<?php include 'inc.message.php'; ?>
+
 <?php echo (!$GAMEPREFS['general_signup'])?"<font color=red><b>SIGNUP HAS BEEN DISABLED</b></font><br>":""?>
+
 <br />
 <b>SIGNUP</b><br />
 

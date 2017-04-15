@@ -12,7 +12,9 @@ $_time = microtime(1);
 // Resources
 // R & D
 // Production
+// Wave & energy decay
 // Fleet travel
+// Combat
 
 $ticker = Ticker::instance();
 

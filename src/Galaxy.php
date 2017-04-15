@@ -24,4 +24,12 @@ class Galaxy extends Model {
 		return "{$this->x}:{$this->y}";
 	}
 
+	/**
+	 * Static
+	 */
+
+	static public function fromCoordinates( $x, $y ) {
+		return self::first(['x' => $x, 'y' => $y]);
+	}
+
 }

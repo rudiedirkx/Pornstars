@@ -63,6 +63,32 @@ a:focus {
 }
 
 /**
+ * MESSAGES
+ */
+
+.message {
+	margin: 1em 0;
+	padding: 10px;
+	background: blue;
+}
+.message.success {
+	background: green;
+}
+.message.warning {
+	background: orange;
+	color: black;
+}
+.message.error {
+	background: #c00;
+}
+.message > :first-child {
+	margin-top: 0;
+}
+.message > :last-child {
+	margin-bottom: 0;
+}
+
+/**
  * RESOURCES
  */
 

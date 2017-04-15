@@ -146,9 +146,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 </table>
 <?php
 
-if ( isset($_SESSION['ps_msg']) ) {
-	echo '<div class="b right" style="color: ' . $_SESSION['ps_msg']['color'] . '">' . $_SESSION['ps_msg']['msg'] . '</div>';
-}
+include 'inc.message.php';
 
 // if ( 0 < count($arrIncomingFleets) ) {
 // 	echo '<table border="0" cellpadding="3" cellspacing="0">';
@@ -157,7 +155,4 @@ if ( isset($_SESSION['ps_msg']) ) {
 // 		echo '<tr style="color:'.( $arrFleet['action'] == 'defend' ? 'lime' : 'red' ).';">'./*'<td align="right">['.$FLEETNAMES[$arrFleet['fleetname']].']</td>'.*/'<td><b>'.$arrFleet['owner'].' is '.$arrFleet['action'].'ing you with '.nummertje($arrFleet['num_units']).' ships ('.$szEta.')</td></tr>';
 // 	}
 // 	echo '</table>';
-// }
-// else if ( !isset($_SESSION['ps_msg']) ) {
-// 	echo '<br />';
 // }
