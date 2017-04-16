@@ -12,6 +12,18 @@ class Galaxy extends Model {
 	 * Getters
 	 */
 
+	public function get_total_asteroids() {
+		return array_reduce($this->planets, function($total, $planet) {
+			return $total + $planet->total_asteroids;
+		}, 0);
+	}
+
+	public function get_score() {
+		return array_reduce($this->planets, function($total, $planet) {
+			return $total + $planet->score;
+		}, 0);
+	}
+
 	public function get_coordinates() {
 		return [$this->x, $this->y];
 	}

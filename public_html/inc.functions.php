@@ -661,19 +661,6 @@ function AddNews( $f_iSubject, $f_szMessage, $f_iPlanetId, $bSeen = false ) {
 	return true;
 }
 
-function Show_Alliance_Members( $tag, $leader_id )
-{
-	$tag = addslashes($tag);
-	$members = db_query("SELECT id,rulername,planetname,tag,x,y FROM planets WHERE tag='$tag' ORDER BY x,y");
-	echo "All members:<br>";
-	while ($mi = mysql_fetch_assoc($members))
-	{
-		echo "<a href=\"galaxy.php?xcoord=".$mi['x']."\">(".$mi['x'].":".$mi['y'].")</a> <a href=\"communication.php?x=".$mi['x']."&y=".$mi['y']."\">".$mi['rulername']." of ".$mi['planetname']."</a>";
-		echo ($mi['id'] == $leader_id) ? " (leader)" : "";
-		echo "<br>\n";
-	}
-}
-
 function goedmaken( $bericht )
 {
 	$bericht = str_replace(">", "&gt;", $bericht);

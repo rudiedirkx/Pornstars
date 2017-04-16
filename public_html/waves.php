@@ -7,6 +7,10 @@ require 'inc.bootstrap.php';
 
 logincheck();
 
+$intelScans = array_filter(array_filter($g_user->waves, Unit::typeFilter('scan')), function($scan) {
+	return $scan->planet_amount > 0;
+});
+
 // ORDER UNITS //
 if ( isset($_POST['order_units'], $_POST['_token']) ) {
 
@@ -48,7 +52,6 @@ else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) 
 
 	validTokenOrFail('scan');
 
-	$intelScans = array_filter($g_user->waves, Unit::typeFilter('scan'));
 	if ( !isset($intelScans[ $_POST['intel_scan_id'] ]) ) {
 		return accessFail('scan');
 	}
@@ -215,7 +218,7 @@ ORDER BY
 
 _header();
 
-$intelScans = Unit::_options(array_filter($g_user->waves, Unit::typeFilter('scan')));
+$intelScans = Unit::_options($intelScans);
 
 ?>
 <h1>Waves</h1>

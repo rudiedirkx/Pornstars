@@ -18,6 +18,11 @@ class Model {
 		return $object;
 	}
 
+	public function delete() {
+		global $db;
+		$db->delete(static::$table, ['id' => $this->id]);
+	}
+
 	public function update( $data ) {
 		global $db;
 
@@ -51,6 +56,12 @@ class Model {
 	static public function options( ...$args ) {
 		$objects = static::all(...$args);
 		return static::_options($objects);
+	}
+
+	static public function insert( array $data ) {
+		global $db;
+		$db->insert(static::$table, $data);
+		return $db->insert_id();
 	}
 
 	static public function first( $conditions, $params = [] ) {
