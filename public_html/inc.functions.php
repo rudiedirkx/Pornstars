@@ -248,6 +248,8 @@ function addProductions( $units, ...$bases ) {
 					$costs = $unit->costs[$variant];
 
 					// @todo Check costs & pay
+					// Fetch live resources before every buy
+					// Buy max units, with available resources
 
 					$unit->produce($g_user, $amount);
 				}
@@ -423,7 +425,7 @@ function getProductionList( ...$bases ) {
 		JOIN planet_production p ON p.unit_id = u.id AND p.planet_id = ?
 		WHERE u.T IN (?)
 		GROUP BY u.id, p.eta
-		ORDER BY u.T ASC, u.o ASC, p.eta ASC
+		ORDER BY u.o ASC, p.eta ASC
 	', [
 		'params' => [$g_user->id, $types],
 		'class' => Unit::class,
@@ -719,27 +721,6 @@ function DateDiff( $interval, $date1, $date2 )
 			break;
 	}
 	return $retval;
-}
-
-function Make_GC( $f_iGalaxyId )
-{
-	$arrGalaxy = db_select('galaxies', 'id = '.(int)$f_iGalaxyId);
-	$arrGalaxy = $arrGalaxy[0];
-
-	$iPlanetsInGalaxy = db_count('planets', 'galaxy_id = '.(int)$f_iGalaxyId);
-	$iVotesNeeded = floor($iPlanetsInGalaxy/2)+1;
-
-	$iNewGCPlanetId = (int)db_select_one('planets', 'voted_for_planet_id', 'galaxy_id = '.(int)$f_iGalaxyId.' group by voted_for_planet_id having count(1) >= '.$iVotesNeeded);
-
-	if ( $iNewGCPlanetId && $iNewGCPlanetId !== (int)$arrGalaxy['gc_planet_id'] ) {
-		// Enough votes and not the same as before and the planet is in the galaxy
-		db_update('galaxies', 'gc_planet_id = '.(int)$iNewGCPlanetId.', moc_planet_id = NULL, mow_planet_id = NULL', 'id = '.(int)$f_iGalaxyId);
-		logbook('election', 'galaxy_id='.$f_iGalaxyId.'&gc='.$iNewGCPlanetId.'&x='.$arrGalaxy['x'].'&y='.$arrGalaxy['y']);
-	}
-	else if ( !$iNewGCPlanetId ) {
-		// No planets has enough votes
-		db_update('galaxies', 'gc_planet_id = NULL, moc_planet_id = NULL, mow_planet_id = NULL', 'id = '.(int)$f_iGalaxyId);
-	}
 }
 
 function isint( $x ) {

@@ -58,14 +58,16 @@ document.onclick = function(e) {
 <?php
 
 function getChildren( $f_iParent = null, &$arrDone = array(0) ) {
-	if ( is_null($f_iParent) ) {
-		$RD = db_select('d_r_d_available a','NOT EXISTS (SELECT * FROM d_r_d_requires WHERE r_d_id = a.id)');
+	global $db;
+
+	if ( !$f_iParent ) {
+		$RD = $db->select('d_r_d_available a','NOT EXISTS (SELECT * FROM d_r_d_requires WHERE r_d_id = a.id)');
 	}
 	else {
-		$RD = db_select('d_r_d_available a, d_r_d_requires r','a.id = r.r_d_id AND r.r_d_requires_id = ' . $f_iParent . " /*AND a.id NOT IN(" . implode(", ", $arrDone) . ")*/");
+		$RD = $db->select('d_r_d_available a, d_r_d_requires r','a.id = r.r_d_id AND r.r_d_requires_id = ' . $f_iParent . " /*AND a.id NOT IN(" . implode(", ", $arrDone) . ")*/");
 	}
 
-	if ( count($RD) ) {
+	if ( $RD = $RD->all() ) {
 		$szHtml = '<table>';
 		foreach ( $RD AS $rd ) {
 			$name = strtoupper($rd['T']) . '. ' . $rd['name'];

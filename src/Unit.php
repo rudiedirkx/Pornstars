@@ -45,6 +45,12 @@ class Unit extends Model {
 	 * Static
 	 */
 
+	static public function stealthFilter() {
+		return function($unit) {
+			return !$unit->is_stealth;
+		};
+	}
+
 	static public function countReduce( $units, $column, $base = 0 ) {
 		return array_reduce($units, function($total, $unit) use ($column) {
 			return $total + $unit->$column;

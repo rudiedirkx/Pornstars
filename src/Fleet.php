@@ -12,13 +12,26 @@ class Fleet extends Model {
 	 * Getters
 	 */
 
+	public function get_name() {
+		global $FLEETNAMES;
+		return $FLEETNAMES[$this->fleetname];
+	}
+
 	public function get_total_ships() {
+		return Unit::countReduce($this->ships, 'planet_amount');
+	}
+
+	public function get_ships() {
 		global $db;
-		return $db->fetch_one('
-			SELECT SUM(amount) AS total
-			FROM ships_in_fleets
-			WHERE fleet_id = ?
-		', 'total', [$this->id]);
+		return $db->fetch('
+			SELECT u.*, f.amount AS planet_amount
+			FROM d_all_units u
+			JOIN planet_r_d rd ON rd.r_d_id = u.r_d_required_id AND rd.planet_id = ? AND eta = 0
+			JOIN ships_in_fleets f ON f.unit_id = u.id AND f.fleet_id = ?
+		', [
+			'params' => [$this->owner_planet_id, $this->id],
+			'class' => Unit::class,
+		])->all();
 	}
 
 	public function get_destination_planet() {

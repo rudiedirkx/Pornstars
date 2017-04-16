@@ -19,101 +19,28 @@ if ( isset($_POST['check'], $_POST['mode']) && $_POST['mode'] == "login" ) {
 		$_SESSION['ADMIN'] = $_POST['pwd'];
 	}
 
-	return do_redirect(null);
+	return do_redirect();
 }
 
-if ( !isset($_SESSION['ADMIN']) || !validateAdminPassword($_SESSION['_ADMIN']) ) {
+if ( !isset($_SESSION['ADMIN']) || !validateAdminPassword($_SESSION['ADMIN']) ) {
 	?>
 <title><?= $GAMENAME ?></title>
 <form method=post>
-	<input type=hidden name=check value=1 />
-	<input type=hidden name=mode value=login />
-	<input type=password name=pwd />
+	<input type="hidden" name="check" value="1" />
+	<input type="hidden" name="mode" value="login" />
+	<input type="password" name="pwd" />
 
-	<input type=submit value=Login />
+	<button>Login</button>
 </form>
 	<?php
 
 	exit;
 }
 
-else if ( isset($_POST['pk'], $_POST['tbl'], $_POST[$_POST['pk']], $_POST['changes']) ) {
-	if ( isset($_POST['changes']['password']) ) {
-		$_POST['changes']['password'] = md5($_POST[$_POST['pk']] . ':' . $_POST['changes']['password']);
-	}
+else if ( isset($_POST['gamename']) ) {
+	$g_prefs->update($_POST);
 
-	$arrFields = explainTbl($_POST['tbl']);
-
-	foreach ( (array)$_POST['changes'] AS $szField => $mvChange ) {
-		$szField = strtolower($szField);
-		switch ( $arrFields[$szField]['type'] )
-		{
-			case 'int':
-			case 'float':
-				$f = $arrFields[$szField]['type'].'val';
-				if ( empty($mvChange) && $arrFields[$szField]['null'] ) {
-					$c = 'NULL';
-				}
-				else if ( substr(trim($mvChange),0,1) == '-' || substr(trim($mvChange),0,1) == '+' || substr(trim($mvChange),0,1) == '/' || substr(trim($mvChange),0,1) == '*' ) {
-					$c = $szField . substr(trim($mvChange),0,1) . $f(substr(trim($mvChange),1));
-				}
-				else {
-					$c = $f(trim($mvChange));
-				}
-				$c = '`' . $szField . '` = ' . $c;
-			break;
-
-			default:
-			case 'enum':
-			case 'string':
-			case 'text':
-				if ( empty($mvChange) && $arrFields[$szField]['null'] ) {
-					$c = 'NULL';
-				}
-				else {
-					$c = "'" . addslashes($mvChange) . "'";
-				}
-				$c = '`' . $szField . '` = ' . $c;
-			break;
-		}
-#var_dump($c);
-		db_update($_POST['tbl'], $c, '`'.$_POST['pk'].'` = '.(int)$_POST[$_POST['pk']]);
-	}
-#exit;
-	Go('?tbl='.$_POST['tbl'].'&pk='.$_POST['pk'].'&'.$_POST['pk'].'='.(int)$_POST[$_POST['pk']]);
-	exit;
-}
-
-
-else if ( isset($_POST['mode']) && $_POST['mode'] == 'prefs' )
-{
-	$arrTblGamePrefs = db_fetch('EXPLAIN prefs;');
-	$arrUpdate = array();
-	foreach ( $arrTblGamePrefs AS $v )
-	{
-		$f = $v['Field'];
-		if ( 'id' == $f || 'tickcount' == $f || 'last_tick' == $f ) {
-			continue;
-		}
-		$t = $v['Type'];
-		switch ( strtolower(reset(explode('(', $t))) )
-		{
-			case 'enum':
-				$arrUpdate[$f] = (string)(int)isset($_POST[$f]);
-			break;
-			default:
-				if ( isset($_POST[$f]) ) {
-					$arrUpdate[$f] = $_POST[$f];
-				}
-			break;
-		}
-	}
-	if ( !empty($_POST['autologout']) ) {
-		db_update('planets', 'unihash = \'\'');
-		$arrUpdate['autologout'] = '0';
-	}
-	db_update('prefs', $arrUpdate, 'id = '.(int)$GAMEPREFS['id']);
-	Go();
+	return do_redirect();
 }
 
 ?>
@@ -125,8 +52,9 @@ else if ( isset($_POST['mode']) && $_POST['mode'] == 'prefs' )
 <script src="/ajax_1_3_1.js"></script>
 <script src="/general_1_2_7.js"></script>
 <style>
-html,body,table,input,select,textarea { background-color:white;color:#000000; }
-body { margin:0; }
+body {
+	margin: 0;
+}
 input[type="number"] {
 	width: 4em;
 }
@@ -203,7 +131,7 @@ var g_szTable = '<?php echo isset($_GET['tbl']) ? $_GET['tbl'] : 'planets'; ?>';
 					</tr>
 					<tr>
 						<td>Admin message</td>
-						<td><textarea name="general_adminmsg"><?= html($g_prefs->general_adminmsg) ?></textarea></td>
+						<td><textarea cols="60" rows="6" name="general_adminmsg"><?= html($g_prefs->general_adminmsg) ?></textarea></td>
 					</tr>
 					<tr>
 						<td>Galaxy size</td>

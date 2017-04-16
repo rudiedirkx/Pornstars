@@ -82,7 +82,7 @@ else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) 
 
 	// @todo Prettify and save results
 
-	$_SESSION['last_scanned'] = $planet->coordinates;
+	$_SESSION['last_scanned'] = ['scan' => $scan->id, 'coords' => $planet->coordinates];
 
 	if ( $blocked ) {
 		sessionWarning("You failed to scan {$planet}.");
@@ -94,55 +94,12 @@ else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) 
 
 	return do_redirect();
 
+
+
 	$szHTML = '';
 	if ( !$blocked ) {
 		switch ( (int)$arrScan['scan_id'] )
 		{
-
-			case 16: // unit
-				$arrShips = db_fetch_fields('
-SELECT
-	u.name,
-	IFNULL((
-		SELECT
-			SUM(amount)
-		FROM
-			fleets f,
-			ships_in_fleets sf
-		WHERE
-			f.owner_planet_id = '.(int)$arrTarget['id'].' AND
-			f.id = sf.fleet_id AND
-			sf.ship_id = s.id
-	),0) AS num_units
-FROM
-	d_all_units u,
-	d_ships s
-WHERE
-	s.id = u.id AND
-	u.is_stealth = \'0\' AND
-	u.r_d_required_id IN (
-		SELECT
-			rdpp.r_d_id
-		FROM
-			planet_r_d rdpp
-		WHERE
-			rdpp.planet_id = '.(int)$arrTarget['id'].' AND
-			rdpp.eta = 0
-	)
-ORDER BY
-	s.id ASC;
-');
-				$iTotalShips = 0;
-				$szHTML .= "<table border=0 cellpadding=2 cellspacing=0 width=100% class=\"widecells\">\n";
-				$szHTML .= "<tr><td colspan=\"2\"><center><b>UNIT Infiltration Report on ".$arrTarget['rulername']." of ".$arrTarget['planetname']." (".$arrTarget['x'].":".$arrTarget['y'].":".$arrTarget['z'].")</b></td></tr>";
-				foreach ( $arrShips AS $szShip => $iAmount ) {
-					$szHTML .= '<tr class="bt"><td align="right">'.$szShip.'</td><td>'.$iAmount.'</td></tr>';
-					$iTotalShips += (int)$iAmount;
-				}
-				$szHTML .= '<tr class="bt"><th align="right" width="50%">Total</th><th align="left">'.nummertje($iTotalShips).'</th></tr>';
-				$szHTML .= "</table>\n";
-			break;
-
 			case 17: // defence
 				$arrDefences = db_fetch_fields('
 SELECT
@@ -274,11 +231,11 @@ $intelScans = Unit::_options(array_filter($g_user->waves, Unit::typeFilter('scan
 			<th></th>
 		</tr>
 		<tr>
-			<td><select name="intel_scan_id"><?= html_options($intelScans) ?></select></td>
+			<td><select name="intel_scan_id"><?= html_options($intelScans, @$_SESSION['last_scanned']['scan']) ?></select></td>
 			<td>
-				<input class="coord" type="number" name="x" placeholder="x" value="<?= @$_SESSION['last_scanned'][0] ?>" />
-				<input class="coord" type="number" name="y" placeholder="y" value="<?= @$_SESSION['last_scanned'][1] ?>" />
-				<input class="coord" type="number" name="z" placeholder="z" value="<?= @$_SESSION['last_scanned'][2] ?>" />
+				<input class="coord" type="number" name="x" placeholder="x" value="<?= @$_GET['x'] ?: @$_SESSION['last_scanned']['coords'][0] ?>" />
+				<input class="coord" type="number" name="y" placeholder="y" value="<?= @$_GET['y'] ?: @$_SESSION['last_scanned']['coords'][1] ?>" />
+				<input class="coord" type="number" name="z" placeholder="z" value="<?= @$_GET['z'] ?: @$_SESSION['last_scanned']['coords'][2] ?>" />
 			</td>
 			<!-- <td><input type="number" name="amount" /></td> -->
 			<td><button>Search</button></td>

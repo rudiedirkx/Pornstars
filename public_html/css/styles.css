@@ -94,6 +94,7 @@ a:focus {
 
 span.resource {
 	padding: 1px 3px;
+	color: white;
 }
 input[type="number"] {
 	width: 3.5em;
@@ -146,6 +147,24 @@ table {
 td, th {
 	border: solid 2px #444;
 	padding: 4px 6px;
+}
+
+/**
+ * POLITICS
+ */
+
+.mof {
+	color: gold;
+}
+.moc {
+	color: green;
+}
+.mow {
+	color: #ff3333;
+}
+.gc {
+	color: #8080ff;
+	font-weight: bold;
 }
 
 /**

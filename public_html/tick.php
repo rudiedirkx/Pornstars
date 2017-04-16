@@ -56,6 +56,7 @@ $db->delete('planet_production', ['eta' => 0]);
 
 $g_prefs->update([
 	'last_tick' => time(),
+	'tickcount = tickcount + 1',
 ]);
 
 echo "\nTook " . round((microtime(1) - $_time) * 1000) . " ms\n\n";

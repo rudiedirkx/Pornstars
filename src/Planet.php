@@ -2,6 +2,7 @@
 
 namespace rdx\ps;
 
+use rdx\ps\Alliance;
 use rdx\ps\Fleet;
 use rdx\ps\Galaxy;
 use rdx\ps\Mail;
@@ -20,6 +21,32 @@ class Planet extends Model {
 	/**
 	 * Getters
 	 */
+
+	public function get_alliance_tag() {
+		if ( $this->alliance ) {
+			return $this->alliance->tag;
+		}
+	}
+
+	public function get_alliance() {
+		if ( $this->alliance_id ) {
+			return Alliance::find($this->alliance_id);
+		}
+	}
+
+	public function get_galaxy_roles() {
+		$roles = [];
+		$this->galaxy->gc_planet_id == $this->id and array_push($roles, 'gc');
+		$this->galaxy->moc_planet_id == $this->id and array_push($roles, 'moc');
+		$this->galaxy->mow_planet_id == $this->id and array_push($roles, 'mow');
+		$this->galaxy->mof_planet_id == $this->id and array_push($roles, 'mof');
+		return $roles;
+	}
+
+	public function get_votes_for_gc() {
+		global $db;
+		return $db->count('planets', 'galaxy_id = ? AND voted_for_planet_id = ?', [$this->galaxy_id, $this->id]);
+	}
 
 	public function get_asteroid_scans() {
 		foreach ( $this->waves as $wave ) {
@@ -72,9 +99,7 @@ class Planet extends Model {
 	}
 
 	public function get_total_defences() {
-		return array_reduce($this->defences, function($total, $unit) {
-			return $total + $unit->planet_amount;
-		}, 0);
+		return Unit::countReduce($this->defences, 'planet_amount');
 	}
 
 	public function get_defences() {
@@ -90,14 +115,12 @@ class Planet extends Model {
 	}
 
 	public function get_total_ships() {
-		return array_reduce($this->ships, function($total, $unit) {
-			return $total + $unit->planet_amount;
-		}, 0);
+		return Unit::countReduce($this->ships, 'planet_amount');
 	}
 
 	public function get_ships() {
 		global $db;
-		return $db->fetch('
+		return $db->fetch_by_field('
 			SELECT a.*, SUM(s.amount) AS planet_amount
 			FROM d_all_units a
 			JOIN planet_r_d rd ON rd.r_d_id = a.r_d_required_id AND rd.planet_id = ? AND eta = 0
@@ -105,7 +128,8 @@ class Planet extends Model {
 			LEFT JOIN fleets f ON f.id = s.fleet_id AND f.owner_planet_id = rd.planet_id
 			WHERE a.T = ?
 			GROUP BY a.id
-		', [
+			ORDER BY a.o
+		', 'id', [
 			'params' => [$this->id, 'ship'],
 			'class' => Unit::class,
 		])->all();
@@ -177,8 +201,44 @@ class Planet extends Model {
 	 * Logic
 	 */
 
+	public function createFleetScanReport( Planet $scanner ) {
+		$fleets = $this->fleets;
+		return array_reduce($this->fleets, function($list, $fleet) {
+			return $list + [$fleet->name => array_reduce($fleet->ships, function($list, $unit) {
+				return $list + [$unit->unit_plural => nummertje($unit->planet_amount)];
+			}, [])];
+		}, []);
+	}
+
+	public function createDefenceScanReport( Planet $scanner ) {
+		// All their defences
+		$defences = $this->defences;
+
+		// Only the types we know exist
+		$defences = array_intersect_key($defences, $scanner->defences);
+		$defences = array_filter($defences, Unit::stealthFilter());
+
+		return array_reduce($defences, function($list, $unit) {
+			return $list + [$unit->unit_plural => nummertje($unit->planet_amount)];
+		}, []);
+	}
+
+	public function createUnitScanReport( Planet $scanner ) {
+		// All their ships
+		$ships = $this->ships;
+
+		// Only the types we know exist
+		$ships = array_intersect_key($ships, $scanner->ships);
+		$ships = array_filter($ships, Unit::stealthFilter());
+
+		return array_reduce($ships, function($list, $unit) {
+			return $list + [$unit->unit_plural => nummertje($unit->planet_amount)];
+		}, []);
+	}
+
 	public function createSectorScanReport( Planet $scanner ) {
-		// @todo Skip stealth units
+		$ships = array_filter($this->ships, Unit::stealthFilter());
+		$defences = array_filter($this->defences, Unit::stealthFilter());
 
 		return [
 			'Score' => nummertje($this->score),
@@ -188,8 +248,8 @@ class Planet extends Model {
 				return $list + [$resource->resource => nummertje($resource->amount)];
 			}, [])
 		+ [
-			'Ships' => nummertje(Unit::countReduce($this->ships, 'planet_amount')),
-			'Defences' => nummertje(Unit::countReduce($this->defences, 'planet_amount')),
+			'Ships' => nummertje(Unit::countReduce($ships, 'planet_amount')),
+			'Defences' => nummertje(Unit::countReduce($defences, 'planet_amount')),
 		];
 	}
 

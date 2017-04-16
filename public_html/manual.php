@@ -14,7 +14,9 @@ require 'inc.bootstrap.php';
 <br />
 <a href="manual.manual.php">Manual</a><br />
 <br />
-<a href="manual.techtree.php">Techtree</a><br />
+<a href="manual.techtree.php">Techtree 1</a><br />
+<a href="_tests/TechTreeV2.php">Techtree 2</a><br />
+<a href="_tests/TechTreeMakerV2.1.php">Techtree 3</a><br />
 <br />
 <a href="manual.shipstats.php">Shipstatistics</a><br />
 <br />

@@ -3,11 +3,13 @@
 require 'inc.bootstrap.php';
 
 function makeRDcell( $rd, $extra = '', $w = 0 ) {
+	global $db;
+
 	$html = '';
 	$html .= '<td '.( 0 < $w ? 'width="'.$w.'%" ' : '' ).''.$extra.' class="t'.$rd['T'].'">';
 	$html .= '<div onclick="goto('.$rd['id'].');" class="t">'.$rd['id'].'. '.$rd['name'].'</div>';
-	$arrExcludesRD = db_select_fields('d_r_d_excludes e, d_r_d_available a', 'a.id,concat(\'<a class="a\',a.T,\'" href="#" onclick="return goto(\',a.id,\');">\',a.name,\'</a>\')', 'a.id = e.r_d_excludes_id AND e.r_d_id = '.$rd['id']);
-	$arrCosts = db_select_fields('d_r_d_costs c, d_resources r', 'r.id,concat(\'<span title="\',r.resource,\'" style="color:\',r.color,\';">\',c.amount,\'</span>\')', 'c.resource_id = r.id AND 0 < c.amount AND c.r_d_id = '.$rd['id']);
+	$arrExcludesRD = $db->select_fields('d_r_d_excludes e, d_r_d_available a', 'a.id,concat(\'<a class="a\',a.T,\'" href="#" onclick="return goto(\',a.id,\');">\',a.name,\'</a>\')', 'a.id = e.r_d_excludes_id AND e.r_d_id = '.$rd['id']);
+	$arrCosts = $db->select_fields('d_r_d_costs c, d_resources r', 'r.id,concat(\'<span title="\',r.resource,\'" style="color:\',r.color,\';">\',c.amount,\'</span>\')', 'c.resource_id = r.id AND 0 < c.amount AND c.r_d_id = '.$rd['id']);
 	$html .= '<div style="display:none;">'.$rd['explanation'].'<br />Costs: '.implode(', ', $arrCosts).'<br />Excludes: '.implode(', ', $arrExcludesRD).'</div>';
 	$html .= '</td>'."\n";
 	return $html;
@@ -53,10 +55,10 @@ var goto = function(id) {
 <body>
 <?php
 
-if ( isset($_GET['id']) && ($arrRD = db_select('d_r_d_available', 'id = '.(int)$_GET['id'])) ) {
+if ( isset($_GET['id']) && ($arrRD = $db->select('d_r_d_available', 'id = '.(int)$_GET['id'])->all()) ) {
 	$arrRD = $arrRD[0];
 
-	$arrRequiresRD = db_select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_requires_id AND r.r_d_id = '.$arrRD['id']);
+	$arrRequiresRD = $db->select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_requires_id AND r.r_d_id = '.$arrRD['id'])->all();
 //$arrRequiresRD = array($arrRD, $arrRD);
 	if ( $arrRequiresRD ) {
 		echo makeRDline($arrRequiresRD);
@@ -65,12 +67,12 @@ if ( isset($_GET['id']) && ($arrRD = db_select('d_r_d_available', 'id = '.(int)$
 	echo makeRDline(array($arrRD), 'style="border:solid 3px black;"');
 
 	echo '<table border="0" cellspacing="5" width="100%"><tr>'."\n";
-	$arrEnablesRD = db_select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_id AND r.r_d_requires_id = '.$arrRD['id']);
+	$arrEnablesRD = $db->select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_id AND r.r_d_requires_id = '.$arrRD['id'])->all();
 //unset($arrEnablesRD[1]);
 	$reqs = array();
 	$w = round(100/count($arrEnablesRD));
 	foreach ( $arrEnablesRD AS $k => $rd ) {
-		$req = db_select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_requires_id AND r.r_d_id = '.$rd['id'].' AND a.id <> '.$arrRD['id']);
+		$req = $db->select('d_r_d_requires r, d_r_d_available a', 'a.id = r.r_d_requires_id AND r.r_d_id = '.$rd['id'].' AND a.id <> '.$arrRD['id'])->all();
 		echo makeRDcell($rd, 'colspan="'.count($req).'"', $w);
 		$reqs[$k] = $req;
 	}
@@ -88,7 +90,7 @@ if ( isset($_GET['id']) && ($arrRD = db_select('d_r_d_available', 'id = '.(int)$
 	echo '</tr></table>'."\n";
 }
 else {
-	$arrStarters = db_fetch('select * from d_r_d_available WHERE id NOT IN (select r_d_id from d_r_d_requires);');
+	$arrStarters = $db->fetch('select * from d_r_d_available WHERE id NOT IN (select r_d_id from d_r_d_requires);')->all();
 	echo makeRDline($arrStarters);
 }
 
@@ -150,16 +152,16 @@ body, table {
 
 $arrTable = unserialize(file_get_contents('tests/arrTable.tbl'));
 
-$arrRD = db_select_by_field('d_r_d_available','id');
+$arrRD = $db->select_by_field('d_r_d_available', 'id', '1')->all();
 
-$arrReq = db_select('d_r_d_requires r', 'r_d_id IN (SELECT r_d_id FROM d_r_d_requires GROUP BY r_d_id HAVING COUNT(1) >= 2)');
+$arrReq = $db->select('d_r_d_requires r', 'r_d_id IN (SELECT r_d_id FROM d_r_d_requires GROUP BY r_d_id HAVING COUNT(1) >= 2)');
 $arrRequires = array();
 foreach ( $arrReq AS $rd ) {
 	$arrRequires[$rd['r_d_id']][] = $arrRD[$rd['r_d_requires_id']]['name'];
 }
 //echo '<pre>'; print_r($arrRequires);
 
-$arrExcl = db_select('d_r_d_excludes');
+$arrExcl = $db->select('d_r_d_excludes');
 $arrExcludes = array();
 foreach ( $arrExcl AS $rd ) {
 	$arrExcludes[$rd['r_d_id']][] = $arrRD[$rd['r_d_excludes_id']]['name'];
@@ -195,14 +197,13 @@ foreach ( $arrTable AS $arrRow ) {
 				$szExcludes = '<br />(<u style="font-weight:bold;color:red;">excludes</u> ' . ( count($exc) ? '<i>`'.implode('`</i>, <i>`', $exc) . '`</i> <b>and</b> ' : '' ) . '<i>`' . $r . '`</i>';
 			}
 			$arrEnables = array();
-			if ( $u=db_select_fields('d_all_units', 'id,unit', 'r_d_required_id = '.(int)$rd['id']) && 0 < count($u) ) {
+			if ( $u=$db->select_fields('d_all_units', 'id,unit', 'r_d_required_id = '.(int)$rd['id']) && 0 < count($u) ) {
 var_dump($u);
 				$ena = $u;
 				$r = array_pop($ena);
 				$arrEnables[] = 'Enables ' . ( count($ena) ? '`'.implode('`, `', $ena) . '` and ' : '' ) . '`' . $r . '`';
 			}
-echo db_error();
-			if ( $u=db_select_fields('d_r_d_results', 'id,explanation', 'done_r_d_id = '.(int)$rd['id']) && 0 < count($u) ) {
+			if ( $u=$db->select_fields('d_r_d_results', 'id,explanation', 'done_r_d_id = '.(int)$rd['id']) && 0 < count($u) ) {
 				$arrEnables[] = implode("\n", $u);
 			}
 			$szEnables = count($arrEnables) ? ' title="'.implode("\n", $arrEnables).'"' : '';
@@ -223,7 +224,7 @@ echo db_error();
 	echo '</tr>'."\n";
 }
 
-$arrNumbers = db_select_fields('d_r_d_available', 'lower(T),count(1)', '1 group by T');
+$arrNumbers = $db->select_fields('d_r_d_available', 'lower(T),count(1)', '1 group by T');
 
 ?>
 </tbody>

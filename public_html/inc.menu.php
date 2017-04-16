@@ -27,6 +27,7 @@ $menu = array(
 	array( 'Logout',			'logout.php?doit=1',	'Logout here. Session destroyed','_parent' ),
 	null,
 	array( 'Config',			'_project/',			'All config for all game content' ),
+	array( 'Admin',				'comp.php',				'Game admin area' ),
 //	array( 'Stats',				'stats.php',			'Some statistics about the game. No personal stuff in here' ),
 //	array( 'Facts',				'facts.php',			'Some boring facts about the game. Visible to anyone' ),
 );
