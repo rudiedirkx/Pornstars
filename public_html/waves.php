@@ -13,7 +13,6 @@ $intelScans = array_filter(array_filter($g_user->waves, Unit::typeFilter('scan')
 
 // ORDER UNITS //
 if ( isset($_POST['order_units'], $_POST['_token']) ) {
-
 	validTokenOrFail('production');
 
 	addProductions($_POST['order_units'], 'wave');
@@ -23,13 +22,11 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 
 // SCAN FOR ASTEROIDS //
 else if ( isset($_POST['asteroid_scans']) ) {
-
 	validTokenOrFail('scan');
 
-	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] < $g_user->asteroid_scans ) {
-		return do_json([
-			['msg', 'Invalid amount!'],
-		]);
+	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] > $g_user->asteroid_scans ) {
+		sessionError('Invalid amount');
+		return do_redirect();
 	}
 
 	$amps = $g_user->wave_amps;
@@ -41,15 +38,14 @@ else if ( isset($_POST['asteroid_scans']) ) {
 
 	$g_user->update('inactive_asteroids = inactive_asteroids + ' . (int) $found);
 
-	return do_json([
-		['msg', 'Found ' . $found . ' asteroids.'],
-	]);
+	sessionSuccess('Found ' . $found . ' asteroids');
+
+	return do_redirect();
 }
 
 // INTELLIGENCE SCAN A PLANET //
 // @todo
 else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) ) {
-
 	validTokenOrFail('scan');
 
 	if ( !isset($intelScans[ $_POST['intel_scan_id'] ]) ) {
@@ -72,9 +68,9 @@ else if ( isset($_POST['intel_scan_id'], $_POST['x'], $_POST['y'], $_POST['z']) 
 	// @todo Incorporate $scan->fuel into $chance
 
 	$chance = 10 * (1 + $amps / max(1, $roids) - $targetBlockers / max(1, $targetRoids));
-	$luck = rand(0, 100);
-	$blocked = $luck < $chance;
-	$noticed = $luck * 3 < $chance && intval($chance) % 10 == 1;
+	$opposition = rand(0, 100);
+	$blocked = $chance < $opposition;
+	$noticed = $opposition < $chance * 3 && intval($chance) % 10 == 1;
 
 	// @todo Update available scans
 
@@ -272,16 +268,11 @@ $intelScans = Unit::_options($intelScans);
 <br />
 
 <h2>Order new</h2>
-<div id="div_productionform">
-	<?= getProductionForm('wave') ?>
-</div>
+<?= getProductionForm('wave') ?>
 <br />
 
 <h2>Production progress</h2>
-<div id="div_productionlist">
-	<?= getProductionList('wave') ?>
-</div>
-<br />
+<?= getProductionList('wave') ?>
 
 <?php
 

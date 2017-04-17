@@ -21,9 +21,8 @@ $ticker = Ticker::instance();
 
 // Resources
 $ticker->setPlanets(Planet::all());
-$ticker->setResources(Resource::all());
 foreach ( $ticker->planets as $planet ) {
-	foreach ( $ticker->resources as $resource ) {
+	foreach ( $planet->resources as $resource ) {
 		$planet->ticker->addResource($resource);
 	}
 }

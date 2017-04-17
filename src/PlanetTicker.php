@@ -88,7 +88,7 @@ class PlanetTicker {
 			$power += $powerMap[$id] * $amount;
 		}
 
-		return 0;
+		return $power;
 	}
 
 	public function asteroidIncome( Resource $resource ) {

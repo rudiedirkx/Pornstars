@@ -3,7 +3,6 @@
 namespace rdx\ps;
 
 use rdx\ps\Planet;
-use rdx\ps\Resource;
 
 class Ticker {
 
@@ -13,7 +12,6 @@ class Ticker {
 	protected $power_map;
 
 	public $planets;
-	public $resources;
 	public $units;
 
 	public function setPlanets( array $planets ) {
@@ -21,10 +19,6 @@ class Ticker {
 
 		// @todo Preload R & D
 		// @todo Preload Power
-	}
-
-	public function setResources( array $resources ) {
-		$this->resources = $resources;
 	}
 
 	public function setUnits( array $units ) {

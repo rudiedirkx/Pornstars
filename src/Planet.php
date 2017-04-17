@@ -243,6 +243,10 @@ class Planet extends Model {
 		return [
 			'Score' => nummertje($this->score),
 			'Asteroids' => nummertje($this->total_asteroids),
+		] + array_reduce($this->resources, function($list, $resource) {
+				return $list + [$resource->resource . ' asteroids' => nummertje($resource->asteroids)];
+			}, [])
+		+ [
 			'Resources' => nummertje(Unit::countReduce($this->resources, 'amount')),
 		] + array_reduce($this->resources, function($list, $resource) {
 				return $list + [$resource->resource => nummertje($resource->amount)];

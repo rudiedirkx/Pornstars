@@ -56,7 +56,7 @@ function checkToken( $name, $token = null ) {
 
 function validTokenOrFail( $name, $token = null ) {
 	if ( !checkToken($name, $token) ) {
-		accessFail('token');
+		accessFail("token: $name");
 	}
 }
 
@@ -521,7 +521,7 @@ function getProductionForm( ...$bases ) {
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->id . '</td>';
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . html($unit->unit_plural) . '<br />' . html($unit->explanation) . '</td>';
 		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->build_eta . '</td>';
-		$szHtml .= '<td rowspan="' . $rowspan . '">' . $unit->number_owned . '</td>';
+		$szHtml .= '<td rowspan="' . $rowspan . '">' . nummertje($unit->number_owned) . '</td>';
 
 		// Costs & order
 		$szHtml .= '<td nowrap>' . renderCostsVariant($unit->costs[0]) . '</td>';
