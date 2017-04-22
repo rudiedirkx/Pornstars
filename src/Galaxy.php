@@ -3,6 +3,7 @@
 namespace rdx\ps;
 
 use rdx\ps\Planet;
+use rdx\ps\Thread;
 
 class Galaxy extends Model {
 
@@ -11,6 +12,10 @@ class Galaxy extends Model {
 	/**
 	 * Getters
 	 */
+
+	public function get_threads() {
+		return Thread::all('galaxy_id = ? AND parent_thread_id IS NULL ORDER BY id DESC', [$this->id]);
+	}
 
 	public function get_total_asteroids() {
 		return array_reduce($this->planets, function($total, $planet) {

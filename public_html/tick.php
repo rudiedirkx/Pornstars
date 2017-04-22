@@ -32,6 +32,18 @@ foreach ( $ticker->planets as $planet ) {
 $db->update('planet_r_d', 'eta = eta - 1', 'eta > 0');
 
 
+// Skills
+$db->update('skill_training', 'eta = eta - 1', 'eta > 0');
+$done = $db->select('skill_training', 'eta = 0');
+foreach ( $done as $skill ) {
+	$db->update('planet_skills', 'value = value + 1', [
+		'planet_id' => $skill->planet_id,
+		'skill_id' => $skill->skill_id,
+	]);
+}
+$db->delete('skill_training', ['eta' => 0]);
+
+
 // Production
 $ticker->setUnits(Unit::all());
 $db->update('planet_production', 'eta = eta - 1', 'eta > 0');

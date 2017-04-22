@@ -78,6 +78,11 @@ class Planet extends Model {
 		return 0;
 	}
 
+	public function get_training_skills() {
+		global $db;
+		return $db->select_fields('skill_training', 'skill_id, skill_id', 'eta > 0 AND planet_id = ?', [$this->id]);
+	}
+
 	public function get_doing_rd() {
 		global $db;
 		return $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
@@ -138,11 +143,12 @@ class Planet extends Model {
 	public function get_skills() {
 		global $db;
 		return $db->fetch_by_field('
-			SELECT a.*, p.value AS planet_value
+			SELECT a.*, p.value AS planet_value, t.eta AS planet_eta
 			FROM d_skills a
 			LEFT JOIN planet_skills p ON a.id = p.skill_id AND p.planet_id = ?
+			LEFT JOIN skill_training t ON t.skill_id = a.id AND t.planet_id = ?
 		', 'id', [
-			'params' => [$this->id],
+			'params' => [$this->id, $this->id],
 			'class' => Skill::class,
 		])->all();
 	}
@@ -309,8 +315,8 @@ class Planet extends Model {
 			'class' => ResearchDevelopment::class,
 		])->all();
 
-		$available = array_filter($all, function($rd) use ($type) {
-			return $rd->planetHasRequireds($this) && !$rd->planetHasExcludeds($this);
+		$available = array_filter($all, function($rd) {
+			return $rd->planet_eta !== null || ($rd->planetHasRequireds($this) && !$rd->planetHasExcludeds($this));
 		});
 
 		// @todo Skills

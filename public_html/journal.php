@@ -1,30 +1,25 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
+
 logincheck();
 
 if ( isset($_POST['journal']) ) {
-	db_update('planets', array('journal' => trim($_POST['journal'])), 'id = '.PLANET_ID);
-	Go();
+	$g_user->update(['journal' => trim($_POST['journal'])]);
+
+	return do_redirect();
 }
 
 _header();
 
 ?>
-<div class="header">Personal Journal</div>
+<h1>Personal Journal</h1>
 
-<br />
-
-<form method="post" action="">
-<textarea name="journal" rows="20" style="width:100%;"><?php echo htmlspecialchars($g_arrUser['journal']); ?></textarea><br />
-<br />
-<input type="submit" value="SAVE" style="width:40%">
+<form method="post" action>
+	<p><textarea name="journal" rows="10" style="width: 100%"><?= html($g_user->journal) ?></textarea></p>
+	<p><button>Save</button></p>
 </form>
-
-<br />
 
 <?php
 
 _footer();
-
-?>
