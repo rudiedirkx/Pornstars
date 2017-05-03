@@ -1,16 +1,16 @@
 <?php
 
-require_once('inc.config.php');
+require 'inc.bootstrap.php';
+
 logincheck();
 
-$iNumMovingRows		= 3;
-$iAttackScoreLimit	= max(1, (int)$GAMEPREFS['military_scorelimit']); //  2
-$iMinActionTicks	= max(1, (int)$GAMEPREFS['military_min_period']);
-$iMaxActionTicks	= max($iMinActionTicks, (int)$GAMEPREFS['military_max_period']);
+$iNumMovingRows = 3;
+// $iAttackScoreLimit	= max(1, (int)$GAMEPREFS['military_scorelimit']); //  2
+// $iMinActionTicks	= max(1, (int)$GAMEPREFS['military_min_period']);
+// $iMaxActionTicks	= max($iMinActionTicks, (int)$GAMEPREFS['military_max_period']);
 
 // MOVE SHIPS //
-if ( isset($_POST['m']) )
-{
+if ( isset($_POST['m']) ) {
 	$arrAllowedShips = db_fetch_fields('
 	SELECT
 		s.id,
@@ -62,8 +62,7 @@ if ( isset($_POST['m']) )
 }
 
 // SEND FLEET FOR A MISSION //
-else if ( isset($_POST['action'], $_POST['x'], $_POST['y'], $_POST['z'], $_POST['fleetname'], $_POST['period']) )
-{
+else if ( isset($_POST['action'], $_POST['x'], $_POST['y'], $_POST['z'], $_POST['fleetname'], $_POST['period']) ) {
 	if ( 0 < (int)$g_arrUser['newbie_ticks'] ) {
 		exit('You are still under protection!');
 	}
@@ -128,8 +127,7 @@ else if ( isset($_POST['action'], $_POST['x'], $_POST['y'], $_POST['z'], $_POST[
 }
 
 // SELF-DESTRUCT FLEET //
-else if ( isset($_GET['selfdestruct_fleetname']) )
-{
+else if ( isset($_GET['selfdestruct_fleetname']) ) {
 	if ( 0 < (int)$_GET['selfdestruct_fleetname'] ) {
 		$iFleetId = (int)db_select_one('fleets', 'id', 'fleetname = \''.(int)$_GET['selfdestruct_fleetname'].'\' AND owner_planet_id = '.PLANET_ID.'');
 		// Kill all ships
@@ -141,8 +139,7 @@ else if ( isset($_GET['selfdestruct_fleetname']) )
 }
 
 // RECALL FLEET //
-else if ( isset($_GET['recall_fleetname']) )
-{
+else if ( isset($_GET['recall_fleetname']) ) {
 	if ( 0 < (int)$_GET['recall_fleetname'] ) {
 		// Recall fleet
 		// If not activated yet
@@ -154,8 +151,7 @@ else if ( isset($_GET['recall_fleetname']) )
 }
 
 // ACTIVATE FLEETS //
-else if ( !empty($_GET['activate_fleets']) )
-{
+else if ( !empty($_GET['activate_fleets']) ) {
 	$arrFleetsToActivate = db_select('galaxies g, planets p, fleets f', 'g.id = p.galaxy_id AND p.id = f.destination_planet_id AND f.owner_planet_id = '.PLANET_ID.' AND (action = \'attack\' OR action = \'defend\') AND activated != \'1\'');
 	foreach ( $arrFleetsToActivate AS $arrFleet ) {
 		if ( db_update('fleets', 'activated = \'1\'', 'id = '.(int)$arrFleet['id']) && 0 < db_affected_rows() ) {
@@ -170,186 +166,89 @@ else if ( !empty($_GET['activate_fleets']) )
 _header();
 
 ?>
-<style type="text/css">
-table.fleets th,
-table.fleets td {
-	padding : 3px 8px;
-}
-</style>
+<h1>Military</h1>
 
-<div class="header">Military</div>
+<?= getFleetMatrix($g_user, true) ?>
 
-<br />
+<h2>Fleet Management</h2>
 
-<?php echo getFleetMatrix(PLANET_ID, true); ?>
-
-<br />
-<br />
-
-<div class="header">Fleet Management</div>
-
-<br />
-
-I'm guessing you know how it works. If you don't, check <a href="manual.php">the Manual</a><br />
-<br />
-<form method="post" action="" autocomplete="off">
-<table border=0 cellpadding=3 cellspacing=2 width=500 bordercolor=#444444 style='border:none;'>
-<tr class="b">
-	<td>UNIT TYPE</td>
-	<td>AMOUNT</td>
-	<td>FROM</td>
-	<td>TO</td>
-</tr>
-<?php
-
-for ( $i=0; $i<$iNumMovingRows; $i++ )
-{
-	?>
-<tr>
-<td width=150>
-<select name="m[<?php echo $i; ?>][ship_id]" style="width:150px;">
-<option value="all">- ALL UNITS
-<option value="">--
-<?php
-
-foreach ( $t_arrShipNames AS $iShip => $szShip )
-{
-	echo '<option value="'.$iShip.'">'.$szShip.'</option>';
-}
-
-?>
-</select>
-</td>
-<td width="150">
-<input type="text" name="m[<?php echo $i; ?>][amount]" class="right" style="width:150px;" />
-</td>
-<td width=150>
-<select name="m[<?php echo $i; ?>][from_fleet]" style="width:150px;">
-<?php
-
-foreach ( $t_arrFleetNames AS $iFleet => $szFleet )
-{
-	echo '<option value="'.$iFleet.'">'.$szFleet.'</option>';
-}
-
-?>
-</select>
-</td>
-<td width=150>
-<select name="m[<?php echo $i; ?>][to_fleet]" style="width:150px;">
-<?php foreach ( $t_arrFleetNames AS $iFleet => $szFleet ) {
-	echo '<option value="'.$iFleet.'">'.$szFleet.'</option>';
-} ?>
-</select>
-</td> 
-</tr>
-	<?php
-}
-
-?>
-<tr>
-<td colspan=4 style='border:none;'><input type=submit value="Move Units" style='width:100%;font-weight:bold;font-size:13px;color:lime;'></td>
-</tr>
-</table>
+<form method="post" action autocomplete="off">
+	<table>
+		<tr class="b">
+			<td>Unit</td>
+			<td>Amount</td>
+			<td>From</td>
+			<td>To</td>
+		</tr>
+		<? for ( $i = 0; $i < $iNumMovingRows; $i++ ): ?>
+			<tr>
+				<td>
+					<select>
+						<option value="">--</option>
+						<option value="all">-- All units</option>
+						<?= html_options($g_user->ships) ?>
+					</select>
+				</td>
+				<td>
+					<input type="number" />
+				</td>
+				<td>
+					<select>
+						<option value="">--</option>
+						<?= html_options($g_user->fleets) ?>
+					</select>
+				</td>
+				<td>
+					<select>
+						<option value="">--</option>
+						<?= html_options($g_user->fleets) ?>
+					</select>
+				</td>
+			</tr>
+		<? endfor ?>
+		<tr>
+			<td colspan="4">
+				<button>Move Units</button>
+			</td>
+		</tr>
+	</table>
 </form>
 
-<br />
+<h2>Missions</h2>
 
-<div class="header">Missions</div>
-
-<br />
-
-<div class="c">Dispatching to outside your galaxy, costs <?php echo $GAMEPREFS['military_extra_eta_outside_galaxy']; ?> ticks extra!</div>
-<div class="c">Dispatching to outside your cluster, costs another <?php echo $GAMEPREFS['military_extra_eta_outside_cluster']; ?> ticks extra!</div>
-
-<br />
-
-<table id="overview_fleetstatus" border="0" cellpadding="3" cellspacing="0">
-<?php
-
-$arrFleets = db_fetch('SELECT *, (1) AS num_units FROM fleets f WHERE f.owner_planet_id = '.PLANET_ID.' AND fleetname != \'0\';');
-$bDispatchButton = false;
-foreach ( $arrFleets AS $arrFleet ) {
-	$szFleet = '<b>'.$FLEETNAMES[$arrFleet['fleetname']].'</b>';
-	$szEta = ( 0 == (int)$arrFleet['eta'] && $arrFleet['actiontime'] <= $arrFleet['startactiontime'] ) ? $arrFleet['actiontime'].' more ticks' : 'ETA '.$arrFleet['eta'].', AT '.$arrFleet['actiontime'];
-
-	if ( $arrFleet['action'] && isset($showcolors[$arrFleet['action']]) ) {
-		$szTxtColor = ' style="color:'. $showcolors[$arrFleet['action']] .';"';
-	}
-	else {
-		$szTxtColor = '';
-	}
-	echo '<tr'.$szTxtColor.'><td align="right">Fleet ['.$szFleet.']</td><td>';
-
-	if ( (int)$arrFleet['destination_planet_id'] && $arrFleet['action'] ) {
-		$szDestination = '<b>'.db_select_one('galaxies g, planets p', 'concat(p.rulername,\'</b> of <b>\',p.planetname,\'</b> (\',g.x,\':\',g.y,\':\',p.z,\')\')', 'p.galaxy_id = g.id AND p.id = '.(int)$arrFleet['destination_planet_id']);
-	}
-
-	switch ( $arrFleet['action'] )
-	{
-		case null:
-		default:
-			echo 'is idling at home...';
-		break;
-
-		case 'return':
-			echo 'is returning'.( !empty($szDestination) ? ' from '.$szDestination : '' ).' (ETA: '.$arrFleet['eta'].')...';
-		break;
-
-		case 'attack':
-		case 'defend':
-			echo 'is'.( '1' !== $arrFleet['activated'] ? ' <b>NOT YET</b>' : '' ).' '.$arrFleet['action'].'ing '.$szDestination.' ('.$szEta.')...';
-			if ( !(int)$arrFleet['activated'] ) {
-				$bDispatchButton = true;
-			}
-		break;
-	} // switch
-	echo '</td>';
-	echo '<td>'.( $arrFleet['action'] && 'return' != $arrFleet['action'] ? '<a href="?recall_fleetname='.$arrFleet['fleetname'].'" onclick="new Ajax(this.href,{onComplete:function(a){alert(a.responseText);}});return false;">recall</a>' : '' ).'</td>';
-	echo '<td>'.( $arrFleet['action'] ? '<a href="?selfdestruct_fleetname='.$arrFleet['fleetname'].'" onclick="new Ajax(this.href,{onComplete:function(a){alert(a.responseText);}});return false;">self-destruct</a>' : '' ).'</td>';
-	echo '<th>'.( !(int)$arrFleet['activated'] && $arrFleet['action'] && 'return' != $arrFleet['action'] ? '<input type="checkbox" name="fleetnames[]" value="'.$arrFleet['fleetname'].'" />' : '' ).'</th>';
-	echo '</tr>';
-}
-
-if ( $bDispatchButton ) {
-	echo '<tr><td colspan="2"></td><td colspan="3" align="right"><input type="button" value="Dispatch fleet(s)" onclick="new Ajax(\'?activate_fleets=1\', {onComplete:function(a){alert(a.responseText);}});" /></td></tr>';
-}
-
-?>
+<table>
+	<? foreach ( $g_user->fleets as $fleet ): ?>
+		<tr class="<?= html($fleet->action) ?>ing fleet">
+			<th><?= html($fleet) ?></th>
+			<td>
+				<? if ( $fleet->action == 'return' ): ?>
+					is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+				<? elseif ( $fleet->action == 'attack' ): ?>
+					is <?= $fleet->activated ? '' : 'NOT YET' ?> attacking <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+				<? elseif ( $fleet->action == 'defend' ): ?>
+					is <?= $fleet->activated ? '' : 'NOT YET' ?> defending <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+				<? elseif ( $fleet->fleetname ): ?>
+					is ready to be sent to
+					<input class="coord" type="number" /> :
+					<input class="coord" type="number" /> :
+					<input class="coord" type="number" />
+					for
+					<input class="coord" type="number" />
+					ticks
+				<? else: ?>
+					is idling at home...
+				<? endif ?>
+			</td>
+			<td>
+				<select>
+					<option value="">--</option>
+					<?= html_options($fleet->available_actions) ?>
+				</select>
+			</td>
+		</tr>
+	<? endforeach ?>
 </table>
-
-<br />
-
-<?php if ( 1 < count($t_arrFleetNames) ): ?>
-<form action="military.php" method="post" onsubmit="return postForm(this, function(a){var t=a.responseText;if('OK'!=t){alert(t);}else{document.location.reload();}});" autocomplete="off">
-<table border="0" cellpadding="3" cellspacing="0" class="widecells">
-<tr>
-	<th>Action</td>
-	<th>Target</td>
-	<th>Fleet</td>
-	<th>Period</td>
-</tr>
-<tr>
-	<td><select name="action"><option value="">--</option><option value="attack">Attack</option><option value="defend">Defend</option></select></td>
-	<td><input type="text" name="x" size="3" class="c">:<input type="text" name="y" size="3" class="c">:<input type="text" name="z" size="3" class="c"></td>
-	<td><select name="fleetname"><option value="">--</option>
-<?php foreach ( $t_arrFleetNames AS $iFleet => $szFleet ) {
-	if ( $iFleet ) { echo '<option value="'.$iFleet.'">'.$szFleet.'</option>'; }
-} ?>
-</select></td>
-	<td><select name="period"><?php for ( $i=(int)$GAMEPREFS['military_min_period']; $i<=(int)$GAMEPREFS['military_max_period']; $i++ ) { echo '<option'.( 5 === $i ? ' selected="1"' : '' ).' value="'.$i.'">'.$i.' tick(s)</option>'; } ?></select></td>
-</tr>
-<tr>
-	<td colspan="3"></td>
-	<td class="right"><input type="submit" value="Order" /></td>
-</tr>
-</table>
-
-<br />
-<?php endif; ?>
 
 <?php
 
 _footer();
-
-?>

@@ -110,6 +110,20 @@ input.coord {
 }
 
 /**
+ * FLEETS
+ */
+
+.fleet.attacking {
+	color: red;
+}
+.fleet.defending {
+	color: green;
+}
+.fleet.returning {
+	color: gold;
+}
+
+/**
  * MAIN MENU
  */
 

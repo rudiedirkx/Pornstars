@@ -2,6 +2,7 @@
 
 namespace rdx\ps;
 
+use rdx\ps\Fleet;
 use rdx\ps\Planet;
 use rdx\ps\Thread;
 
@@ -12,6 +13,14 @@ class Galaxy extends Model {
 	/**
 	 * Getters
 	 */
+
+	public function get_outgoing_fleets() {
+		return Fleet::all("activated = '1' AND destination_planet_id IS NOT NULL AND owner_planet_id IN (?)", [array_keys($this->planets)]);
+	}
+
+	public function get_incoming_fleets() {
+		return Fleet::all("activated = '1' AND destination_planet_id IN (?)", [array_keys($this->planets)]);
+	}
 
 	public function get_threads() {
 		return Thread::all('galaxy_id = ? AND parent_thread_id IS NULL ORDER BY id DESC', [$this->id]);

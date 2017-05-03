@@ -129,12 +129,9 @@ _header();
 
 <h2>.: Fleet Status :.</h2>
 <table>
-	<? foreach ( $g_user->fleets AS $fleet ):
-		$szFleet = '<b>'.$FLEETNAMES[$fleet->fleetname].'</b>';
-		$szEta = ( 0 == (int)$fleet->eta && $fleet->actiontime <= $fleet->startactiontime ) ? $fleet->actiontime.' more ticks' : 'ETA '.$fleet->eta.', AT '.$fleet->actiontime;
-		?>
-		<tr>
-			<td>Fleet [<?= html($fleet->fleetname) ?>]</td>
+	<? foreach ( $g_user->fleets AS $fleet ): ?>
+		<tr class="<?= html($fleet->action) ?>ing fleet">
+			<td><?= html($fleet) ?></td>
 			<td>(<?= nummertje($fleet->total_ships) ?> units)</td>
 			<td>
 				<? if ( $fleet->action == 'return' ): ?>

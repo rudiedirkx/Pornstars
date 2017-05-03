@@ -113,7 +113,10 @@ else if ( isset($_POST['pwdvergeten']) ) {
 <html>
 
 <head>
-<title><?php echo $GAMENAME; ?></title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<title><?= html($GAMENAME) ?></title>
 <script src="general_1_2_6.js"></script>
 <script src="ajax_1_3_1.js"></script>
 <link rel="stylesheet" href="css/styles.css" />
@@ -167,7 +170,7 @@ function L(a) {
 	<input type="hidden" name="sleepmode_override" value="" />
 
 	E-mail address<br>
-	<input type="text" autofocus name="u" /><br>
+	<input type="email" autofocus name="u" /><br>
 	<br />
 
 	Password<br>

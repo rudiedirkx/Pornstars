@@ -310,107 +310,48 @@ function applyRDChange( $f_szType, $f_iInitialValue, $f_iPlanetId = PLANET_ID ) 
 } // END applyRDChange()
 
 
-function getFleetMatrix( $f_iPlanetId = PLANET_ID, $f_bPrintDetails = true ) {
-	global $NUM_OUTGOING_FLEETS, $FLEETNAMES, $showcolors, $t_arrFleetNames, $t_arrShipNames;
+function getFleetMatrix( Planet $objPlanet, $withDetails = true ) {
+	global $db;
+	// global $NUM_OUTGOING_FLEETS, $FLEETNAMES, $showcolors, $t_arrFleetNames, $t_arrShipNames;
 
-	$arrShips = db_fetch('
-SELECT
-	u.*,
-	s.id AS ship_id,
-	IFNULL((SELECT
-			SUM(amount)
-		FROM
-			fleets f,
-			ships_in_fleets sf
-		WHERE
-			f.owner_planet_id = '.$f_iPlanetId.' AND
-			f.id = sf.fleet_id AND
-			sf.ship_id = s.id AND
-			f.fleetname = \'0\'
-	),0) AS num_units
-FROM
-	d_all_units u,
-	d_ships s
-WHERE
-	s.id = u.id AND
-	u.r_d_required_id IN (
-		SELECT
-			rdpp.r_d_id
-		FROM
-			planet_r_d rdpp
-		WHERE
-			rdpp.planet_id = '.$f_iPlanetId.' AND
-			rdpp.eta = 0
-	)
-ORDER BY
-	s.id ASC;
-');
+	$fleets = $objPlanet->fleets;
+	$ships = $objPlanet->ships;
 
-	$szHtml = '';
-	$szHtml .= '<table class="fleets" border="0" cellpadding="2" cellspacing="0"'.( !$f_bPrintDetails ? ' align="center"' : '' ).'><tr class="bb"><td>&nbsp;</td>';
-
-	$t_arrFleetNames = $t_arrShipNames /*= $arrFleetETAs = $arrFleetCostsPerTick*/ = array();
-	for ( $iFleetName=0; $iFleetName<=$NUM_OUTGOING_FLEETS; $iFleetName++ )
-	{
-		$arrFleetETAs[$iFleetName] = $arrFleetCostsPerTick[$iFleetName] = 0;
-
-		$arrFleet = db_select('fleets', 'owner_planet_id = '.$f_iPlanetId.' AND fleetname = \''.$iFleetName.'\'');
-		$arrFleet = $arrFleet[0];
-		$szFleetAction = $arrFleet['action'];
-		if ( !$szFleetAction ) {
-			$t_arrFleetNames[$iFleetName] = $FLEETNAMES[(int)$iFleetName];
-			$szTxtColor = '';
-		}
-		else {
-			$szTxtColor = ' style="color:' . $showcolors[$szFleetAction] . ';"';
-		}
-		$szHtml .= '<th'.$szTxtColor.' width="70" nowrap="nowrap" class="right" title="'.$arrFleet['id'].'" id="fleetmatrix_fleet_'.$iFleetName.'">'.$FLEETNAMES[(int)$iFleetName].'</th>';
+	$html = '';
+	$html .= '<table>';
+	$html .= '<tr>';
+	$html .= '<td></td>';
+	foreach ( $fleets as $fleetId => $fleet ) {
+		$html .= '<th>' . html($fleet) . '</th>';
 	}
-	$szHtml .= '</tr>';
-
-	foreach ( $arrShips AS $k => $arrShip )
-	{
-		$t_arrShipNames[(int)$arrShip['ship_id']] = $arrShip['unit_plural'];
-		$szHtml .= '<tr class="bt'.( $f_bPrintDetails && $k == count($arrShips)-1 ? ' bb' : '' ).'">';
-		$szHtml .= '<td nowrap="nowrap" title="'.$arrShip['id'].': ETA = '.$arrShip['move_eta'].', Fuel use = '.$arrShip['fuel'].'">'.htmlspecialchars($arrShip['unit_plural']).'</td>';
-		$szHtml .= '<td align="right">'.nummertje($arrShip['num_units']).'</td>';
-		for ( $iFleetName=1; $iFleetName<=$NUM_OUTGOING_FLEETS; $iFleetName++ )
-		{
-			$iShips = shipsInFleet($arrShip['ship_id'], $iFleetName, $f_iPlanetId);
-#			if ( 0 < $iShips && $arrShip['move_eta'] > $arrFleetETAs[$iFleetName] ) {
-#				$arrFleetETAs[$iFleetName] = $arrShip['move_eta'];
-#			}
-#			$arrFleetCostsPerTick[$iFleetName] += $iShips * $arrShip['fuel'];
-			$szHtml .= '<td align="right">'.nummertje($iShips).'</td>';
+	$html .= '</tr>';
+	foreach ( $ships as $shipId => $ship ) {
+		$html .= '<tr>';
+		$html .= '<th>' . html($ship->unit_plural) . '</th>';
+		foreach ( $fleets as $fleetId => $fleet ) {
+			$html .= '<td>' . nummertje($fleet->ships[$shipId]->planet_amount) . '</td>';
 		}
-		$szHtml .= '</tr>';
+		$html .= '</tr>';
 	}
-	if ( $f_bPrintDetails ) {
-		$szHtml .= '<tr class="bt">';
-		$szHtml .= '<td colspan="2" class="right">Min. ETA:</td>';
-//		$szHtml .= '<td>&nbsp;</td>'; // Home fleet
-		$arrEtas = array();
-		for ( $iFleetName=1; $iFleetName<=$NUM_OUTGOING_FLEETS; $iFleetName++ )
-		{
-			$iEta = db_select_one('d_ships s, ships_in_fleets sif, fleets f, d_all_units u', 'max(u.move_eta)', 'u.id = s.id AND s.id = sif.ship_id AND sif.fleet_id = f.id AND f.fleetname = \''.(int)$iFleetName.'\' AND f.owner_planet_id = '.$f_iPlanetId.' AND sif.amount > 0');
-			$iEta = applyRDChange('travel_eta', $iEta, $f_iPlanetId);
-			$szHtml .= '<td align="right">'.$iEta.'</td>';
-			$arrEtas[$iFleetName] = $iEta;
-		}
-		$szHtml .= '</tr>';
-		$szHtml .= '<tr class="bb">';
-		$szHtml .= '<td colspan="2" class="right" nowrap="1" wrap="off">Min. Fuel use:</td>';
-//		$szHtml .= '<td>&nbsp;</td>'; // Home fleet
-		for ( $iFleetName=1; $iFleetName<=$NUM_OUTGOING_FLEETS; $iFleetName++ )
-		{
-			$iFuelUsePerTick = db_select_one('d_ships s, ships_in_fleets sif, fleets f, d_all_units u', 'sum(u.fuel*sif.amount)', 'u.id = s.id AND s.id = sif.ship_id AND sif.fleet_id = f.id AND f.fleetname = \''.(int)$iFleetName.'\' AND f.owner_planet_id = '.$f_iPlanetId.' AND sif.amount > 0');
-			$szHtml .= '<td align="right" style="color:'.$showcolors['energy'].';">'.nummertje($arrEtas[$iFleetName]*$iFuelUsePerTick).'</td>';
-		}
-		$szHtml .= '</tr>';
-	}
-	$szHtml .= '</table>';
 
-	return $szHtml;
+	if ( $withDetails ) {
+		$html .= '<tr>';
+		$html .= '<th>ETA</th>';
+		foreach ( $fleets as $fleetId => $fleet ) {
+			$html .= '<td>' . ( $fleet->fleetname ? $fleet->ships_eta : '' ) . '</td>';
+		}
+		$html .= '</tr>';
+		$html .= '<tr>';
+		$html .= '<th>Fuel</th>';
+		foreach ( $fleets as $fleetId => $fleet ) {
+			$html .= '<td>' . ( $fleet->fleetname ? nummertje($fleet->ships_power) : '' ) . '</td>';
+		}
+		$html .= '</tr>';
+	}
+
+	$html .= '</table>';
+
+	return $html;
 }
 
 

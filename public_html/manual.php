@@ -2,33 +2,28 @@
 
 require 'inc.bootstrap.php';
 
+_header();
+
 ?>
-<title>Manual</title>
-<body bgcolor=black>
-<link rel=stylesheet href="css/styles.css" />
+
 <center>
+	<p><a href="manual.help.php">H E L P</a></p>
 
-<br />
-<a href="manual.help.php">H E L P</a><br />
-<br />
-<br />
-<a href="manual.manual.php">Manual</a><br />
-<br />
-<a href="manual.techtree.php">Techtree 1</a><br />
-<a href="_tests/TechTreeV2.php">Techtree 2</a><br />
-<a href="_tests/TechTreeMakerV2.1.php">Techtree 3</a><br />
-<br />
-<a href="manual.shipstats.php">Shipstatistics</a><br />
-<br />
-<a href="manual.combatstats.php">Combatstatistics</a><br />
-<br />
-<!---<a href="manual.formulas.php">Formulas</a><br />
-<br />--->
-<a href="manual.asteroidscanning.php">Asteroidscanning</a><br />
-<br />
-<br />
-<br />
-<a href="CHANGELOG">CHANGELOG</a><br />
-<br />
+	<p><a href="manual.manual.php">Manual</a></p>
 
+	<p>
+		<a href="manual.techtree.php">Techtree 1</a><br />
+		<a href="_tests/TechTreeV2.php">Techtree 2</a><br />
+		<a href="_tests/TechTreeMakerV2.1.php">Techtree 3</a>
+	</p>
 
+	<p><a href="manual.shipstats.php">Shipstatistics</a></p>
+
+	<p><a href="manual.combatstats.php">Combatstatistics</a></p>
+
+	<p><a href="manual.asteroidscanning.php">Asteroidscanning</a></p>
+</center>
+
+<?php
+
+require 'inc.footer.php';
