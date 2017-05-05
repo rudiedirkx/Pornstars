@@ -113,13 +113,10 @@ else if ( isset($_POST['pwdvergeten']) ) {
 <html>
 
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="shortcut icon" href="/favicon.ico" />
+<? include 'tpl.head.php' ?>
 <title><?= html($GAMENAME) ?></title>
 <script src="general_1_2_6.js"></script>
 <script src="ajax_1_3_1.js"></script>
-<link rel="stylesheet" href="css/styles.css" />
 <script>
 function L(a) {
 	var t = a.responseText;

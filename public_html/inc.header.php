@@ -16,12 +16,8 @@ if ( logincheck(false) && $g_user->oldpwd && 'preferences' != $st && $g_prefs->m
 <html>
 
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="shortcut icon" href="/favicon.ico" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<? include 'tpl.head.php' ?>
 <title><?= $g_prefs->gamename ?></title>
-<link rel="stylesheet" href="css/styles.css" />
 <script src="general_1_2_6.js"></script>
 <script src="ajax_1_3_1.js"></script>
 <script>

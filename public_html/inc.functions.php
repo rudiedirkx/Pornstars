@@ -200,10 +200,7 @@ function logincheck( $f_bAct = true ) {
 
 	if ( isset($_SESSION['planet_id'], $_SESSION['unihash']) ) {
 		if ( $objPlanet = Planet::find($_SESSION['planet_id']) ) {
-			if ( $objPlanet->unihash == $_SESSION['unihash'] && !$objPlanet->closed ) {
-
-				// @todo Global user
-				// @todo Global resources
+			if ( /*$objPlanet->unihash == $_SESSION['unihash'] &&*/ !$objPlanet->closed ) {
 				$g_user = $objPlanet;
 
 				define( 'PLANET_ID', (int) $objPlanet->id);

@@ -33,8 +33,15 @@ $menu = array(
 );
 
 ?>
-<ul id="mmenu">
-	<? foreach ( $menu AS $item ): ?>
-		<li><?= $item ? '<a href="' . html($item[1]) . '">' . html($item[0]) . '</a>' : '&nbsp;' ?></li>
-	<? endforeach ?>
+<ul class="main-menu">
+<? foreach ( $menu AS $item ): ?>
+	<? if ( $item ):
+		$active = basename($_SERVER['SCRIPT_NAME']) == $item[1] ? 'active' : '';
+		?>
+		<li><?= '<a class="' . $active . '" href="' . html($item[1]) . '">' . html($item[0]) . '</a>' ?></li>
+	<? else: ?>
+		</ul>
+		<ul class="main-menu">
+	<? endif ?>
+<? endforeach ?>
 </ul>

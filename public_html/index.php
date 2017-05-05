@@ -25,8 +25,8 @@ $tickertimetxt = (($tickdif > $TICKERTIME)?"<font color=red>":"") . Verschil_In_
 ?>
 <html>
 <head>
+<? include 'tpl.head.php' ?>
 <title><?php echo $GAMENAME; ?></title>
-<link rel=stylesheet href="css/styles.css">
 <script>if (top.location!=document.location) { top.location=document.location; }</script>
 </head>
 <body bgcolor="black">

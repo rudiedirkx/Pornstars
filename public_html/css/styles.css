@@ -127,25 +127,29 @@ input.coord {
  * MAIN MENU
  */
 
-ul#mmenu,
-ul#mmenu li {
+.main-menu,
+.main-menu li {
      list-style: none;
      margin: 0;
      padding: 0;
 }
-ul#mmenu {
+.main-menu {
      margin: 5px;
 }
-ul#mmenu li {
+.main-menu + .main-menu {
+     margin-top: 1em;
+}
+.main-menu li {
      margin-top: 1px;
 }
-ul#mmenu li a {
+.main-menu a {
      display: block;
      background-color: #111;
      padding: 3px;
 }
-ul#mmenu li a:focus,
-ul#mmenu li a:hover {
+.main-menu a:focus,
+.main-menu a:hover,
+.main-menu a.active {
      background-color: #e80;
      color: #111;
 }
@@ -192,6 +196,27 @@ h2 {
 	color: #3388dd;
 	font-weight: bold;
 	text-align: center;
+}
+
+
+
+
+/**
+ * MOBILE
+ */
+
+@media (max-width: 600px) {
+	body > .flex {
+		flex-direction: column;
+	}
+	#left {
+		display: -webkit-box;
+		display: flex;
+		overflow: auto;
+	}
+	.main-menu + .main-menu {
+		margin-top: 0;
+	}
 }
 
 
