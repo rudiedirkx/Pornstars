@@ -83,6 +83,11 @@ class Galaxy extends Model {
 	 * Static
 	 */
 
+	static public function create( $x, $y ) {
+		$id = self::insert(compact('x', 'y'));
+		return self::find($id);
+	}
+
 	static public function fromCoordinates( $x, $y ) {
 		return self::first(['x' => $x, 'y' => $y]);
 	}

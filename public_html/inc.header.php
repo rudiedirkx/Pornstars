@@ -17,7 +17,7 @@ if ( logincheck(false) && $g_user->oldpwd && 'preferences' != $st && $g_prefs->m
 
 <head>
 <? include 'tpl.head.php' ?>
-<title><?= $g_prefs->gamename ?></title>
+<title><?= html($g_prefs->gamename) ?></title>
 <script src="general_1_2_6.js"></script>
 <script src="ajax_1_3_1.js"></script>
 <script>

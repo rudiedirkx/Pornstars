@@ -2,8 +2,6 @@
 
 use rdx\ps\Resource;
 
-$indextitel = '<table border="0" cellpadding="5" cellspacing="0" width="100%"><tr valign="middle"><td align="center"><a href="./">Index</a> &nbsp; || &nbsp; <a href="login.php">Login</a> &nbsp; || &nbsp; <a href="signup.php">Signup</a> &nbsp;||&nbsp; <a href="./"><b>Play</b></a> &nbsp;||&nbsp; <a href="comp.php" target="_parent">Administration</a></td></tr></table>';
-
 // Misc
 $PWD_MUST_CHANGE			= (bool) $g_prefs->must_change_pwd;			// Password must be changed in order to play when set to TRUE
 $CHECK_TIME_BETWEEN_LOGINS	= (int) $g_prefs->between_logins_time;			// If 0, disabled. Else you can't login for this amount of seconds after your last login

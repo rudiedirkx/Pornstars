@@ -99,6 +99,17 @@ function sessionError( $message ) {
 	return sessionMessage($message, 'error');
 }
 
+function rand_string( $f_iLength = 8 ) {
+	$chars = array_merge(range('A','Z'), range(0, 9));
+
+	$string = '';
+	while ( strlen($string) < $f_iLength ) {
+		$string .= $chars[ array_rand($chars) ];
+	}
+
+	return $string;
+}
+
 
 
 function db_transaction_update( $f_arrUpdates, $f_szIfField, $f_szUpdateField ) {
@@ -131,20 +142,6 @@ function _header() {
 
 	include 'inc.header.php';
 }
-
-function rand_string( $f_iLength = 8 )
-{
-	$arrTokens = array_merge( range("a","z"), range("A","Z"), range("0","9") );
-
-	$szRandString = "";
-	for ( $i=0; $i<max(1, (int)$f_iLength); $i++ )
-	{
-		$szRandString .= $arrTokens[array_rand($arrTokens)];
-	}
-
-	return $szRandString;
-}
-
 
 function fullname($f_iPlanetId, $f_bIncGalaxy = true) {
 	if ( $f_bIncGalaxy ) {
@@ -215,7 +212,8 @@ function logincheck( $f_bAct = true ) {
 		}
 	}
 
-	$_SESSION = [];
+	unset($_SESSION['planet_id']);
+	unset($_SESSION['unihash']);
 
 	if ( $f_bAct ) {
 		exit('<a href="login.php">Invalid session!</a>');

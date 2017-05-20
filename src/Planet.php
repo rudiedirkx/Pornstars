@@ -16,6 +16,9 @@ use rdx\ps\Unit;
 
 class Planet extends Model {
 
+	const NEW_PLANET_ASTEROIDS = 3;
+	const NEW_PLANET_RESOURCES = 2000;
+
 	static protected $table = 'planets';
 
 	/**
@@ -352,6 +355,95 @@ class Planet extends Model {
 	/**
 	 * Static
 	 */
+
+	static public function create( array $data ) {
+		global $db, $g_prefs;
+
+		list($galaxy, $z) = self::findAvailableCoordinates();
+
+		$insert = [
+			'email' => $data['email'],
+			'password' => $data['password'],
+			'rulername' => $data['rulername'],
+			'planetname' => $data['planetname'],
+			'race_id' => $data['race'],
+			'activationcode' => rand_string(),
+			'z' => $z,
+			'galaxy_id' => $galaxy->id,
+			'inactive_asteroids' => self::NEW_PLANET_ASTEROIDS,
+			'journal' => '',
+		];
+
+		// Create planet
+		$id = self::insert($insert);
+		$planet = self::find($id);
+
+		// Planet resources
+		$db->query('
+			INSERT INTO planet_resources (planet_id, resource_id, amount)
+				SELECT ?, id, ? FROM d_resources
+		', [$id, self::NEW_PLANET_RESOURCES]);
+
+		// Planet skills
+		$db->query('
+			INSERT INTO planet_skills (planet_id, skill_id)
+				SELECT ?, id FROM d_skills
+		', [$id]);
+
+		// Planet defences
+		$db->query('
+			INSERT INTO defence_on_planets (planet_id, unit_id)
+				SELECT ?, id FROM d_defence
+		', [$id]);
+
+		// Planet power
+		$db->query('
+			INSERT INTO power_on_planets (planet_id, unit_id)
+				SELECT ?, id FROM d_power
+		', [$id]);
+
+		// Planet waves
+		$db->query('
+			INSERT INTO waves_on_planets (planet_id, unit_id)
+				SELECT ?, id FROM d_waves
+		', [$id]);
+
+		// Planet fleets
+		foreach ( $g_prefs->fleets as $index => $name ) {
+			$db->insert('fleets', ['owner_planet_id' => $id, 'fleetname' => $index]);
+		}
+
+		// Ships in fleets
+		$db->query('
+			INSERT INTO ships_in_fleets (fleet_id, unit_id)
+				SELECT f.id, u.id FROM fleets f, d_ships u WHERE f.owner_planet_id = ?
+		', [$id]);
+	}
+
+	static public function findAvailableCoordinates() {
+		global $db, $g_prefs;
+
+		$coords = $db->fetch('
+			SELECT g.x, g.y, p.z
+			FROM planets p, galaxies g
+			WHERE g.id = p.galaxy_id
+		')->all();
+		$coords = array_map(function($planet) {
+			return "{$planet->x}-{$planet->y}-{$planet->z}";
+		}, $coords);
+
+		for ( $x = 1; $x < 100; $x++ ) {
+			for ( $y = 1; $y < 100; $y++ ) {
+				for ( $z = 1; $z <= $g_prefs->planets_per_galaxy; $z++ ) {
+					$coord = "{$x}-{$y}-{$z}";
+					if ( !in_array($coord, $coords) ) {
+						$galaxy = Galaxy::fromCoordinates($x, $y) ?: Galaxy::create($x, $y);
+						return [$galaxy, $z];
+					}
+				}
+			}
+		}
+	}
 
 	static public function fromCoordinates( $x, $y, $z ) {
 		if ( $galaxy = Galaxy::fromCoordinates($x, $y) ) {

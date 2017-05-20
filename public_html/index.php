@@ -2,16 +2,11 @@
 
 require 'inc.bootstrap.php';
 
-if ( isset($_GET['ps_page']) && $_GET['ps_page'] == 'playtitelbalk' ) {
-	die("<html><head><title>".$GAMENAME."</title><link rel=stylesheet href=\"css/styles.css\" /></head><body bgcolor=\"black\"><base target=\"_parent\" /><table border=\"0\" cellpadding=\"5\" cellspacing=\"0\" width=\"828\" height=\"100%\" style=\"border-bottom:solid 0px #444444;\"><tr><td align=\"center\"><a href=\"./\">Index</a> &nbsp; || &nbsp; <a href=\"login.php\">Login</a> &nbsp; || &nbsp; <a href=\"signup.php\">Signup</a> &nbsp;||&nbsp; <a href=\"./\"><b>Play</b></a> &nbsp;||&nbsp; Ticker: <a href=\"tickah.php?SET_USER_IS_TICKER=1\" target=\"t0\">ON</a> / <a href=\"tickah.php?SET_USER_IS_TICKER=0\" target=\"t0\">OFF</a> &nbsp;||&nbsp; <a href=\"comp.php\" target=\"_parent\">Administration</a></td></tr></table></body></html>");
-}
-
 if ( logincheck(false) ) {
 	return do_redirect('overview');
 }
 
-
-echo $indextitel;
+include 'tpl.anon-menu.php';
 
 if ($tickdif > $TICKERTIME) {
 	$tickertimetxt = "<font color=red>".(($tickdif>=24*3600)?(date("d",$tickdif)-1)." dagen, ":"").(date("H",$tickdif)-1)."h ".date("i\m s\s",$tickdif)."</font>";
