@@ -43,6 +43,15 @@ class Model {
 		}
 	}
 
+	public function reload() {
+		global $db;
+
+		$record = $db->select(static::$table, ['id' => $this->id])->nextRecord();
+		$this->fill($record);
+
+		return $this;
+	}
+
 	/**
 	 * Static
 	 */
@@ -113,6 +122,10 @@ class Model {
 	/**
 	 * Magic
 	 */
+
+	public function __reget( $name ) {
+		return $this->__get($name);
+	}
 
 	public function __get( $name ) {
 		if ( is_callable($method = [$this, "get_{$name}"]) ) {

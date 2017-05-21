@@ -3,6 +3,10 @@
 use rdx\ps\Planet;
 use rdx\ps\Unit;
 
+class NotEnoughException extends Exception {}
+
+
+
 function html( $text ) {
 	return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8') ?: htmlspecialchars((string)$text, ENT_QUOTES, 'ISO-8859-1');
 }
@@ -99,6 +103,8 @@ function sessionError( $message ) {
 	return sessionMessage($message, 'error');
 }
 
+
+
 function rand_string( $f_iLength = 8 ) {
 	$chars = array_merge(range('A','Z'), range(0, 9));
 
@@ -108,6 +114,12 @@ function rand_string( $f_iLength = 8 ) {
 	}
 
 	return $string;
+}
+
+
+
+function nextRoidCosts( $f_iHave ) {
+	return 110 * $f_iHave;
 }
 
 
@@ -241,17 +253,22 @@ function addProductions( $units, ...$bases ) {
 			foreach ( $variants as $variant => $amount ) {
 				if ( isint($amount) && $amount > 0 ) {
 					$costs = $unit->costs[$variant];
+					$costs = array_column($costs, 'amount', 'id');
 
-					// @todo Check costs & pay
-					// Fetch live resources before every buy
-					// Buy max units, with available resources
+					$maxAmount = $g_user->maxResourcesFor($costs);
+					$amount = min($maxAmount, $amount);
 
-					$unit->produce($g_user, $amount);
+					if ( $amount > 0 ) {
+						$g_user->takeTransaction(function($g_user) use ($unit, $costs, $amount) {
+							$g_user->takeResources($costs, $amount);
+
+							$unit->produce($g_user, $amount);
+						}, false);
+					}
 				}
 			}
 		}
 	}
-
 }
 
 
@@ -535,19 +552,6 @@ function Goede_Gebruikersnaam( $str )
 	{
 		trigger_error("Wrong argument passed for ".__FUNCTION__.". String needed, ".gettype($str)." passed");
 	}
-}
-
-
-function initRoidsCosts($f_iWanna, $f_iHave) {
-	$iCosts = 0;
-	for ( $i = 0; $i<$f_iWanna; $i++ ) {
-		$iHave = $i+$f_iHave;
-		$iCosts += nextRoidCosts($iHave);
-	}
-	return $iCosts;
-}
-function nextRoidCosts($f_iCurrentRoids) {
-	return 110*$f_iCurrentRoids;
 }
 
 function res_per_type( $x ) {

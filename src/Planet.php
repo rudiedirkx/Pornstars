@@ -25,6 +25,36 @@ class Planet extends Model {
 	 * Getters
 	 */
 
+	public function get_power_amount() {
+		return (float) $this->power_resource->amount;
+	}
+
+	public function get_power_resource() {
+		foreach ( $this->resources as $resource ) {
+			if ( $resource->is_power ) {
+				return $resource;
+			}
+		}
+	}
+
+	public function get_power_to_activate_asteroids() {
+		$haveRoids = $this->total_asteroids;
+		$havePower = $this->power_amount;
+
+		$needPower = 0;
+		$newRoids = 0;
+		while ( $havePower > $needPower ) {
+			$newRoids++;
+			$needPower += nextRoidCosts($haveRoids + $newRoids);
+		}
+
+		return $newRoids - 1;
+	}
+
+	public function get_next_asteroid_costs() {
+		return nextRoidCosts($this->total_asteroids);
+	}
+
 	public function get_alliance_tag() {
 		if ( $this->alliance ) {
 			return $this->alliance->tag;
@@ -158,7 +188,7 @@ class Planet extends Model {
 
 	public function get_resources() {
 		global $db;
-		return $db->select('d_resources c, planet_resources p', 'c.id = p.resource_id AND p.planet_id = ?', [$this->id], ['class' => Resource::class])->all();
+		return $db->select_by_field('d_resources c, planet_resources p', 'id', 'c.id = p.resource_id AND p.planet_id = ?', [$this->id], ['class' => Resource::class])->all();
 	}
 
 	public function get_ranked() {
@@ -209,6 +239,87 @@ class Planet extends Model {
 	/**
 	 * Logic
 	 */
+
+	public function maxResourcesFor( array $costs ) {
+		$have = array_column($this->__reget('resources'), 'amount', 'id');
+		$max = -1;
+
+		foreach ( $costs as $rid => $amount ) {
+			$can = floor($have[$rid] / $amount);
+			$max = $max == -1 ? $can : min($max, $can);
+		}
+
+		return $max;
+	}
+
+	public function takeTransaction( callable $transaction, $rethrow = true ) {
+		global $db;
+
+		try {
+			$db->begin();
+			call_user_func($transaction, $this);
+			$db->commit();
+			return true;
+		}
+		catch ( Exception $ex ) {
+			$db->rollback();
+			if ( $rethrow ) {
+				throw $ex;
+			}
+
+			return false;
+		}
+	}
+
+	/**
+	 * @todo Make overflow safe
+	 *
+	 * @throws NotEnoughException
+	 */
+	public function takeResources( array $resources, $quantity = 1 ) {
+		global $db;
+
+		foreach ( $resources as $rid => $amount ) {
+			$amount *= $quantity;
+			$db->update('planet_resources', "amount = amount - $amount", [
+				'resource_id' => $rid,
+				'planet_id' => $this->id,
+			]);
+		}
+
+		// @todo throw new NotEnoughException("resource $rid")
+
+		$this->__reget('resources');
+	}
+
+	/**
+	 * @todo Make overflow safe
+	 *
+	 * @throws NotEnoughException
+	 */
+	public function takeProperties( array $properties ) {
+		$update = [];
+		foreach ( $properties as $property => $amount ) {
+			$update[] = "$property = $property - $amount";
+		}
+
+		$this->update(implode(', ', $update));
+
+		// @todo throw new NotEnoughException($property)
+
+		$this->reload();
+	}
+
+	public function activateAsteroidsCosts( $amount ) {
+		$have = $this->total_asteroids;
+
+		$costs = 0;
+		for ( $i = 1; $i <= $amount; $i++ ) {
+			$costs += nextRoidCosts($have + $i);
+		}
+
+		return $costs;
+	}
 
 	public function createFleetScanReport( Planet $scanner ) {
 		$fleets = $this->fleets;
