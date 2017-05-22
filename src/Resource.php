@@ -25,4 +25,12 @@ class Resource extends Model {
 		}
 	}
 
+	/**
+	 * Logic
+	 */
+
+	public function __toString() {
+		return $this->resource;
+	}
+
 }

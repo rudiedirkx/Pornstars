@@ -20,44 +20,34 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 if ( isset($_POST['activate_asteroids']) && is_array($_POST['activate_asteroids']) ) {
 	validTokenOrFail('asteroids');
 
-	// Check inactive asteroids
-	$totalActivate = array_sum($_POST['activate_asteroids']);
-	if ( $totalActivate > $g_user->inactive_asteroids ) {
-		sessionError('Not enough inactive asteroids');
-		return do_redirect();
-	}
+	$activate = array_intersect_key($_POST['activate_asteroids'], $g_user->resources);
+	$activate = array_filter($activate, 'isint');
 
-	// Check resources
-	$totalCosts = $g_user->activateAsteroidsCosts($totalActivate);
-	if ( $totalCosts > $g_user->power_amount ) {
-		sessionError('Not enough power on planet');
-		return do_redirect();
-	}
+	$activated = 0;
+	foreach ( $activate as $rid => $amount ) {
+		$amount = min($g_user->maxPowerForAsteroids(), $amount);
+		if ( $amount == 0 ) continue;
 
-	try {
-		$g_user->takeTransaction(function($g_user) use ($totalCosts, $totalActivate) {
+		$costs = $g_user->activateAsteroidsCosts($amount);
+
+		$g_user->takeTransaction(function($g_user) use ($db, &$activated, $rid, $costs, $amount) {
 			// Take resources
-			$g_user->takeResources([$g_user->power_resource->id => $totalCosts]);
+			$g_user->takeResources([$g_user->power_resource->id => $costs]);
 
 			// Take inactive asteroids
-			$g_user->takeProperties(['inactive_asteroids' => $totalActivate]);
-		});
-	}
-	catch ( NotEnoughException $ex ) {
-		sessionError('Not enough: ' . $ex->getMessage());
-		return do_redirect();
-	}
+			$g_user->takeProperties(['inactive_asteroids' => $amount]);
 
-	// Add active asteroids
-	foreach ( $_POST['activate_asteroids'] as $rid => $amount ) {
-		if ( isset($g_user->resources[$rid]) ) {
+			// Add active asteroids
 			$db->update('planet_resources', 'asteroids = asteroids + ' . (int) $amount, [
 				'planet_id' => $g_user->id,
 				'resource_id' => $rid,
 			]);
-		}
+
+			$activated += $amount;
+		}, false);
 	}
 
+	sessionSuccess('Activated ' . nummertje($activated) . ' asteroids');
 	return do_redirect();
 }
 
@@ -111,7 +101,7 @@ _header();
 			<td><button>Activate</button></td>
 			<td colspan="4">
 				The next 'roid will cost <?= nummertje($g_user->next_asteroid_costs) ?> power.
-				You can activate <?= nummertje($g_user->power_to_activate_asteroids) ?>.
+				You can activate <?= nummertje($g_user->maxPowerForAsteroids()) ?>.
 			</td>
 		</tr>
 	</table>

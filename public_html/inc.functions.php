@@ -247,6 +247,7 @@ function addProductions( $units, ...$bases ) {
 
 	$allUnits = Unit::all();
 
+	$queued = 0;
 	foreach ( $units as $id => $variants ) {
 		if ( isset($allUnits[$id]) && in_array($allUnits[$id]->T, $types) ) {
 			$unit = $allUnits[$id];
@@ -259,16 +260,20 @@ function addProductions( $units, ...$bases ) {
 					$amount = min($maxAmount, $amount);
 
 					if ( $amount > 0 ) {
-						$g_user->takeTransaction(function($g_user) use ($unit, $costs, $amount) {
+						$g_user->takeTransaction(function($g_user) use (&$queued, $unit, $costs, $amount) {
 							$g_user->takeResources($costs, $amount);
 
 							$unit->produce($g_user, $amount);
+
+							$queued += $amount;
 						}, false);
 					}
 				}
 			}
 		}
 	}
+
+	sessionSuccess('Queued ' . nummertje($queued) . ' units');
 }
 
 
@@ -427,7 +432,7 @@ function getProductionList( ...$bases ) {
 		$szHtml .= '<tr>';
 		$szHtml .= '<th>' . html($line['unit']->unit_plural) . '</th>';
 		foreach ( $matrixEtas as $eta ) {
-			$szHtml .= '<td>' . @$line['etas'][$eta] . '</td>';
+			$szHtml .= '<td>' . ( !empty($line['etas'][$eta]) ? nummertje($line['etas'][$eta]) : '' ) . '</td>';
 		}
 		$szHtml .= '</tr>';
 	}
@@ -478,7 +483,7 @@ function getProductionForm( ...$bases ) {
 
 		// Costs & order
 		$szHtml .= '<td nowrap>' . renderCostsVariant($unit->costs[0]) . '</td>';
-		$szHtml .= '<td><input class="costs" name="order_units[' . $unit->id . '][0]" /></td>';
+		$szHtml .= '<td><input type="number" class="costs" name="order_units[' . $unit->id . '][0]" /></td>';
 
 		$szHtml .= '</tr>';
 
@@ -486,7 +491,7 @@ function getProductionForm( ...$bases ) {
 		foreach ( array_slice($unit->costs, 1) as $variant => $costs ) {
 			$szHtml .= '<tr>';
 			$szHtml .= '<td nowrap>' . renderCostsVariant($costs) . '</td>';
-			$szHtml .= '<td><input class="costs" name="order_units[' . $unit->id . '][' . ($variant+1) . ']" /></td>';
+			$szHtml .= '<td><input type="number" class="costs" name="order_units[' . $unit->id . '][' . ($variant+1) . ']" /></td>';
 			$szHtml .= '</tr>';
 		}
 	}
@@ -504,7 +509,7 @@ function getProductionForm( ...$bases ) {
 
 function renderCostsVariant( array $costs ) {
 	$labels = array_map(function($cost) {
-		return '<span class="resource" style="background: ' . $cost->color . '">' . $cost->amount . '</span>';
+		return '<span class="resource" style="background: ' . $cost->color . '">' . nummertje($cost->amount) . '</span>';
 	}, $costs);
 	return implode(' + ', $labels);
 }

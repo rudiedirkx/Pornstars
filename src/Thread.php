@@ -27,7 +27,7 @@ class Thread extends Model {
 	 */
 
 	public function get_posts() {
-		return self::all('parent_thread_id = ? ORDER BY id ASC', [$this->id]);
+		return $this->posts = self::all('parent_thread_id = ? ORDER BY id ASC', [$this->id]);
 	}
 
 	public function get_creator_planet() {

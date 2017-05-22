@@ -91,29 +91,29 @@ class Unit extends Model {
 
 		$variants = [];
 		foreach ( $costs as $cost ) {
-			$variants[$cost->variant][$cost->resource_id] = Resource::find($cost->resource_id)->decorate(['amount' => $cost->amount]);
+			$variants[$cost->variant][$cost->resource_id] = Resource::find($cost->resource_id)->decorate(['amount' => (float) $cost->amount]);
 		}
 
 		if ( !$variants ) {
 			$variants[0] = [];
 		}
 
-		return $variants;
+		return $this->costs = $variants;
 	}
 
 	public function get_number_owned() {
 		switch ( $this->base_type ) {
 			case 'wave':
-				return $this->numberOnPlanet('waves_on_planets', $this->id, $this->planet_id);
+				return $this->number_owned = $this->numberOnPlanet('waves_on_planets', $this->id, $this->planet_id);
 
 			case 'defence':
-				return $this->numberOnPlanet('defence_on_planets', $this->id, $this->planet_id);
+				return $this->number_owned = $this->numberOnPlanet('defence_on_planets', $this->id, $this->planet_id);
 
 			case 'power':
-				return $this->numberOnPlanet('power_on_planets', $this->id, $this->planet_id);
+				return $this->number_owned = $this->numberOnPlanet('power_on_planets', $this->id, $this->planet_id);
 
 			case 'ship':
-				return $this->numberInFleets($this->id, $this->planet_id);
+				return $this->number_owned = $this->numberInFleets($this->id, $this->planet_id);
 		}
 	}
 

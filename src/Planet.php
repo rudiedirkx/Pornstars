@@ -2,6 +2,7 @@
 
 namespace rdx\ps;
 
+use NotEnoughException;
 use rdx\ps\Alliance;
 use rdx\ps\Fleet;
 use rdx\ps\Galaxy;
@@ -37,20 +38,6 @@ class Planet extends Model {
 		}
 	}
 
-	public function get_power_to_activate_asteroids() {
-		$haveRoids = $this->total_asteroids;
-		$havePower = $this->power_amount;
-
-		$needPower = 0;
-		$newRoids = 0;
-		while ( $havePower > $needPower ) {
-			$newRoids++;
-			$needPower += nextRoidCosts($haveRoids + $newRoids);
-		}
-
-		return $newRoids - 1;
-	}
-
 	public function get_next_asteroid_costs() {
 		return nextRoidCosts($this->total_asteroids);
 	}
@@ -63,7 +50,7 @@ class Planet extends Model {
 
 	public function get_alliance() {
 		if ( $this->alliance_id ) {
-			return Alliance::find($this->alliance_id);
+			return $this->alliance = Alliance::find($this->alliance_id);
 		}
 	}
 
@@ -113,21 +100,21 @@ class Planet extends Model {
 
 	public function get_training_skills() {
 		global $db;
-		return $db->select_fields('skill_training', 'skill_id, skill_id', 'eta > 0 AND planet_id = ?', [$this->id]);
+		return $this->training_skills = $db->select_fields('skill_training', 'skill_id, skill_id', 'eta > 0 AND planet_id = ?', [$this->id]);
 	}
 
 	public function get_doing_rd() {
 		global $db;
-		return $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
+		return $this->doing_rd = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
 	}
 
 	public function get_finished_rd() {
 		global $db;
-		return $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta = 0 AND planet_id = ?', [$this->id]);
+		return $this->finished_rd = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta = 0 AND planet_id = ?', [$this->id]);
 	}
 
 	public function get_fleets() {
-		return Fleet::all('owner_planet_id = ?', [$this->id]);
+		return $this->fleets = Fleet::all('owner_planet_id = ?', [$this->id]);
 	}
 
 	public function get_total_asteroids() {
@@ -141,15 +128,15 @@ class Planet extends Model {
 	}
 
 	public function get_defences() {
-		return $this->getUnits('defence');
+		return $this->defence = $this->getUnits('defence');
 	}
 
 	public function get_waves() {
-		return $this->getUnits('wave');
+		return $this->waves = $this->getUnits('wave');
 	}
 
 	public function get_power() {
-		return $this->getUnits('power');
+		return $this->power = $this->getUnits('power');
 	}
 
 	public function get_total_ships() {
@@ -158,7 +145,7 @@ class Planet extends Model {
 
 	public function get_ships() {
 		global $db;
-		return $db->fetch_by_field('
+		return $this->ships = $db->fetch_by_field('
 			SELECT a.*, SUM(s.amount) AS planet_amount
 			FROM d_all_units a
 			JOIN planet_r_d rd ON rd.r_d_id = a.r_d_required_id AND rd.planet_id = ? AND eta = 0
@@ -175,7 +162,7 @@ class Planet extends Model {
 
 	public function get_skills() {
 		global $db;
-		return $db->fetch_by_field('
+		return $this->skills = $db->fetch_by_field('
 			SELECT a.*, p.value AS planet_value, t.eta AS planet_eta
 			FROM d_skills a
 			LEFT JOIN planet_skills p ON a.id = p.skill_id AND p.planet_id = ?
@@ -188,20 +175,20 @@ class Planet extends Model {
 
 	public function get_resources() {
 		global $db;
-		return $db->select_by_field('d_resources c, planet_resources p', 'id', 'c.id = p.resource_id AND p.planet_id = ?', [$this->id], ['class' => Resource::class])->all();
+		return $this->resources = $db->select_by_field('d_resources c, planet_resources p', 'id', 'c.id = p.resource_id AND p.planet_id = ?', [$this->id], ['class' => Resource::class])->all();
 	}
 
 	public function get_ranked() {
 		global $db;
-		return $db->count('planets', 'score > ?', [$this->score]) + 1;
+		return $this->ranked = $db->count('planets', 'score > ?', [$this->score]) + 1;
 	}
 
 	public function get_researching() {
-		return $this->getRD('r');
+		return $this->researching = $this->getRD('r');
 	}
 
 	public function get_constructing() {
-		return $this->getRD('d');
+		return $this->constructing = $this->getRD('d');
 	}
 
 	public function get_coordinates() {
@@ -221,11 +208,11 @@ class Planet extends Model {
 	}
 
 	public function get_new_mail() {
-		return Mail::all(['to_planet_id' => $this->id, 'seen' => 0]);
+		return $this->new_mail = Mail::all(['to_planet_id' => $this->id, 'seen' => 0]);
 	}
 
 	public function get_new_news() {
-		return News::all(['planet_id' => $this->id, 'seen' => 0]);
+		return $this->new_news = News::all(['planet_id' => $this->id, 'seen' => 0]);
 	}
 
 	public function get_galaxy() {
@@ -233,12 +220,28 @@ class Planet extends Model {
 	}
 
 	public function get_ticker() {
-		return new PlanetTicker(Ticker::instance(), $this);
+		return $this->ticker = new PlanetTicker(Ticker::instance(), $this);
 	}
 
 	/**
 	 * Logic
 	 */
+
+	public function maxPowerForAsteroids() {
+		$this->__reget('resources');
+
+		$haveRoids = $this->total_asteroids;
+		$havePower = $this->power_amount;
+
+		$needPower = 0;
+		$newRoids = 0;
+		while ( $havePower > $needPower ) {
+			$newRoids++;
+			$needPower += nextRoidCosts($haveRoids + $newRoids);
+		}
+
+		return $newRoids - 1;
+	}
 
 	public function maxResourcesFor( array $costs ) {
 		$have = array_column($this->__reget('resources'), 'amount', 'id');
@@ -272,8 +275,6 @@ class Planet extends Model {
 	}
 
 	/**
-	 * @todo Make overflow safe
-	 *
 	 * @throws NotEnoughException
 	 */
 	public function takeResources( array $resources, $quantity = 1 ) {
@@ -284,28 +285,34 @@ class Planet extends Model {
 			$db->update('planet_resources', "amount = amount - $amount", [
 				'resource_id' => $rid,
 				'planet_id' => $this->id,
+				"amount >= $amount",
 			]);
+			if ( $db->affected_rows() < 1 ) {
+				$resource = Resource::find($rid);
+				throw new NotEnoughException("$resource");
+			}
 		}
-
-		// @todo throw new NotEnoughException("resource $rid")
 
 		$this->__reget('resources');
 	}
 
 	/**
-	 * @todo Make overflow safe
-	 *
 	 * @throws NotEnoughException
 	 */
 	public function takeProperties( array $properties ) {
-		$update = [];
+		global $db;
+
+		$updates = [];
+		$conditions = ['id' => $this->id];
 		foreach ( $properties as $property => $amount ) {
-			$update[] = "$property = $property - $amount";
+			$updates[] = "$property = $property - $amount";
+			$conditions[] = "property >= $amount";
 		}
 
-		$this->update(implode(', ', $update));
-
-		// @todo throw new NotEnoughException($property)
+		$db->update(self::$table, $updates, $conditions);
+		if ( $db->affected_rows() < 1 ) {
+			throw new NotEnoughException(implode('/', array_keys($properties)));
+		}
 
 		$this->reload();
 	}

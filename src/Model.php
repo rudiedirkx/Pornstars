@@ -129,7 +129,7 @@ class Model {
 
 	public function __get( $name ) {
 		if ( is_callable($method = [$this, "get_{$name}"]) ) {
-			return $this->$name = call_user_func($method);
+			return call_user_func($method);
 		}
 	}
 

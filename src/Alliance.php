@@ -24,7 +24,7 @@ class Alliance extends Model {
 
 	public function get_planets() {
 		global $db;
-		return $db->select_by_field('planets', 'id', 'alliance_id = ? ORDER BY z', [$this->id], ['class' => Planet::class])->all();
+		return $this->planets = $db->select_by_field('planets', 'id', 'alliance_id = ? ORDER BY z', [$this->id], ['class' => Planet::class])->all();
 	}
 
 	/**

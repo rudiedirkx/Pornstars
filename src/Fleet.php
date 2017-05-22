@@ -53,7 +53,7 @@ class Fleet extends Model {
 
 	public function get_ships() {
 		global $db;
-		return $db->fetch_by_field('
+		return $this->ships = $db->fetch_by_field('
 			SELECT u.*, f.amount AS planet_amount
 			FROM d_all_units u
 			JOIN planet_r_d rd ON rd.r_d_id = u.r_d_required_id AND rd.planet_id = ? AND eta = 0

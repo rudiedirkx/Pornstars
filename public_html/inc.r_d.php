@@ -1,17 +1,27 @@
 <?php
 
 if ( isset($_GET['start'], $_GET['_token']) ) {
-
 	validTokenOrFail('rd');
 
 	$rd = $g_user->canRD($rdType, $_GET['start']);
 	if ( !$rd ) {
-		accessFail('id');
+		return accessFail('id');
 	}
 
-	// @todo Check costs & pay
+	try {
+		$g_user->takeTransaction(function($g_user) use ($rd) {
+			$costs = $rd->costs;
+			$costs = array_column($costs, 'amount', 'id');
 
-	$rd->start($g_user);
+			// Take resources
+			$g_user->takeResources($costs);
+		});
+
+		$rd->start($g_user);
+	}
+	catch ( NotEnoughException $ex ) {
+		sessionError('Not enough: ' . $ex->getMessage());
+	}
 
 	return do_redirect();
 }
@@ -31,7 +41,7 @@ tr.done {
 	color: green;
 }
 tr.doing {
-	color: orange;
+	color: gold;
 }
 <? if ( $inProgress ): ?>
 	tr.available {
@@ -73,7 +83,7 @@ tr.doing {
 					<a href="?start=<?= $rd->id ?>&_token=<?= createToken('rd') ?>">start</a>
 				<? endif ?>
 			</td>
-			<td>costs</td>
+			<td nowrap><?= renderCostsVariant($rd->costs) ?></td>
 			<td>skills</td>
 		</tr>
 	<? endforeach ?>

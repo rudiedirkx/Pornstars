@@ -20,6 +20,17 @@ class ResearchDevelopment extends Model {
 	 * Getters
 	 */
 
+	public function get_costs() {
+		global $db;
+
+		$costs = $db->select_by_field('d_r_d_costs', 'resource_id', ['r_d_id' => $this->id])->all();
+		$costs = array_map(function($cost) {
+			return Resource::find($cost->resource_id)->decorate(['amount' => (float) $cost->amount]);
+		}, $costs);
+
+		return $costs;
+	}
+
 	public function get_excluded_by_rd() {
 		return array_intersect_key(self::all(), $this->excluded_by_rd_ids);
 	}
@@ -60,22 +71,22 @@ class ResearchDevelopment extends Model {
 
 	public function get_excluded_by_rd_ids() {
 		global $db;
-		return $db->select_fields('d_r_d_excludes', 'r_d_id, r_d_id', ['r_d_excludes_id' => $this->id]);
+		return $this->excluded_by_rd_ids = $db->select_fields('d_r_d_excludes', 'r_d_id, r_d_id', ['r_d_excludes_id' => $this->id]);
 	}
 
 	public function get_excludes_rd_ids() {
 		global $db;
-		return $db->select_fields('d_r_d_excludes', 'r_d_excludes_id, r_d_excludes_id', ['r_d_id' => $this->id]);
+		return $this->excludes_rd_ids = $db->select_fields('d_r_d_excludes', 'r_d_excludes_id, r_d_excludes_id', ['r_d_id' => $this->id]);
 	}
 
 	public function get_required_by_rd_ids() {
 		global $db;
-		return $db->select_fields('d_r_d_requires', 'r_d_id, r_d_id', ['r_d_requires_id' => $this->id]);
+		return $this->required_by_rd_ids = $db->select_fields('d_r_d_requires', 'r_d_id, r_d_id', ['r_d_requires_id' => $this->id]);
 	}
 
 	public function get_requires_rd_ids() {
 		global $db;
-		return $db->select_fields('d_r_d_requires', 'r_d_requires_id, r_d_requires_id', ['r_d_id' => $this->id]);
+		return $this->requires_rd_ids = $db->select_fields('d_r_d_requires', 'r_d_requires_id, r_d_requires_id', ['r_d_id' => $this->id]);
 	}
 
 	public function get_pct_done() {

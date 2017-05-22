@@ -43,6 +43,8 @@ button {
 	cursor: pointer;
 	background: #222;
 	padding: 4px 9px;
+	border-right-color: #777;
+	border-bottom-color: #777;
 }
 button:focus {
 	color: lightblue;
