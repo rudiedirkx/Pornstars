@@ -132,17 +132,21 @@ _header();
 	<? foreach ( $g_user->fleets AS $fleet ): ?>
 		<tr class="<?= html($fleet->action) ?>ing fleet">
 			<td><?= html($fleet) ?></td>
-			<td>(<?= nummertje($fleet->total_ships) ?> units)</td>
+			<td align="center"><?= nummertje($fleet->total_ships) ?> units</td>
 			<td>
-				<? if ( $fleet->action == 'return' ): ?>
-					is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
-				<? elseif ( $fleet->action == 'attack' ): ?>
-					is <?= $fleet->activated ? '' : 'NOT YET' ?> attacking <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
-				<? elseif ( $fleet->action == 'defend' ): ?>
-					is <?= $fleet->activated ? '' : 'NOT YET' ?> defending <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
-				<? else: ?>
-					is idling at home...
-				<? endif ?>
+					<? if ( $fleet->action == 'return' ): ?>
+						is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
+					<? elseif ( in_array($fleet->action, ['attack', 'defend']) ): ?>
+						<? if ( $fleet->activated ): ?>
+							is <?= $fleet->action ?>ing <?= $fleet->destination_planet ?> for <?= $fleet->action_eta ?> more ticks
+						<? else: ?>
+							is moving to <?= $fleet->action ?> <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
+						<? endif ?>
+					<? elseif ( $fleet->fleetname ): ?>
+						is idling at home...
+					<? else: ?>
+						is fixed at home
+					<? endif ?>
 			</td>
 		</tr>
 	<? endforeach ?>

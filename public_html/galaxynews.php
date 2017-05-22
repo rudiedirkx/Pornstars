@@ -19,8 +19,14 @@ _header();
 	</tr>
 	<? foreach ( $g_user->galaxy->incoming_fleets as $fleet ): ?>
 		<tr class="<?= html($fleet->action) ?>ing fleet">
-			<td><?= html($fleet->owner_planet) ?> (<?= implode(':', $fleet->owner_planet->coordinates) ?>)</td>
-			<td><?= html($fleet->destination_planet) ?> (<?= implode(':', $fleet->destination_planet->coordinates) ?>)</td>
+			<td>
+				<?= html($fleet->owner_planet) ?>
+				(<a href="galaxy.php?x=<?= $fleet->owner_planet->x ?>&y=<?= $fleet->owner_planet->y ?>"><?= implode(':', $fleet->owner_planet->coordinates) ?></a>)
+			</td>
+			<td>
+				<?= html($fleet->destination_planet) ?>
+				(<a href="galaxy.php?x=<?= $fleet->destination_planet->x ?>&y=<?= $fleet->destination_planet->y ?>"><?= implode(':', $fleet->destination_planet->coordinates) ?>)
+			</td>
 			<td><?= $fleet->travel_eta ?: $fleet->action_eta ?></td>
 		</tr>
 	<? endforeach ?>
@@ -36,8 +42,14 @@ _header();
 	</tr>
 	<? foreach ( $g_user->galaxy->outgoing_fleets as $fleet ): ?>
 		<tr class="<?= html($fleet->action) ?>ing fleet">
-			<td><?= html($fleet->owner_planet) ?> (<?= implode(':', $fleet->owner_planet->coordinates) ?>)</td>
-			<td><?= html($fleet->destination_planet) ?> (<?= implode(':', $fleet->destination_planet->coordinates) ?>)</td>
+			<td>
+				<?= html($fleet->owner_planet) ?>
+				(<a href="galaxy.php?x=<?= $fleet->owner_planet->x ?>&y=<?= $fleet->owner_planet->y ?>"><?= implode(':', $fleet->owner_planet->coordinates) ?></a>)
+			</td>
+			<td>
+				<?= html($fleet->destination_planet) ?>
+				(<a href="galaxy.php?x=<?= $fleet->destination_planet->x ?>&y=<?= $fleet->destination_planet->y ?>"><?= implode(':', $fleet->destination_planet->coordinates) ?>)
+			</td>
 			<td><?= $fleet->travel_eta ?: $fleet->action_eta ?></td>
 		</tr>
 	<? endforeach ?>

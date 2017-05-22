@@ -47,7 +47,9 @@ else if ( isset($_POST['mission']) ) {
 		}
 
 		$action = 'execute' . $mission['action'];
-		sessionSuccess(call_user_func([$fleet, $action], $mission));
+		if ( $message = call_user_func([$fleet, $action], $mission) ) {
+			sessionSuccess($message);
+		}
 	}
 
 	return do_redirect();
@@ -112,10 +114,12 @@ _header();
 				<td>
 					<? if ( $fleet->action == 'return' ): ?>
 						is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
-					<? elseif ( $fleet->action == 'attack' ): ?>
-						is <?= $fleet->activated ? '' : 'NOT YET' ?> attacking <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
-					<? elseif ( $fleet->action == 'defend' ): ?>
-						is <?= $fleet->activated ? '' : 'NOT YET' ?> defending <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
+					<? elseif ( in_array($fleet->action, ['attack', 'defend']) ): ?>
+						<? if ( $fleet->activated ): ?>
+							is <?= $fleet->action ?>ing <?= $fleet->destination_planet ?> for <?= $fleet->action_eta ?> more ticks
+						<? else: ?>
+							is moving to <?= $fleet->action ?> <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
+						<? endif ?>
 					<? elseif ( $fleet->fleetname ): ?>
 						is ready to be sent to
 						<input class="coord" type="number"  name="mission[<?= $fleet->fleetname ?>][x]"/> :

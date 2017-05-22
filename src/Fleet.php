@@ -6,7 +6,27 @@ use rdx\ps\Planet;
 
 class Fleet extends Model {
 
+	const ETA_GALAXY = 5;
+	const ETA_CLUSTER = 10;
+	const ETA_UNIVERSE = 15;
+
 	static protected $table = 'fleets';
+
+	/**
+	 * Static
+	 */
+
+	public function planetDistanceEta( Planet $from, Planet $to ) {
+		if ( $from->galaxy_id == $to->galaxy_id ) {
+			return self::ETA_GALAXY;
+		}
+
+		if ( $from->x == $to->x ) {
+			return self::ETA_CLUSTER;
+		}
+
+		return self::ETA_UNIVERSE;
+	}
 
 	/**
 	 * Getters
@@ -97,6 +117,8 @@ class Fleet extends Model {
 	}
 
 	public function executeDestroy( array $mission ) {
+		global $db;
+
 		// Destroy all ships
 		$db->update('ships_in_fleets', ['amount' => 0], ['fleet_id' => $this->id]);
 
@@ -111,16 +133,34 @@ class Fleet extends Model {
 		return 'Destroyed fleet ' . $this;
 	}
 
-	public function executeAttack( array $mission ) {
+	protected function executeMoveTroops( array $mission ) {
 		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
+		if ( $destination && $destination->id != $this->owner_planet_id ) {
 
-		return '*WIP* Fleet ' . $this . ' is now attacking ' . $destination;
+			// @todo Check newbie status & score difference
+			// @todo Check power costs & pay
+
+			$this->update([
+				'action' => $mission['action'],
+				'destination_planet_id' => $destination->id,
+				'travel_eta' => self::planetDistanceEta($this->owner_planet, $destination),
+				'action_eta' => $mission['ticks'],
+				'activated' => 0,
+			]);
+			return $destination;
+		}
+	}
+
+	public function executeAttack( array $mission ) {
+		if ( $destination = $this->executeMoveTroops($mission) ) {
+			return 'Fleet ' . $this . ' is now attacking ' . $destination;
+		}
 	}
 
 	public function executeDefend( array $mission ) {
-		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
-
-		return '*WIP* Fleet ' . $this . ' is now defending ' . $destination;
+		if ( $destination = $this->executeMoveTroops($mission) ) {
+			return 'Fleet ' . $this . ' is now defending ' . $destination;
+		}
 	}
 
 	public function moveShips( $shipId, $amount, self $to ) {
