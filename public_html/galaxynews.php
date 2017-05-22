@@ -21,7 +21,7 @@ _header();
 		<tr class="<?= html($fleet->action) ?>ing fleet">
 			<td><?= html($fleet->owner_planet) ?> (<?= implode(':', $fleet->owner_planet->coordinates) ?>)</td>
 			<td><?= html($fleet->destination_planet) ?> (<?= implode(':', $fleet->destination_planet->coordinates) ?>)</td>
-			<td><?= $fleet->eta ?></td>
+			<td><?= $fleet->travel_eta ?: $fleet->action_eta ?></td>
 		</tr>
 	<? endforeach ?>
 </table>
@@ -38,7 +38,7 @@ _header();
 		<tr class="<?= html($fleet->action) ?>ing fleet">
 			<td><?= html($fleet->owner_planet) ?> (<?= implode(':', $fleet->owner_planet->coordinates) ?>)</td>
 			<td><?= html($fleet->destination_planet) ?> (<?= implode(':', $fleet->destination_planet->coordinates) ?>)</td>
-			<td><?= $fleet->eta ?></td>
+			<td><?= $fleet->travel_eta ?: $fleet->action_eta ?></td>
 		</tr>
 	<? endforeach ?>
 </table>

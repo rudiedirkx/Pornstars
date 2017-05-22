@@ -338,14 +338,14 @@ function getFleetMatrix( Planet $objPlanet, $withDetails = true ) {
 	$html .= '<table>';
 	$html .= '<tr>';
 	$html .= '<td></td>';
-	foreach ( $fleets as $fleetId => $fleet ) {
-		$html .= '<th>' . html($fleet) . '</th>';
+	foreach ( $fleets as $fleet ) {
+		$html .= '<th class="' . html($fleet->action) . 'ing fleet">' . html($fleet) . '</th>';
 	}
 	$html .= '</tr>';
 	foreach ( $ships as $shipId => $ship ) {
 		$html .= '<tr>';
 		$html .= '<th>' . html($ship->unit_plural) . '</th>';
-		foreach ( $fleets as $fleetId => $fleet ) {
+		foreach ( $fleets as $fleet ) {
 			$html .= '<td>' . nummertje($fleet->ships[$shipId]->planet_amount) . '</td>';
 		}
 		$html .= '</tr>';
@@ -354,13 +354,13 @@ function getFleetMatrix( Planet $objPlanet, $withDetails = true ) {
 	if ( $withDetails ) {
 		$html .= '<tr>';
 		$html .= '<th>ETA</th>';
-		foreach ( $fleets as $fleetId => $fleet ) {
+		foreach ( $fleets as $fleet ) {
 			$html .= '<td>' . ( $fleet->fleetname ? $fleet->ships_eta : '' ) . '</td>';
 		}
 		$html .= '</tr>';
 		$html .= '<tr>';
 		$html .= '<th>Fuel</th>';
-		foreach ( $fleets as $fleetId => $fleet ) {
+		foreach ( $fleets as $fleet ) {
 			$html .= '<td>' . ( $fleet->fleetname ? nummertje($fleet->ships_power) : '' ) . '</td>';
 		}
 		$html .= '</tr>';

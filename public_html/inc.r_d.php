@@ -60,7 +60,6 @@ tr.doing {
 		<th>Progress</th>
 		<th>Action</th>
 		<th>Costs</th>
-		<th>Skills</th>
 	</tr>
 	<? foreach ( $available AS $rd ): ?>
 		<tr class="<?= $rd->status ?>">
@@ -84,7 +83,6 @@ tr.doing {
 				<? endif ?>
 			</td>
 			<td nowrap><?= renderCostsVariant($rd->costs) ?></td>
-			<td>skills</td>
 		</tr>
 	<? endforeach ?>
 </table>

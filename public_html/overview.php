@@ -135,11 +135,11 @@ _header();
 			<td>(<?= nummertje($fleet->total_ships) ?> units)</td>
 			<td>
 				<? if ( $fleet->action == 'return' ): ?>
-					is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+					is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
 				<? elseif ( $fleet->action == 'attack' ): ?>
-					is <?= $fleet->activated ? '' : 'NOT YET' ?> attacking <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+					is <?= $fleet->activated ? '' : 'NOT YET' ?> attacking <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
 				<? elseif ( $fleet->action == 'defend' ): ?>
-					is <?= $fleet->activated ? '' : 'NOT YET' ?> defending <?= $fleet->destination_planet ?> (ETA: <?= $fleet->eta ?>)
+					is <?= $fleet->activated ? '' : 'NOT YET' ?> defending <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?: $fleet->action_eta ?>)
 				<? else: ?>
 					is idling at home...
 				<? endif ?>

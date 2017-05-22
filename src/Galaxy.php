@@ -15,11 +15,11 @@ class Galaxy extends Model {
 	 */
 
 	public function get_outgoing_fleets() {
-		return $this->outgoing_fleets = Fleet::all("activated = '1' AND destination_planet_id IS NOT NULL AND owner_planet_id IN (?)", [array_keys($this->planets)]);
+		return $this->outgoing_fleets = Fleet::all("action <> 'return' AND destination_planet_id IS NOT NULL AND owner_planet_id IN (?)", [array_keys($this->planets)]);
 	}
 
 	public function get_incoming_fleets() {
-		return $this->incoming_fleets = Fleet::all("activated = '1' AND destination_planet_id IN (?)", [array_keys($this->planets)]);
+		return $this->incoming_fleets = Fleet::all("action <> 'return' AND destination_planet_id IN (?)", [array_keys($this->planets)]);
 	}
 
 	public function get_threads() {

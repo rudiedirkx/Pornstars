@@ -114,7 +114,10 @@ class Planet extends Model {
 	}
 
 	public function get_fleets() {
-		return $this->fleets = Fleet::all('owner_planet_id = ?', [$this->id]);
+		$fleets = Fleet::all('owner_planet_id = ? ORDER BY fleetname', [$this->id]);
+		return $this->fleets = array_reduce($fleets, function($fleets, $fleet) {
+			return $fleets + [$fleet->fleetname => $fleet];
+		}, []);
 	}
 
 	public function get_total_asteroids() {

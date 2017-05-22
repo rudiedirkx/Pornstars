@@ -12,6 +12,10 @@ class Fleet extends Model {
 	 * Getters
 	 */
 
+	public function get_is_home() {
+		return !$this->fleetname || ( !$this->action && !$this->travel_eta );
+	}
+
 	public function get_available_actions() {
 		$actions = [];
 		if ( $this->action ) {
@@ -78,8 +82,69 @@ class Fleet extends Model {
 	 * Logic
 	 */
 
+	public function executeReturn( array $mission ) {
+		$travelEta = max(1, $this->ships_eta - $this->travel_eta);
+
+		// Return fleet
+		$this->update([
+			'action' => 'return',
+			'travel_eta' => $travelEta,
+			'action_eta' => 0,
+			'activated' => 0,
+		]);
+
+		return 'Turned around fleet ' . $this;
+	}
+
+	public function executeDestroy( array $mission ) {
+		// Destroy all ships
+		$db->update('ships_in_fleets', ['amount' => 0], ['fleet_id' => $this->id]);
+
+		// Reset fleet
+		$this->update([
+			'action' => null,
+			'travel_eta' => 0,
+			'action_eta' => 0,
+			'activated' => 0,
+		]);
+
+		return 'Destroyed fleet ' . $this;
+	}
+
+	public function executeAttack( array $mission ) {
+		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
+
+		return '*WIP* Fleet ' . $this . ' is now attacking ' . $destination;
+	}
+
+	public function executeDefend( array $mission ) {
+		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
+
+		return '*WIP* Fleet ' . $this . ' is now defending ' . $destination;
+	}
+
+	public function moveShips( $shipId, $amount, self $to ) {
+		global $db;
+
+		if ( !isint($amount) || $amount < 1 || $amount > $this->ships[$shipId]->planet_amount ) {
+			$amount = $this->ships[$shipId]->planet_amount;
+		}
+
+		$db->update('ships_in_fleets', "amount = amount - $amount", [
+			'fleet_id' => $this->id,
+			'unit_id' => $shipId,
+			"amount >= $amount",
+		]);
+		if ( $db->affected_rows() > 0 ) {
+			$db->update('ships_in_fleets', "amount = amount + $amount", [
+				'fleet_id' => $to->id,
+				'unit_id' => $shipId,
+			]);
+		}
+	}
+
 	public function __toString() {
-		return 'Fleet [' . $this->fleetname . ']';
+		return $this->name;
 	}
 
 }
