@@ -1,2 +1,4 @@
+env.php
 /runtime/logs/
 /public_html/_project/*.zip
+/vendor/

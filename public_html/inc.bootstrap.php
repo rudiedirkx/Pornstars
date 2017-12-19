@@ -35,7 +35,7 @@ spl_autoload_register(function($class) {
 });
 
 require_once __DIR__ . '/env.php';
-require_once PROJECT_DB_LOCATION . '/db_mysql.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $db = db_mysql::open([
 	'user' => PROJECT_DB_USER,
