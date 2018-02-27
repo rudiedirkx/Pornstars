@@ -5,6 +5,12 @@
     "require": {
         "rdx/db": "^1.2"
     },
+    "autoload": {
+        "psr-4": {
+            "rdx\\ps\\": "src/"
+        },
+        "files": ["public_html/inc.functions.php"]
+    },
     "license": "MIT",
     "authors": [
         {

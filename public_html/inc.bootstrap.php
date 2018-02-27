@@ -5,10 +5,10 @@ use rdx\ps\Prefs;
 $iUtcStartTime = microtime(true);
 
 define( 'PARENT_SCRIPT_NAME',	$_SERVER['SCRIPT_NAME'] );
-define( 'BASEPAGE', basename($_SERVER['PHP_SELF']) );
+define( 'BASEPAGE', 			basename($_SERVER['PHP_SELF']) );
 
-define( 'PROJECT_RUNTIME',	dirname(dirname(__FILE__)).'/runtime' );
-define( 'PROJECT_LOGS',		PROJECT_RUNTIME.'/logs' );
+define( 'PROJECT_RUNTIME',		dirname(dirname(__FILE__)).'/runtime' );
+define( 'PROJECT_LOGS',			PROJECT_RUNTIME . '/logs' );
 
 
 session_start();
@@ -25,15 +25,6 @@ function validateAdminPassword( $password ) {
 	}
 }
 
-spl_autoload_register(function($class) {
-	$prefix = 'rdx\\ps\\';
-	if ( strpos($class, $prefix) === 0 ) {
-		if ( file_exists($file = dirname(__DIR__) . '/src/' . str_replace($prefix, '', $class) . '.php') ) {
-			include $file;
-		}
-	}
-});
-
 require_once __DIR__ . '/env.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -45,7 +36,7 @@ $db = db_mysql::open([
 $db->returnAffectedRows = true;
 
 function prepSomeGameStuff() {
-	global $db, $g_prefs;
+	global $g_prefs;
 	global $ticktime, $tickdif;
 
 	$g_prefs = Prefs::first('1 ORDER BY id DESC');
@@ -60,4 +51,3 @@ function prepSomeGameStuff() {
 prepSomeGameStuff();
 
 require_once 'inc.config_gamevalues.php';
-require_once 'inc.functions.php';

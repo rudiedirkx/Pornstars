@@ -13,11 +13,6 @@ $FLEETNAMES					= explode(',', (trim($g_prefs->fleetnames) ? $g_prefs->fleetname
 $NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$g_prefs->num_outgoing_fleets);			// Duh
 
 
-// foreach ( db_select_fields( 'd_news_subjects', 'id,const_name', '1 ORDER BY id ASC' ) AS $iSubjectId => $szConstant ) {
-// 	define( 'NEWS_SUBJECT_'.strtoupper($szConstant), (int)$iSubjectId );
-// }
-
-
 // Preferences
 $TICKERTIME		= $g_prefs->tickertime;
 $tickertime		= $g_prefs->tickertime;
