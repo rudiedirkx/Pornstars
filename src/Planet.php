@@ -309,7 +309,7 @@ class Planet extends Model {
 		$conditions = ['id' => $this->id];
 		foreach ( $properties as $property => $amount ) {
 			$updates[] = "$property = $property - $amount";
-			$conditions[] = "property >= $amount";
+			$conditions[] = "$property >= $amount";
 		}
 
 		$db->update(self::$table, $updates, $conditions);

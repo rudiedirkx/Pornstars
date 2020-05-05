@@ -54,19 +54,23 @@ class PlanetTicker {
 	}
 
 	public function getIncome( Resource $resource ) {
+		$income = [];
+
 		if ( $resource->is_power ) {
-			$income = $this->powerIncome();
+			$income['asteroid'] = $this->powerIncome();
 		}
 		else {
-			$income = $this->asteroidIncome($resource);
+			$income['asteroid'] = $this->asteroidIncome($resource);
 		}
 
-		$income = $this->rdResultIncome($resource, $income);
+		$total = $this->rdResultIncome($resource, $income['asteroid']);
+		$income['bonus'] = $total - $income['asteroid'];
+
 		return $income;
 	}
 
 	public function addResource( Resource $resource ) {
-		$income = $this->getIncome($resource);
+		$income = array_sum($this->getIncome($resource));
 
 		if ( $income > 0 ) {
 			global $db;

@@ -67,12 +67,13 @@ _header();
 			<th>Type</th>
 			<th>Amount</th>
 			<th>Activate</th>
-			<th>Planet-</th>
-			<th>Asteroid-</th>
+			<th>Planet/Asteroid-</th>
 			<th>Bonus-</th>
 			<th>Total</th>
 		</tr>
-		<? foreach ( $g_user->resources as $resource ): ?>
+		<? foreach ( $g_user->resources as $resource ):
+			$income = $g_user->ticker->getIncome($resource);
+			?>
 			<tr>
 				<td><?= html($resource->resource) ?></td>
 				<td>
@@ -85,21 +86,16 @@ _header();
 						<input type="number" name="activate_asteroids[<?= $resource->id ?>]" />
 					<? endif ?>
 				</td>
-				<td>?</td>
-				<td>
-					<? if ( !$resource->is_power ): ?>
-						?
-					<? endif ?>
-				</td>
-				<td>?</td>
-				<td><?= nummertje($g_user->ticker->getIncome($resource)) ?></td>
+				<td><?= nummertje($income['asteroid']) ?></td>
+				<td><?= nummertje($income['bonus']) ?></td>
+				<td><?= nummertje(array_sum($income)) ?></td>
 			</tr>
 		<? endforeach ?>
 		<tr>
 			<td>Inactive</td>
 			<td><?= nummertje($g_user->inactive_asteroids) ?></td>
 			<td><button>Activate</button></td>
-			<td colspan="4">
+			<td colspan="3">
 				The next 'roid will cost <?= nummertje($g_user->next_asteroid_costs) ?> power.
 				You can activate <?= nummertje($g_user->maxPowerForAsteroids()) ?>.
 			</td>

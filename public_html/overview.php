@@ -115,7 +115,7 @@ _header();
 		<tr>
 			<td><?= html($resource->resource) ?></td>
 			<td><?= nummertje($resource->display_number) ?> <?= $resource->display_name ?></td>
-			<td>+ <?= nummertje($g_user->ticker->getIncome($resource)) ?></td>
+			<td>+ <?= nummertje(array_sum($g_user->ticker->getIncome($resource))) ?></td>
 		</tr>
 	<? endforeach ?>
 	<tr>
