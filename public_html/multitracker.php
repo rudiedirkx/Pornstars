@@ -84,7 +84,7 @@ function OnePlanetInPlanetTracker(planet) {
 	<td align="center" id="td_content_logs"><table align="center" border="0" cellpadding="4" cellspacing="1">
 <tr class="hd">
 	<th>Time</th>
-	<th>MyT</th>
+	<th>Tick</th>
 	<th>Action</th>
 	<th>User</th>
 	<th>Details</th>

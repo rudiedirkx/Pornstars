@@ -97,6 +97,12 @@ $arrResources = $db->select_fields('d_resources', 'id, resource', '1 ORDER BY id
 <title>R&D</title>
 
 <style>
+input[size="1"] {
+	width: 2em;
+}
+select {
+	max-width: 15em;
+}
 body[data-rd]:not([data-rd="d"]) [data-rd="d"] .hideable,
 body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 	display: none;

@@ -239,6 +239,17 @@ function nummertje($n) {
 	return number_format((int)$n, 0, ".", "," );
 }
 
+function costs_nummertje($n) {
+	if ($n % 1e6 == 0) {
+		return nummertje($n/1e6) . 'M';
+	}
+	if ($n % 1e3 == 0) {
+		return nummertje($n/1e3) . 'K';
+	}
+
+	return nummertje($n);
+}
+
 
 function addProductions( $units, ...$bases ) {
 	global $g_user;
@@ -509,7 +520,7 @@ function getProductionForm( ...$bases ) {
 
 function renderCostsVariant( array $costs ) {
 	$labels = array_map(function($cost) {
-		return '<span class="resource" style="background: ' . $cost->color . '">' . nummertje($cost->amount) . '</span>';
+		return '<span class="resource" style="background: ' . $cost->color . '">' . costs_nummertje($cost->amount) . '</span>';
 	}, $costs);
 	return implode(' + ', $labels);
 }

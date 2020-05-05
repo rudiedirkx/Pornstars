@@ -102,7 +102,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 			&nbsp;/&nbsp;
 			<a title="<?= $iHasNews ?> new" href="news.php"><?= $szNews ?></a>
 		</td>
-		<td>MyT = <?= $g_prefs->tickcount ?></td>
+		<td>Tick = <?= nummertje($g_prefs->tickcount) ?></td>
 	</tr>
 	<tr>
 		<td colspan="6">

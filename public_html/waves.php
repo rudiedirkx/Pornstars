@@ -154,7 +154,7 @@ ORDER BY
 						$szHTML .= '<br /><table border="0" cellpadding="3" cellspacing="0" width="450" align="center" style="border:solid 1px #222;border-width:0 1px 1px 0;">';
 						$szHTML .= '<tr>';
 						$szHTML .= '	<td style="padding:0;"><img title="'.$arrItem['name'].'" alt="'.$arrItem['name'].'" src="images/'.$arrItem['image'].'" height="55" width="55" /></td>';
-						$szHTML .= '	<td bgcolor="#222222">'.date('Y-m-d H:i:s', $arrItem['utc_time']).', <b>MyT: '.$arrItem['myt'].'</b></td>';
+						$szHTML .= '	<td bgcolor="#222222">'.date('Y-m-d H:i:s', $arrItem['utc_time']).', <b>Tick: '.$arrItem['myt'].'</b></td>';
 						$szHTML .= '</tr>';
 						$szHTML .= '<tr>';
 						$szHTML .= '	<td></td>';

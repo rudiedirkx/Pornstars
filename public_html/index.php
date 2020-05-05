@@ -43,7 +43,7 @@ $tickertimetxt = (($tickdif > $TICKERTIME)?"<font color=red>":"") . Verschil_In_
 Game status:<br />
 <?php echo $tickertimetxt; ?> since last tick.</font>
 <br />
-MyT = <?php echo $MyT; ?><br />
+Tick = <?= nummertje($MyT) ?><br />
 <br />
 <?php
 

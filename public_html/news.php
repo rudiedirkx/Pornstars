@@ -38,7 +38,7 @@ if ( 0 < count($arrNewsItems) )
 		echo '<br /><table border="0" cellpadding="3" cellspacing="0" width="450" align="center" style="border:solid 1px #222;border-width:0 1px 1px 0;">';
 		echo '<tr>';
 		echo '	<td style="padding:0;width:30px;" width="30"><img title="'.$arrItem['name'].'" alt="'.$arrItem['name'].'" src="images/'.$arrItem['image'].'" height="55" width="55" /></td>';
-		echo '	<td nowrap="1" wrap="off" bgcolor='.((!$arrItem['seen'])?"#cc0000":"#222222").'>'.date('Y-m-d H:i:s', $arrItem['utc_time']).', <b>MyT: '.$arrItem['myt'].'</b></td>';
+		echo '	<td nowrap="1" wrap="off" bgcolor='.((!$arrItem['seen'])?"#cc0000":"#222222").'>'.date('Y-m-d H:i:s', $arrItem['utc_time']).', <b>Tick: '.$arrItem['myt'].'</b></td>';
 		echo '	<td align="right" bgcolor="' . ( !$arrItem['seen'] ? '#cc0000' : '#222222' ) . '">';
 		echo '		<a href="news.php?delete=1&id='.$arrItem['id'].'">delete</a> -';
 		echo '		<a href="news.php?delete=1&subject='.$arrItem['news_subject_id'].'">/'.$arrItem['name'].'</a>';
