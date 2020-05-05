@@ -2,8 +2,6 @@
 
 namespace rdx\ps;
 
-use rdx\ps\Planet;
-
 class Ticker {
 
 	static $instance;
@@ -67,6 +65,73 @@ class Ticker {
 		}
 
 		return [];
+	}
+
+	public function updateScores() {
+		global $db;
+
+		$db->execute('
+			UPDATE planets
+			SET score =
+				0.01 * (			/*SHIPS IN FLEETS*/
+					SELECT
+						IFNULL(SUM(
+							s.amount *
+							(
+								SELECT
+									(SELECT SUM(amount) FROM d_unit_costs WHERE unit_id = u.id)
+								FROM
+									d_all_units u
+								WHERE
+									s.unit_id = u.id
+							)
+						),0)
+					FROM
+						ships_in_fleets s,
+						fleets f
+					WHERE
+						s.fleet_id = f.id AND
+						f.owner_planet_id = planets.id
+				) +
+				0.01 * (				/*DEFENCE ON PLANETS*/
+					SELECT
+						IFNULL(SUM(
+							dop.amount *
+							(
+								SELECT
+									(SELECT SUM(amount) FROM d_unit_costs WHERE unit_id = u.id)
+								FROM
+									d_all_units u
+								WHERE
+									dop.unit_id = u.id
+							)
+						),0)
+					FROM
+						defence_on_planets dop
+					WHERE
+						dop.planet_id = planets.id
+				) +
+				0.01 * (				/*WAVES ON PLANETS*/
+					SELECT
+						IFNULL(SUM(
+							wop.amount *
+							(
+								SELECT
+									(SELECT SUM(amount) FROM d_unit_costs WHERE unit_id = u.id)
+								FROM
+									d_all_units u
+								WHERE
+									wop.unit_id = u.id
+							)
+						),0)
+					FROM
+						waves_on_planets wop
+					WHERE
+						wop.planet_id = planets.id
+				) +
+				150 * (SELECT SUM(asteroids) FROM planet_resources WHERE planet_id = planets.id) +
+				ROUND( 0.002 * (SELECT SUM(amount) FROM planet_resources WHERE planet_id = planets.id) );
+		');
 	}
 
 	static public function instance() {

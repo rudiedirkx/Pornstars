@@ -35,19 +35,13 @@ $db = db_mysql::open([
 ]);
 $db->returnAffectedRows = true;
 
-function prepSomeGameStuff() {
-	global $g_prefs;
-	global $ticktime, $tickdif;
-
-	$g_prefs = Prefs::first('1 ORDER BY id DESC');
-	if ( !$g_prefs ) {
-		exit('No current game exists...');
-	}
-
-	$ticktime = $g_prefs->last_tick;
-	$tickdif = time() - $ticktime;
+/** @var Prefs $g_prefs */
+$g_prefs = Prefs::first('1 ORDER BY id DESC');
+if ( !$g_prefs ) {
+	exit('No current game exists...');
 }
 
-prepSomeGameStuff();
+$ticktime = $g_prefs->last_tick;
+$tickdif = time() - $ticktime;
 
 require_once 'inc.config_gamevalues.php';

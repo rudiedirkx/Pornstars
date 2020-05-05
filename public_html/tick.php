@@ -1,20 +1,13 @@
 <?php
 
 use rdx\ps\Planet;
-use rdx\ps\Resource;
 use rdx\ps\Ticker;
 use rdx\ps\Unit;
 
 require 'inc.bootstrap.php';
-header('Content-type: text/plain; charset=utf-8');
+// header('Content-type: text/plain; charset=utf-8');
 $_time = microtime(1);
 
-// Resources
-// R & D
-// Production
-// Wave & energy decay
-// Fleet travel
-// Combat
 
 $ticker = Ticker::instance();
 
@@ -61,8 +54,16 @@ foreach ( $ready as $prod ) {
 $db->delete('planet_production', ['eta' => 0]);
 
 
-
 // Fleet travel
+// @todo
+
+
+// Combat
+// @todo
+
+
+// Score
+$ticker->updateScores();
 
 
 $g_prefs->update([
@@ -72,7 +73,5 @@ $g_prefs->update([
 
 echo "\nTook " . round((microtime(1) - $_time) * 1000) . " ms\n\n";
 
-echo "\n";
-print_r($db->bad_queries());
-echo "\n";
-print_r($db->queries);
+dump($db->bad_queries());
+dump($db->queries);
