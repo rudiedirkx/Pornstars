@@ -33,26 +33,21 @@ if ( isset($_POST['email'], $_POST['rulername'], $_POST['planetname'], $_POST['p
 		exit('invalid race');
 	}
 
-	sessionSuccess('An e-mail has been sent to ' . $_POST['email'] . ' with instructions.');
-
 	if ( $exists('email', $_POST['email']) ) {
-		$g_prefs->sendEmail(
-			$_POST['email'],
-			'Signup',
-			'Someone tried to sign up with this e-mail address, but a planet with this address already exists.'
-		);
+		sessionError('This e-mail already exists..?');
 		return do_redirect();
 	}
 
 	Planet::create($_POST);
 
-	$g_prefs->sendEmail(
-		$_POST['email'],
-		'Signup',
-		'You are now the ruler of a planet! Log in to start ruling.'
-	);
+	// $g_prefs->sendEmail(
+	// 	$_POST['email'],
+	// 	'Signup',
+	// 	'You are now the ruler of a planet! Log in to start ruling.'
+	// );
 
-	return do_redirect();
+	sessionSuccess('You can log in now.');
+	return do_redirect('login');
 }
 
 include 'tpl.anon-menu.php';

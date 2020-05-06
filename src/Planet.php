@@ -576,7 +576,7 @@ class Planet extends Model {
 	 * Overrides
 	 */
 
-	protected function presave( array &$data ) {
+	static protected function presave( array &$data ) {
 		if ( isset($data['password']) ) {
 			$data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 		}

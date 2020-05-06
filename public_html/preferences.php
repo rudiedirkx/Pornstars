@@ -6,7 +6,9 @@ logincheck();
 
 if ( isset($_POST['current_password'], $_POST['new_password']) ) {
 	if ( $g_user->checkPassword($_POST['current_password']) ) {
-		$g_user->update(['password' => $_POST['new_password']]);
+		$g_user->update([
+			'password' => $_POST['new_password'],
+		]);
 		sessionSuccess('Password changed');
 	}
 	else {

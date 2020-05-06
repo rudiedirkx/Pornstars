@@ -14,7 +14,8 @@ if ( isset($_POST['u'], $_POST['p']) ) {
 
 	// Invalid login
 	if ( !$objPlanet || !$objPlanet->checkPassword($_POST['p']) ) {
-		exit('Invalid login combination!');
+		sessionError('Invalid login combination!');
+		return do_redirect();
 	}
 
 	$save = array(

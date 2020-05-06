@@ -24,7 +24,7 @@ $menu = array(
 	array( 'Military',			'military.php',			'Organise your fleets and send them to defend or attack' ),
 	null,
 	array( 'Preferences',		'preferences.php',		'Necessities' ),
-	array( 'Logout',			'logout.php?doit=1',	'Logout here. Session destroyed','_parent' ),
+	array( 'Log out',			'logout.php?doit=1',	'Logout here. Session destroyed','_parent' ),
 	null,
 	array( 'Config',			'_project/',			'All config for all game content' ),
 	array( 'Admin',				'comp.php',				'Game admin area' ),

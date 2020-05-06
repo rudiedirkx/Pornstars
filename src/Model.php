@@ -26,12 +26,12 @@ class Model {
 	public function update( $data ) {
 		global $db;
 
-		is_array($data) and $this->presave($data);
+		is_array($data) and static::presave($data);
 		$db->update(static::$table, $data, ['id' => $this->id]);
 		is_array($data) and $this->fill($data);
 	}
 
-	protected function presave( array &$data ) {
+	static protected function presave( array &$data ) {
 		// Alter data pre-save
 	}
 
@@ -69,6 +69,7 @@ class Model {
 
 	static public function insert( array $data ) {
 		global $db;
+		static::presave($data);
 		$db->insert(static::$table, $data);
 		return $db->insert_id();
 	}
