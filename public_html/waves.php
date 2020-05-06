@@ -24,17 +24,16 @@ if ( isset($_POST['order_units'], $_POST['_token']) ) {
 else if ( isset($_POST['asteroid_scans']) ) {
 	validTokenOrFail('scan');
 
-	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] > $g_user->asteroid_scans ) {
+	if ( !isint($_POST['asteroid_scans']) || $_POST['asteroid_scans'] > $g_user->num_asteroid_scans ) {
 		sessionError('Invalid amount');
 		return do_redirect();
 	}
 
 	$amps = $g_user->wave_amps;
-	$roids = $g_user->inactive_asteroids + array_sum(array_column($g_user->resources, 'asteroids'));
-
+	$roids = /*$g_user->inactive_asteroids +*/ array_sum(array_column($g_user->resources, 'asteroids'));
 	$found = scanForAsteroids($_POST['asteroid_scans'], $roids, $amps);
 
-	// @todo Update available asteroid scans
+	$g_user->takeWaves($g_user->asteroid_scans->id, $_POST['asteroid_scans']);
 
 	$g_user->update('inactive_asteroids = inactive_asteroids + ' . (int) $found);
 
@@ -259,9 +258,9 @@ $intelScans = Unit::_options($intelScans);
 		</tr>
 		<tr>
 			<th>Asteroid scans</th>
-			<td><?= nummertje($g_user->asteroid_scans) ?></td>
-			<td><input type="number" name="asteroid_scans" max="<?= $g_user->asteroid_scans ?>" /></td>
-			<td><button <?= !$g_user->asteroid_scans ? 'disabled' : '' ?>>Scan</button></td>
+			<td><?= nummertje($g_user->num_asteroid_scans) ?></td>
+			<td><input type="number" name="asteroid_scans" max="<?= $g_user->num_asteroid_scans ?>" /></td>
+			<td><button <?= !$g_user->num_asteroid_scans ? 'disabled' : '' ?>>Scan</button></td>
 		</tr>
 	</table>
 </form>

@@ -71,8 +71,14 @@ class Planet extends Model {
 	public function get_asteroid_scans() {
 		foreach ( $this->waves as $wave ) {
 			if ( $wave->T == 'roidscan' ) {
-				return (int) $wave->planet_amount;
+				return $wave;
 			}
+		}
+	}
+
+	public function get_num_asteroid_scans() {
+		if ( $this->asteroid_scans ) {
+			return (int) $this->asteroid_scans->planet_amount;
 		}
 
 		return 0;
@@ -275,6 +281,27 @@ class Planet extends Model {
 
 			return false;
 		}
+	}
+
+	/**
+	 * @throws NotEnoughException
+	 */
+	public function takeWaves( $id, $amount ) {
+		global $db;
+
+		$db->update('waves_on_planets', "amount = amount - $amount", [
+			'unit_id' => $id,
+			'planet_id' => $this->id,
+			"amount >= $amount",
+		]);
+		if ( $db->affected_rows() < 1 ) {
+			$resource = Unit::find($rid);
+			throw new NotEnoughException("$resource");
+		}
+
+		$this->__reget('waves');
+		$this->__reget('asteroid_scans');
+		$this->__reget('num_asteroid_scans');
 	}
 
 	/**

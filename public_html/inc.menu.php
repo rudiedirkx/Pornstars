@@ -10,7 +10,7 @@ $menu = array(
 	null,
 	array( 'Production',		'production.php',		'Get some units done' ),
 	array( 'Research',			'research.php',			'Research new and advanced technologies' ),
-	array( 'Constructions',		'construction.php',		'After researching, you have to actually build that stuff' ),
+	array( 'Development',		'construction.php',		'After researching, you have to actually build that stuff' ),
 	array( 'Resources',			'resources.php',		'Initiate \'roids, donate to friendlies and check your roidstatus' ),
 	array( 'Skills',			'skills.php',			'Train your skills' ),
 #	null,

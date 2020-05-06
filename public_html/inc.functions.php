@@ -3,7 +3,11 @@
 use rdx\ps\Planet;
 use rdx\ps\Unit;
 
-class NotEnoughException extends Exception {}
+class NotEnoughException extends Exception {
+	public function __construct( $types ) {
+		parent::__construct(implode(', ', (array) $types));
+	}
+}
 
 
 

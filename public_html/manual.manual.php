@@ -8,7 +8,7 @@ require 'inc.bootstrap.php';
 <br>
 Gaining a score that will meet the standards of the top or even better: be the top!<br>
 You do this by building anything for points. Ships, waves and even resources gather points.<br>
-If you are a=<?=$GAMEPREFS['military_scorelimit']?> times bigger than your target, you cannot attack it. You can attack anyone bigger than you though.<br>
+If you are a=<?=$g_prefs->military_scorelimit?> times bigger than your target, you cannot attack it. You can attack anyone bigger than you though.<br>
 If a=0, you can attack anyone you want, as long as the planet is not under protection or blocked.<br>
 <br>
 <br>

@@ -87,6 +87,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 		<td colspan="2">
 			<a
 				<?= $tickdif > $g_prefs->tickertime ? 'style="color: red"' : '' ?>
+				class="ticker"
 				href="tick.php"
 				target="_blank"
 				onclick="return (x => { x=new XMLHttpRequest; x.open('get',`${this.href}?ajax=1`); x.onload=e=>location.reload(); x.send(); })(), false"
@@ -119,7 +120,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 			</table>
 		</td>
 	</tr>
-	<tr>
+	<tr valign="top">
 		<td colspan="2">
 			<a href="research.php">research</a>
 			<?php if ( $g_user->researching ) { ?>
@@ -129,7 +130,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 			<?php } ?>
 		</td>
 		<td colspan="2">
-			<a href="construction.php">construction</a>
+			<a href="construction.php">development</a>
 			<?php if ( $g_user->constructing ) { ?>
 				<div style="background-color: #444" title="<?= html($g_user->constructing->name) . ': ' . $g_user->constructing->planet_eta ?> left">
 					<div style="width: <?= $g_user->constructing->pct_done ?>%; height: 8px; background-color: green"></div>
