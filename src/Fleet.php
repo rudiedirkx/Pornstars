@@ -32,6 +32,10 @@ class Fleet extends Model {
 	 * Getters
 	 */
 
+	public function get_is_working() {
+		return $this->travel_eta == 0 && $this->action_eta > 0;
+	}
+
 	public function get_is_home() {
 		return !$this->fleetname || ( !$this->action && !$this->travel_eta );
 	}
@@ -72,7 +76,7 @@ class Fleet extends Model {
 	}
 
 	public function get_total_ships() {
-		return Unit::countReduce($this->ships, 'planet_amount');
+		return $this->getTotalShips();
 	}
 
 	public function get_ships() {
@@ -102,15 +106,19 @@ class Fleet extends Model {
 	 * Logic
 	 */
 
+	public function getTotalShips() {
+		return Unit::countReduce($this->ships, 'planet_amount');
+	}
+
 	public function executeReturn( array $mission ) {
-		$travelEta = max(1, $this->ships_eta - $this->travel_eta);
+		$travelEta = max(1, self::planetDistanceEta($this->owner_planet, $this->destination_planet) - $this->travel_eta);
 
 		// Return fleet
 		$this->update([
 			'action' => 'return',
 			'travel_eta' => $travelEta,
 			'action_eta' => 0,
-			'activated' => 0,
+			// 'activated' => 0,
 		]);
 
 		return 'Turned around fleet ' . $this;
@@ -127,7 +135,8 @@ class Fleet extends Model {
 			'action' => null,
 			'travel_eta' => 0,
 			'action_eta' => 0,
-			'activated' => 0,
+			'destination_planet_id' => null,
+			// 'activated' => 0,
 		]);
 
 		return 'Destroyed fleet ' . $this;

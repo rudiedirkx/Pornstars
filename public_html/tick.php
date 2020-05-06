@@ -1,15 +1,20 @@
 <?php
 
+use rdx\ps\Fleet;
 use rdx\ps\Planet;
 use rdx\ps\Ticker;
 use rdx\ps\Unit;
 
 require 'inc.bootstrap.php';
-// header('Content-type: text/plain; charset=utf-8');
+echo '<style>body { white-space: pre-line; }</style>';
 $_time = microtime(1);
+$debug = empty($_GET['ajax']);
 
 
 $ticker = Ticker::instance();
+
+
+// $db->begin();
 
 
 // Resources
@@ -54,12 +59,23 @@ foreach ( $ready as $prod ) {
 $db->delete('planet_production', ['eta' => 0]);
 
 
-// Fleet travel
-// @todo
+// Fleet movement & combat
+$fleets = Fleet::all("action IS NOT NULL");
+if ($debug) {
+	echo "Active fleets:\n";
+	dump($fleets);
+}
 
+$battles = $ticker->makeBattles($fleets);
+if ($debug) {
+	echo "Battles:\n";
+	dump($battles);
+}
+foreach ($battles as $battle) {
+	$ticker->fightBattle($battle);
+}
 
-// Combat
-// @todo
+$ticker->moveFleets($fleets);
 
 
 // Score
@@ -73,7 +89,7 @@ $g_prefs->update([
 
 echo "\nTook " . round((microtime(1) - $_time) * 1000) . " ms\n\n";
 
-if (empty($_GET['ajax'])) {
-	dump($db->bad_queries());
+if ( $debug ) {
+	// dump($db->bad_queries());
 	dump($db->queries);
 }

@@ -134,6 +134,72 @@ class Ticker {
 		');
 	}
 
+	public function makeBattles( array &$fleets ) {
+		$battles = [];
+		foreach ( $fleets as $i => $fleet ) {
+			if ( $fleet->travel_eta == 0 && $fleet->action_eta > 0 && $fleet->action != 'return' ) {
+				isset($battles[$fleet->destination_planet_id]) or $battles[$fleet->destination_planet_id] = new Battle($fleet->destination_planet);
+				$battles[$fleet->destination_planet_id]->addFleet($fleet);
+				unset($fleets[$i]);
+			}
+		}
+
+		return $battles;
+	}
+
+	public function fightBattle( Battle $battle ) {
+echo "BATTLE AT $battle->location\n";
+		$returning = [];
+		foreach ([$battle->defending, $battle->attacking] as $fleets) {
+			foreach ($fleets as $fleet) {
+echo "- [$fleet->action] $fleet->owner_planet's $fleet (".($fleet->action_eta-1)." left)\n";
+				$fleet->update([
+					'action_eta' => $fleet->action_eta - 1,
+				]);
+
+				// @todo Fight?
+
+				if ($fleet->getTotalShips() == 0) {
+echo "-- ^ has been destroyed\n";
+					$fleet->update([
+						'action' => null,
+						'travel_eta' => 0,
+						'action_eta' => 0,
+						'destination_planet_id' => null,
+					]);
+				}
+				elseif ($fleet->action_eta == 0) {
+echo "-- ^ is done & returning\n";
+					$fleet->update([
+						'action' => 'return',
+						'travel_eta' => Fleet::planetDistanceEta($fleet->owner_planet, $fleet->destination_planet),
+					]);
+				}
+			}
+		}
+echo "\n";
+	}
+
+	public function moveFleets( array $fleets ) {
+		foreach ( $fleets as $fleet ) {
+			if ( $fleet->travel_eta == 1 && $fleet->action == 'return' ) {
+echo "$fleet->owner_planet's $fleet returned home\n";
+				$fleet->update([
+					'travel_eta' => 0,
+					'action_eta' => 0,
+					'action' => null,
+					'destination_planet_id' => null,
+				]);
+			}
+			elseif ( $fleet->travel_eta > 0 ) {
+echo "$fleet->owner_planet's $fleet traveled to $fleet->action (".($fleet->travel_eta-1)." left)\n";
+				$fleet->update([
+					'travel_eta' => $fleet->travel_eta - 1,
+				]);
+			}
+		}
+	}
+
 	static public function instance() {
 		if ( !self::$instance ) {
 			self::$instance = new self;

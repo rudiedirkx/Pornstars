@@ -204,6 +204,10 @@ class Planet extends Model {
 		return [$this->galaxy->x, $this->galaxy->y, $this->z];
 	}
 
+	public function get_pretty_coordinates() {
+		return '[' . implode(':', $this->coordinates) . ']';
+	}
+
 	public function get_x() {
 		return $this->galaxy->x;
 	}

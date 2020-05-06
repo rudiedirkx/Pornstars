@@ -137,7 +137,7 @@ _header();
 					<? if ( $fleet->action == 'return' ): ?>
 						is returning from <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
 					<? elseif ( in_array($fleet->action, ['attack', 'defend']) ): ?>
-						<? if ( $fleet->activated ): ?>
+						<? if ( $fleet->is_working ): ?>
 							is <?= $fleet->action ?>ing <?= $fleet->destination_planet ?> for <?= $fleet->action_eta ?> more ticks
 						<? else: ?>
 							is moving to <?= $fleet->action ?> <?= $fleet->destination_planet ?> (ETA: <?= $fleet->travel_eta ?>)
