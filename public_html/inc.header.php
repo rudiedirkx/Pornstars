@@ -89,7 +89,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 				<?= $tickdif > $g_prefs->tickertime ? 'style="color: red"' : '' ?>
 				href="tick.php"
 				target="_blank"
-				onclick="return (x => { x=new XMLHttpRequest; x.open('get',this.href); x.onload=e=>location.reload(); x.send(); })(), false"
+				onclick="return (x => { x=new XMLHttpRequest; x.open('get',`${this.href}?ajax=1`); x.onload=e=>location.reload(); x.send(); })(), false"
 			>
 				<?= Verschil_In_Tijd($tickdif) ?> since last tick (<?= $g_prefs->tickertime ?>s)
 			</a>

@@ -9,8 +9,8 @@ $PLANETS_IN_ONE_GALAXY		= (int) $g_prefs->planets_per_galaxy;			// Duh
 $RESCON_NEWS_ON				= (bool)(int) $g_prefs->news_for_done_rd;			// If TRUE, the engine will check R&D per planet (takes a bit longer, but sends a Msg when finished)
 $GALFORUM_WAIT_FOR_TURN		= (bool)(int) $g_prefs->galaxy_forum_wait_for_turn;	// If TRUE, you cant post 2 posts after eachother without anyone posting in between
 
-$FLEETNAMES					= explode(',', (trim($g_prefs->fleetnames) ? $g_prefs->fleetnames : 'Base'));			// The names for BASEFLEET and $NUM_OUTGOING_FLEETS outgoing fleets
-$NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$g_prefs->num_outgoing_fleets);			// Duh
+$FLEETNAMES					= explode(',', $g_prefs->fleetnames ?: 'Base');
+$NUM_OUTGOING_FLEETS		= min(count($FLEETNAMES)-1, (int)$g_prefs->num_outgoing_fleets);
 
 
 // Preferences

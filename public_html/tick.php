@@ -73,5 +73,7 @@ $g_prefs->update([
 
 echo "\nTook " . round((microtime(1) - $_time) * 1000) . " ms\n\n";
 
-dump($db->bad_queries());
-dump($db->queries);
+if (empty($_GET['ajax'])) {
+	dump($db->bad_queries());
+	dump($db->queries);
+}
