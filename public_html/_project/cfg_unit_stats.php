@@ -60,6 +60,7 @@ if ( isset($_POST['units']) ) {
 // @todo Create new. Incl type-table, see Unit::$tables
 
 $arrRD = $db->select_fields('d_r_d_available', "id, CONCAT(UPPER(T), ': ', name)", '1 ORDER BY T, id');
+$arrUsedRD = array_intersect_key($arrRD, $db->select_fields('d_all_units', 'r_d_required_id', '1'));
 
 $arrUnits = $db->select('d_all_units', '1 ORDER BY FIELD(T, ?), o', [$types]);
 
@@ -86,17 +87,27 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 ?>
 <title>Units</title>
 
+<p>
+	Filter:
+	<select data-filter='span[data-type="?"]'><?= html_options(array_combine($types, $types), $_GET['filter_type'] ?? null, '-- All Types') ?></select>
+	<select data-filter='select[data-r_d="?"]'><?= html_options($arrUsedRD, $_GET['filter_r_d'] ?? null, '-- All R&D') ?></select>
+</p>
+
 <form method="post" action>
 	<table border="1" cellpadding="4" cellspacing="1">
-		<tr>
-			<th></th>
-			<th>SHIP DETAILS</th>
-			<th></th>
-		</tr>
+		<thead>
+			<tr>
+				<th></th>
+				<th>SHIP DETAILS</th>
+				<th></th>
+			</tr>
+		</thead>
 		<?php
 		foreach ( $arrUnits AS $n => $unit ) {
+			echo '<tbody class="filterable">';
+
 			echo '<tr valign="top">';
-			echo '<th>' . $unit->id . '. ' . html($unit->unit) . '<br />[' . $unit->T . ']</th>';
+			echo '<th>' . $unit->id . '. ' . html($unit->unit) . '<br /><span data-type="' . $unit->T . '">[' . $unit->T . ']</span></th>';
 			echo '<td>';
 			echo '<table>';
 
@@ -157,7 +168,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			echo '<tr>';
 			echo '<th>R&D required</th>';
 			echo '<td colspan="9">';
-			echo '<select name="units[' . $unit->id . '][r_d_required_id]">';
+			echo '<select data-r_d="' . $unit->r_d_required_id . '" name="units[' . $unit->id . '][r_d_required_id]">';
 			echo html_options($arrRD, $unit->r_d_required_id);
 			echo '</select>';
 			echo '</td>';
@@ -206,12 +217,16 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 			}
 			echo '</td>';
 			echo '</tr>';
+
+			echo '</tbody>';
 		}
 
 		?>
-		<tr>
-			<th colspan="3"><input type="submit" value="Opslaan" /></td>
-		</tr>
+		<tfoot>
+			<tr>
+				<th colspan="3"><input type="submit" value="Opslaan" /></td>
+			</tr>
+		</tfoot>
 	</table>
 </form>
 
@@ -222,3 +237,5 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 		<input type="submit" value="New" />
 	</fieldset>
 </form>
+
+<?php include 'tpl.js.php' ?>

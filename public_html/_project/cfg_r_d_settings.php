@@ -82,8 +82,15 @@ $multipler = function($table, $column) {
 };
 
 $g_arrRequires = $multipler('d_r_d_requires', 'r_d_requires_id');
+$g_arrRequiredBy = [];
+foreach ($g_arrRequires as $a => $bs) {
+	foreach ($bs as $b) {
+		$g_arrRequiredBy[$b][] = $a;
+	}
+}
 $g_arrExcludes = $multipler('d_r_d_excludes', 'r_d_excludes_id');
 // $g_arrForRaces = $multipler('d_r_d_per_race', 'race_id');
+// dd($g_arrRequires, $g_arrRequiredBy);
 
 $g_arrAllowsUnits = $db->select_fields('d_all_units', 'r_d_required_id, COUNT(*)', '1 GROUP BY r_d_required_id');
 
@@ -115,8 +122,8 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 <form method="post" action autocomplete="off">
 	<table width="100%" border="0" cellpadding="3" cellspacing="0">
 		<tr bgcolor="#dddddd">
-			<th data-rd="r" onclick="document.body.dataset.rd = 'r'" class="rb">RESEARCHES</th>
-			<th data-rd="d" onclick="document.body.dataset.rd = 'd'">DEVELOPMENTS</th>
+			<th data-rd="r" x-onclick="document.body.dataset.rd = 'r'" class="rb">RESEARCHES</th>
+			<th data-rd="d" x-onclick="document.body.dataset.rd = 'd'">DEVELOPMENTS</th>
 		</tr>
 		<tr valign="top">
 			<td data-rd="r" class="rb" align="center">
@@ -127,8 +134,8 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 			</td>
 		</tr>
 		<tr bgcolor="#dddddd">
-			<th data-rd="r" onclick="document.body.dataset.rd = 'r'" class="rb">RESEARCHES</th>
-			<th data-rd="d" onclick="document.body.dataset.rd = 'd'">DEVELOPMENTS</th>
+			<th data-rd="r" x-onclick="document.body.dataset.rd = 'r'" class="rb">RESEARCHES</th>
+			<th data-rd="d" x-onclick="document.body.dataset.rd = 'd'">DEVELOPMENTS</th>
 		</tr>
 		<tr>
 			<th colspan="2"><input type="submit" value="Opslaan" /></th>
@@ -156,10 +163,24 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 	</table>
 </form>
 
+<?php include 'tpl.js.php' ?>
+<script>
+function filterRD(a, cls) {
+	$$('.r-d').prop('hidden', true);
+	$$(`.${cls}`).prop('hidden', false);
+	a.closest('.r-d').hidden = false;
+}
+
+$$('a[data-filter-class]').invoke('addEventListener', 'click', function(e) {
+	e.preventDefault();
+	filterRD(this, this.dataset.filterClass);
+});
+</script>
+
 <?php
 
 function printRDSelect($RD, $type, /*$races,*/ $skills, $resources) {
-	global $db, $g_arrRequires, $g_arrExcludes, /*$g_arrForRaces,*/ $g_arrAllowsRDResults, $g_arrAllowsUnits;
+	global $db, $g_arrRequires, $g_arrRequiredBy, $g_arrExcludes, /*$g_arrForRaces,*/ $g_arrAllowsRDResults, $g_arrAllowsUnits;
 
 	$rdOptions = array_map(function($rd) {
 		return strtoupper($rd['T']) . ' ' . $rd['id'] . '. ' . $rd['name'];
@@ -169,8 +190,8 @@ function printRDSelect($RD, $type, /*$races,*/ $skills, $resources) {
 	$szHtml .= '<table width="100%" id="tbl_' . $type . '" border="0">';
 	$szHtml .= '<tr>';
 	$szHtml .= '<td></td>';
-	$szHtml .= '<th class="hideable">REQUIRE</th>';
-	$szHtml .= '<th class="hideable">EXCLUDE</th>';
+	$szHtml .= '<th class="hideable">REQUIRES</th>';
+	$szHtml .= '<th class="hideable">EXCLUDES</th>';
 	// $szHtml .= '<th class="hideable">RACES</th>';
 	$szHtml .= '<th class="hideable">SKILLS</th>';
 	$szHtml .= '</tr>';
@@ -181,16 +202,24 @@ function printRDSelect($RD, $type, /*$races,*/ $skills, $resources) {
 			continue;
 		}
 
-		$szHtml .= '<tr'.( $n2++%2==0 ? ' bgcolor="#eeeeee"' : '' ).' valign="top">';
+		$classes = array_merge(array_map(function($id) {
+			return "requires-$id";
+		}, $g_arrRequires[$rd->id] ?? []), array_map(function($id) {
+			return "required-by-$id";
+		}, $g_arrRequiredBy[$rd->id] ?? []), array_map(function($id) {
+			return "excludes-$id";
+		}, $g_arrExcludes[$rd->id] ?? []));
+		$szHtml .= '<tr valign="top" class="r-d ' . implode(' ', $classes) . '">';
 
 		// info //
 		$szHtml .= '<td>';
-		$szHtml .= '<b>' . $rd->id . '. ' . $rd->name . '</b><br /><br />';
-		$szHtml .= 'Requires:&nbsp;' . count((array) @$g_arrRequires[ $rd->id ]) . '<br />';
-		$szHtml .= 'Excludes:&nbsp;' . count((array) @$g_arrExcludes[ $rd->id ]) . '<br />';
-		// $szHtml .= 'Races:&nbsp;' . count((array) @$g_arrForRaces[ $rd->id ]) . '<br />';
-		$szHtml .= 'R&D&nbsp;results:&nbsp;' . (int) @$g_arrAllowsRDResults[ $rd->id ] . '<br />';
-		$szHtml .= 'Units:&nbsp;' . (int) @$g_arrAllowsUnits[ $rd->id ] . '<br />';
+		$szHtml .= '<b title="' . html($rd->explanation) . '">' . $rd->id . '. ' . $rd->name . '</b><br /><br />';
+		$szHtml .= '<a href data-filter-class="required-by-' . $rd->id . '">Requires</a>:&nbsp;' . count($g_arrRequires[$rd->id] ?? []) . '<br />';
+		$szHtml .= '<a href data-filter-class="requires-' . $rd->id . '">Required&nbsp;by</a>:&nbsp;' . count($g_arrRequiredBy[$rd->id] ?? []) . '<br />';
+		$szHtml .= '<a href data-filter-class="excludes-' . $rd->id . '">Excludes</a>:&nbsp;' . count($g_arrExcludes[$rd->id] ?? []) . '<br />';
+		// $szHtml .= 'Races:&nbsp;' . count($g_arrForRaces[$rd->id] ?? []) . '<br />';
+		$szHtml .= '<a href="cfg_r_d_results.php?filter_r_d=' . $rd->id . '">R&D&nbsp;results</a>:&nbsp;' . ($g_arrAllowsRDResults[$rd->id] ?? 0) . '<br />';
+		$szHtml .= '<a href="cfg_unit_stats.php?filter_r_d=' . $rd->id . '">Units</a>:&nbsp;' . ($g_arrAllowsUnits[$rd->id] ?? 0) . '<br />';
 		$szHtml .= '</td>';
 
 		// requires //
