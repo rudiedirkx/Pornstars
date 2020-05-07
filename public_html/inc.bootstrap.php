@@ -12,7 +12,7 @@ define( 'PROJECT_LOGS',			PROJECT_RUNTIME . '/logs' );
 
 
 session_start();
-error_reporting(2047);
+
 
 $_adminPasswords = ['$2y$10$FTKrlmfnxEWzokWQaQvr5.K56d.qrwNSa.2/nei6esxseJbIQBDlu'];
 

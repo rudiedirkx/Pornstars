@@ -47,6 +47,10 @@ class ResearchDevelopment extends Model {
 		return array_intersect_key(self::all(), $this->requires_rd_ids);
 	}
 
+	public function get_requires_skills() {
+		return RequiredSkill::all(['r_d_id' => $this->id]);
+	}
+
 	public function get_status() {
 		return $this->is_done ? 'done' : ($this->is_doing ? 'doing' : 'available');
 	}

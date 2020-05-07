@@ -240,6 +240,18 @@ class Planet extends Model {
 	 * Logic
 	 */
 
+	public function hasSkillsForRD(ResearchDevelopment $rd) {
+		$have = array_column($this->skills, 'planet_value', 'id');
+
+		foreach ($rd->requires_skills as $skill) {
+			if ($skill->required_value > $have[$skill->skill_id]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public function maxPowerForAsteroids() {
 		$this->__reget('resources');
 
@@ -452,7 +464,9 @@ class Planet extends Model {
 		$available = $this->getAvailableRD($type);
 		foreach ( $available as $rd ) {
 			if ( $rd->id == $id ) {
-				return $rd->planet_eta === null ? $rd : null;
+				if ( $rd->planet_eta !== null ) return;
+				if ( !$this->hasSkillsForRD($rd) ) return;
+				return $rd;
 			}
 		}
 	}

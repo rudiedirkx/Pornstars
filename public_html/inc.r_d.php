@@ -5,7 +5,8 @@ if ( isset($_GET['start'], $_GET['_token']) ) {
 
 	$rd = $g_user->canRD($rdType, $_GET['start']);
 	if ( !$rd ) {
-		return accessFail('id');
+		sessionError('Invalid project');
+		return do_redirect();
 	}
 
 	try {
@@ -37,17 +38,16 @@ $available = $g_user->getAvailableRD($rdType);
 ?>
 
 <style>
-tr.done {
+tr.done,
+span.skilled-enough {
 	color: green;
 }
 tr.doing {
 	color: gold;
 }
-<? if ( $inProgress ): ?>
-	tr.available {
-		opacity: 0.6;
-	}
-<? endif ?>
+span.not-skilled-enough {
+	color: orange;
+}
 </style>
 
 <h1><?= html($pageTitle) ?></h1>
@@ -67,8 +67,13 @@ tr.doing {
 			<td>
 				<?= html($rd->name) ?><br />
 				<?= html($rd->explanation) ?><br>
-				Requires <?= count($rd->requires_rd_ids) ?>.
-				Required by <?= count($rd->required_by_rd_ids) ?>.
+				<? if (count($rd->requires_skills)): ?>
+					<span class="<?= !$g_user->hasSkillsForRD($rd) ? 'not-' : '' ?>skilled-enough">
+						Requires <?= implode(', ', $rd->requires_skills) ?>
+					</span>
+				<? endif ?>
+				<? /* Requires <?= count($rd->requires_rd_ids) ?>. */ ?>
+				<? /* Required by <?= count($rd->required_by_rd_ids) ?>. */ ?>
 				<? if ( $rd->excludes_rd_ids ): ?>
 					<span style="color: red">
 						Excludes: <?= implode(', ', array_map('strval', $rd->excludes_rd)) ?>

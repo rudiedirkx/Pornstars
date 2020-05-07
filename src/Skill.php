@@ -44,4 +44,8 @@ class Skill extends Model {
 		]);
 	}
 
+	public function __toString() {
+		return $this->skill;
+	}
+
 }
