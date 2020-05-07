@@ -109,14 +109,14 @@ class Planet extends Model {
 		return $this->training_skills = $db->select_fields('skill_training', 'skill_id, skill_id', 'eta > 0 AND planet_id = ?', [$this->id]);
 	}
 
-	public function get_doing_rd() {
+	public function get_doing_rd_ids() {
 		global $db;
-		return $this->doing_rd = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
+		return $this->doing_rd_ids = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta > 0 AND planet_id = ?', [$this->id]);
 	}
 
-	public function get_finished_rd() {
+	public function get_finished_rd_ids() {
 		global $db;
-		return $this->finished_rd = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta = 0 AND planet_id = ?', [$this->id]);
+		return $this->finished_rd_ids = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta = 0 AND planet_id = ?', [$this->id]);
 	}
 
 	public function get_fleets() {

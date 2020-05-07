@@ -11,14 +11,14 @@ if ( isset($_GET['start'], $_GET['_token']) ) {
 
 	try {
 		$g_user->takeTransaction(function($g_user) use ($rd) {
-			$costs = $rd->costs;
+			$costs = $g_user->ticker->rdResultRdCosts($rd->costs);
 			$costs = array_column($costs, 'amount', 'id');
 
 			// Take resources
 			$g_user->takeResources($costs);
-		});
 
-		$rd->start($g_user);
+			$rd->start($g_user);
+		});
 	}
 	catch ( NotEnoughException $ex ) {
 		sessionError('Not enough: ' . $ex->getMessage());
@@ -80,14 +80,14 @@ span.not-skilled-enough {
 					</span>
 				<? endif ?>
 			</td>
-			<td><?= $rd->is_doing ? $rd->planet_eta : $rd->eta ?></td>
+			<td><?= $rd->is_doing ? $rd->planet_eta : $g_user->ticker->rdResultRdEta($rd->eta) ?></td>
 			<td><?= $rd->is_doing ? $rd->pct_done . ' %' : '' ?></td>
 			<td>
 				<? if ( !$rd->is_done && !$rd->is_doing && !$inProgress ): ?>
 					<a href="?start=<?= $rd->id ?>&_token=<?= createToken('rd') ?>">start</a>
 				<? endif ?>
 			</td>
-			<td nowrap><?= renderCostsVariant($rd->costs) ?></td>
+			<td nowrap><?= renderCostsVariant($g_user->ticker->rdResultRdCosts($rd->costs)) ?></td>
 		</tr>
 	<? endforeach ?>
 </table>

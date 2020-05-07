@@ -106,36 +106,34 @@ class ResearchDevelopment extends Model {
 	public function start( Planet $planet ) {
 		global $db;
 
+		$eta = $planet->ticker->rdResultRdEta($this->eta);
+
 		$db->insert('planet_r_d', [
 			'planet_id' => $planet->id,
 			'r_d_id' => $this->id,
-			'eta' => $this->eta,
+			'eta' => $eta,
 		]);
 	}
 
 	public function planetHasRequireds( Planet $planet ) {
-		$planetRD = $planet->finished_rd;
+		$planetRD = $planet->finished_rd_ids;
 		foreach ( $this->requires_rd_ids as $id ) {
 			if ( !isset($planetRD[$id]) ) {
-// echo "No access to # {$this->id} because planet lacks # {$id}\n";
 				return false;
 			}
 		}
 
-// echo "No invalid requiredness for  # {$this->id}\n";
 		return true;
 	}
 
 	public function planetHasExcludeds( Planet $planet ) {
-		$planetRD = $planet->finished_rd + $planet->doing_rd;
+		$planetRD = $planet->finished_rd_ids + $planet->doing_rd_ids;
 		foreach ( $this->excluded_by_rd_ids as $id ) {
 			if ( isset($planetRD[$id]) ) {
-// echo "No access to # {$this->id} because planet chose # {$id}\n";
 				return true;
 			}
 		}
 
-// echo "No invalid excludedness for  # {$this->id}\n";
 		return false;
 	}
 

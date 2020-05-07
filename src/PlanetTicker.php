@@ -99,11 +99,32 @@ class PlanetTicker {
 		return 500 * $resource->asteroids;
 	}
 
-	public function rdResultIncome( Resource $resource, $base ) {
-		$rdFinished = $this->planet->finished_rd;
+	public function rdResultIncome( Resource $resource, int $base ) {
+		$rdFinished = $this->planet->finished_rd_ids;
 		$rdResults = $this->ticker->getRDResultsByTypeAndRD("income:{$resource->id}", $rdFinished);
 
-		foreach ( $rdResults as $result ) {
+		return $this->applyRdResults($base, $rdResults);
+	}
+
+	public function rdResultRdEta( int $base ) : int {
+		$rdFinished = $this->planet->finished_rd_ids;
+		$rdResults = $this->ticker->getRDResultsByTypeAndRD('r_d_eta', $rdFinished);
+
+		return ceil($this->applyRdResults($base, $rdResults));
+	}
+
+	public function rdResultRdCosts( array $costs ) : array {
+		$rdFinished = $this->planet->finished_rd_ids;
+		$rdResults = $this->ticker->getRDResultsByTypeAndRD('r_d_costs', $rdFinished);
+
+		return array_map(function(Resource $cost) use ($rdResults) {
+			$cost->amount = max(0, ceil($this->applyRdResults($cost->amount, $rdResults)));
+			return $cost;
+		}, $costs);
+	}
+
+	protected function applyRdResults( int $base, array $results ) {
+		foreach ( $results as $result ) {
 			switch ( $result->unit ) {
 				case 'real':
 					$base += $result->change;

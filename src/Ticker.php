@@ -45,7 +45,7 @@ class Ticker {
 		if ( !$this->rd_results ) {
 			global $db;
 
-			$results = $db->select('d_r_d_results', '1 ORDER BY o');
+			$results = $db->select('d_r_d_results', "enabled = '1' ORDER BY o");
 
 			$this->rd_results = [];
 			foreach ( $results as $result ) {
