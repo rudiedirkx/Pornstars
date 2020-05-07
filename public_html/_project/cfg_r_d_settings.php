@@ -119,6 +119,10 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 }
 </style>
 
+<p>
+	<input type="search" />
+</p>
+
 <form method="post" action autocomplete="off">
 	<table width="100%" border="0" cellpadding="3" cellspacing="0">
 		<tr bgcolor="#dddddd">
@@ -174,6 +178,14 @@ function filterRD(a, cls) {
 $$('a[data-filter-class]').invoke('addEventListener', 'click', function(e) {
 	e.preventDefault();
 	filterRD(this, this.dataset.filterClass);
+});
+
+$('[type=search]').addEventListener('input', function(e) {
+	console.log(`"${this.value}"`);
+	if (this.value == '') return $$('.r-d').prop('hidden', false);
+
+	const q = this.value.toLowerCase();
+	$$('.r-d').forEach(el => el.hidden = !el.querySelector('b').innerText.toLowerCase().includes(q));
 });
 </script>
 

@@ -136,7 +136,7 @@ else {
 		<select style="width:100%;" size="15" id="r_d">
 		<?php
 
-		$RD = db_select('d_r_d_available', '1 ORDER BY T, id');
+		$RD = $db->select('d_r_d_available', '1 ORDER BY T, id')->all();
 		foreach (['r' => 'RESEARCH', 'd' => 'DEVELOPMENT'] as $type => $typeName) {
 			echo '<optgroup label="' . html($typeName) . '">';
 			foreach ( $RD AS $rd ) {
@@ -203,6 +203,15 @@ tt.cancelSelection = function() {
 		selection.removeClass('selection');
 	}
 	return selection;
+};
+
+tt.getRD = function(id) {
+	var options = document.querySelector('#r_d').options;
+	for (let option of options) {
+		if (option.value == id) {
+			return option;
+		}
+	}
 };
 
 tt.assignRD = function(option) {
