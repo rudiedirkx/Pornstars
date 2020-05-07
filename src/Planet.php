@@ -475,7 +475,6 @@ class Planet extends Model {
 		});
 
 		// @todo Skills
-		// @todo Race
 
 		usort($available, function($a, $b) {
 			return $a->order_score - $b->order_score;
@@ -518,7 +517,7 @@ class Planet extends Model {
 			'password' => $data['password'],
 			'rulername' => $data['rulername'],
 			'planetname' => $data['planetname'],
-			'race_id' => $data['race'],
+			// 'race_id' => $data['race'],
 			'activationcode' => rand_string(),
 			'z' => $z,
 			'galaxy_id' => $galaxy->id,

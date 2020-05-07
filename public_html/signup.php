@@ -8,7 +8,7 @@ if ( logincheck(false) ) {
 	return do_redirect('index');
 }
 
-$arrRaces = $db->select_fields('d_races', 'id, race', '1 ORDER BY id ASC');
+// $arrRaces = $db->select_fields('d_races', 'id, race', '1 ORDER BY id ASC');
 
 if ( isset($_POST['email'], $_POST['rulername'], $_POST['planetname'], $_POST['password']) ) {
 	$_POST = array_map('trim', $_POST);
@@ -29,9 +29,9 @@ if ( isset($_POST['email'], $_POST['rulername'], $_POST['planetname'], $_POST['p
 		}
 	}
 
-	if ( empty($_POST['race']) || !isset($arrRaces[ $_POST['race'] ]) ) {
-		exit('invalid race');
-	}
+	// if ( empty($_POST['race']) || !isset($arrRaces[ $_POST['race'] ]) ) {
+	// 	exit('invalid race');
+	// }
 
 	if ( $exists('email', $_POST['email']) ) {
 		sessionError('This e-mail already exists..?');
@@ -91,12 +91,12 @@ include 'tpl.anon-menu.php';
 		<input name="planetname" required />
 	</p>
 
-	<p>
+	<? /* <p>
 		Race:<br />
 		<select name="race" size="<?= count($arrRaces) ?>" required>
 			<?= html_options($arrRaces, '') ?>
 		</select>
-	</p>
+	</p> */ ?>
 
 	<p>
 		<button>Sign up</button>

@@ -26,13 +26,13 @@ if ( isset($_POST['rd']) ) {
 		}
 
 		// races //
-		$db->delete('d_r_d_per_race', ['r_d_id' => $id]);
-		foreach ( (array) @$data['race'] as $raceId ) {
-			$db->insert('d_r_d_per_race', [
-				'r_d_id' => $id,
-				'race_id' => $raceId,
-			]);
-		}
+		// $db->delete('d_r_d_per_race', ['r_d_id' => $id]);
+		// foreach ( (array) @$data['race'] as $raceId ) {
+		// 	$db->insert('d_r_d_per_race', [
+		// 		'r_d_id' => $id,
+		// 		'race_id' => $raceId,
+		// 	]);
+		// }
 
 		// skills //
 		$db->delete('d_skills_per_r_d', ['r_d_id' => $id]);
@@ -83,13 +83,13 @@ $multipler = function($table, $column) {
 
 $g_arrRequires = $multipler('d_r_d_requires', 'r_d_requires_id');
 $g_arrExcludes = $multipler('d_r_d_excludes', 'r_d_excludes_id');
-$g_arrForRaces = $multipler('d_r_d_per_race', 'race_id');
+// $g_arrForRaces = $multipler('d_r_d_per_race', 'race_id');
 
 $g_arrAllowsUnits = $db->select_fields('d_all_units', 'r_d_required_id, COUNT(*)', '1 GROUP BY r_d_required_id');
 
 $g_arrAllowsRDResults = $db->select_fields('d_r_d_results', 'done_r_d_id, COUNT(*)', '1 GROUP BY done_r_d_id');
 
-$arrRaces = $db->select_fields('d_races', 'id, race', '1 ORDER BY id ASC');
+// $arrRaces = $db->select_fields('d_races', 'id, race', '1 ORDER BY id ASC');
 $arrSkills = $db->select_fields('d_skills', 'id, skill', '1 ORDER BY id ASC');
 $arrResources = $db->select_fields('d_resources', 'id, resource', '1 ORDER BY id ASC');
 
@@ -120,10 +120,10 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 		</tr>
 		<tr valign="top">
 			<td data-rd="r" class="rb" align="center">
-				<?= printRDSelect($RD, 'r', $arrRaces, $arrSkills, $arrResources) ?>
+				<?= printRDSelect($RD, 'r', /*$arrRaces,*/ $arrSkills, $arrResources) ?>
 			</td>
 			<td data-rd="d" align="center">
-				<?= printRDSelect( $RD, 'd', $arrRaces, $arrSkills, $arrResources ) ?>
+				<?= printRDSelect($RD, 'd', /*$arrRaces,*/ $arrSkills, $arrResources) ?>
 			</td>
 		</tr>
 		<tr bgcolor="#dddddd">
@@ -158,8 +158,8 @@ body[data-rd]:not([data-rd="r"]) [data-rd="r"] .hideable {
 
 <?php
 
-function printRDSelect($RD, $type, $races, $skills, $resources) {
-	global $db, $g_arrRequires, $g_arrExcludes, $g_arrForRaces, $g_arrAllowsRDResults, $g_arrAllowsUnits;
+function printRDSelect($RD, $type, /*$races,*/ $skills, $resources) {
+	global $db, $g_arrRequires, $g_arrExcludes, /*$g_arrForRaces,*/ $g_arrAllowsRDResults, $g_arrAllowsUnits;
 
 	$rdOptions = array_map(function($rd) {
 		return strtoupper($rd['T']) . ' ' . $rd['id'] . '. ' . $rd['name'];
@@ -171,7 +171,7 @@ function printRDSelect($RD, $type, $races, $skills, $resources) {
 	$szHtml .= '<td></td>';
 	$szHtml .= '<th class="hideable">REQUIRE</th>';
 	$szHtml .= '<th class="hideable">EXCLUDE</th>';
-	$szHtml .= '<th class="hideable">RACES</th>';
+	// $szHtml .= '<th class="hideable">RACES</th>';
 	$szHtml .= '<th class="hideable">SKILLS</th>';
 	$szHtml .= '</tr>';
 
@@ -188,7 +188,7 @@ function printRDSelect($RD, $type, $races, $skills, $resources) {
 		$szHtml .= '<b>' . $rd->id . '. ' . $rd->name . '</b><br /><br />';
 		$szHtml .= 'Requires:&nbsp;' . count((array) @$g_arrRequires[ $rd->id ]) . '<br />';
 		$szHtml .= 'Excludes:&nbsp;' . count((array) @$g_arrExcludes[ $rd->id ]) . '<br />';
-		$szHtml .= 'Races:&nbsp;' . count((array) @$g_arrForRaces[ $rd->id ]) . '<br />';
+		// $szHtml .= 'Races:&nbsp;' . count((array) @$g_arrForRaces[ $rd->id ]) . '<br />';
 		$szHtml .= 'R&D&nbsp;results:&nbsp;' . (int) @$g_arrAllowsRDResults[ $rd->id ] . '<br />';
 		$szHtml .= 'Units:&nbsp;' . (int) @$g_arrAllowsUnits[ $rd->id ] . '<br />';
 		$szHtml .= '</td>';
@@ -208,11 +208,11 @@ function printRDSelect($RD, $type, $races, $skills, $resources) {
 		$szHtml .= '</td>';
 
 		// races //
-		$szHtml .= '<td class="hideable" align="center">';
-		$szHtml .= '<select size="' . count($races) . '" name="rd[' . $rd->id . '][race][]" multiple>';
-		$szHtml .= html_options($races, (array) @$g_arrForRaces[$rd->id]);
-		$szHtml .= '</select>';
-		$szHtml .= '</td>';
+		// $szHtml .= '<td class="hideable" align="center">';
+		// $szHtml .= '<select size="' . count($races) . '" name="rd[' . $rd->id . '][race][]" multiple>';
+		// $szHtml .= html_options($races, (array) @$g_arrForRaces[$rd->id]);
+		// $szHtml .= '</select>';
+		// $szHtml .= '</td>';
 
 		$arrRequiredSkills = $db->select('d_skills_per_r_d', ['r_d_id' => $rd->id])->all();
 		$arrRequiredSkills[] = ['skill_id' => '', 'required_value' => ''];

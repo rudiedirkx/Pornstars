@@ -26,10 +26,10 @@ _header();
 
 <form method="post" action>
 	<table>
-		<tr>
+		<? /* <tr>
 			<th>Race</th>
 			<td><?= $g_user->race ?></td>
-		</tr>
+		</tr> */ ?>
 		<tr>
 			<th>Email</th>
 			<td><?= $g_user->email ?></td>
