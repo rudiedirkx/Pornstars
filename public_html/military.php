@@ -36,20 +36,36 @@ else if ( isset($_POST['mission']) ) {
 		return !empty($mission['action']);
 	});
 
-	foreach ( $missions as $fleetname => $mission ) {
-		if ( !isset($g_user->fleets[$fleetname]) ) {
-			continue;
-		}
-		$fleet = $g_user->fleets[$fleetname];
+	try {
+		$g_user->takeTransaction(function($g_user) use ($missions) {
+			$messages = [];
+			foreach ( $missions as $fleetname => $mission ) {
+				if ( !isset($g_user->fleets[$fleetname]) ) {
+					continue;
+				}
+				$fleet = $g_user->fleets[$fleetname];
 
-		if ( !$fleet->available_actions || !isset($fleet->available_actions[ $mission['action'] ]) ) {
-			continue;
-		}
+				if ( !$fleet->available_actions || !isset($fleet->available_actions[ $mission['action'] ]) ) {
+					continue;
+				}
 
-		$action = 'execute' . $mission['action'];
-		if ( $message = call_user_func([$fleet, $action], $mission) ) {
-			sessionSuccess($message);
-		}
+				$action = 'validate' . $mission['action'];
+				call_user_func_array([$fleet, $action], [&$mission]);
+
+				$action = 'execute' . $mission['action'];
+				$messages[] = call_user_func([$fleet, $action], $mission);
+			}
+
+			if ( count($messages) ) {
+				sessionSuccess(implode('<br>', $messages));
+			}
+		});
+	}
+	catch ( FleetMissionException $ex ) {
+		sessionError('Invalid mission for [' . $ex->getFleet() . ']: ' . $ex->getMessage());
+	}
+	catch ( NotEnoughException $ex ) {
+		sessionError('Not enough: ' . $ex->getMessage());
 	}
 
 	return do_redirect();

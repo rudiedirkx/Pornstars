@@ -2,6 +2,7 @@
 
 namespace rdx\ps;
 
+use FleetMissionException;
 use rdx\ps\Planet;
 
 class Fleet extends Model {
@@ -16,7 +17,7 @@ class Fleet extends Model {
 	 * Static
 	 */
 
-	public function planetDistanceEta( Planet $from, Planet $to ) {
+	static public function planetDistanceEta( Planet $from, Planet $to ) {
 		if ( $from->galaxy_id == $to->galaxy_id ) {
 			return self::ETA_GALAXY;
 		}
@@ -106,12 +107,22 @@ class Fleet extends Model {
 	 * Logic
 	 */
 
+	public function calculateEtaTo( Planet $destination ) {
+		$distanceEta = self::planetDistanceEta($this->owner_planet, $destination);
+		$shipEta = $this->ships_eta;
+		return $this->owner_planet->ticker->rdResultTravelEta($distanceEta + $shipEta);
+	}
+
 	public function getTotalShips() {
 		return Unit::countReduce($this->ships, 'planet_amount');
 	}
 
+	public function validateReturn( array &$mission ) {
+		// Always fine?
+	}
+
 	public function executeReturn( array $mission ) {
-		$travelEta = max(1, self::planetDistanceEta($this->owner_planet, $this->destination_planet) - $this->travel_eta);
+		$travelEta = max(1, $this->calculateEtaTo($this->destination_planet) - $this->travel_eta);
 
 		// Return fleet
 		$this->update([
@@ -121,7 +132,11 @@ class Fleet extends Model {
 			// 'activated' => 0,
 		]);
 
-		return 'Turned around fleet ' . $this;
+		return "Turned around fleet $this";
+	}
+
+	public function validateDestroy( array &$mission ) {
+		// Always fine?
 	}
 
 	public function executeDestroy( array $mission ) {
@@ -139,37 +154,58 @@ class Fleet extends Model {
 			// 'activated' => 0,
 		]);
 
-		return 'Destroyed fleet ' . $this;
+		return "Destroyed fleet $this";
 	}
 
-	protected function executeMoveTroops( array $mission ) {
-		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
-		if ( $destination && $destination->id != $this->owner_planet_id ) {
+	public function validateAttack( array &$mission ) {
+		$this->validateMoveTroops($mission);
 
-			// @todo Check newbie status & score difference
-			// @todo Check power costs & pay
-
-			$this->update([
-				'action' => $mission['action'],
-				'destination_planet_id' => $destination->id,
-				'travel_eta' => self::planetDistanceEta($this->owner_planet, $destination),
-				'action_eta' => $mission['ticks'],
-				'activated' => 0,
-			]);
-			return $destination;
-		}
+		// @todo Check newbie status & score difference
 	}
 
 	public function executeAttack( array $mission ) {
-		if ( $destination = $this->executeMoveTroops($mission) ) {
-			return 'Fleet ' . $this . ' is now attacking ' . $destination;
-		}
+		$this->executeMoveTroops($mission);
+		$destination = $mission['destination'];
+		return "Fleet $this is now attacking $destination ($destination->pretty_coordinates)";
+	}
+
+	public function validateDefend( array &$mission ) {
+		$this->validateMoveTroops($mission);
 	}
 
 	public function executeDefend( array $mission ) {
-		if ( $destination = $this->executeMoveTroops($mission) ) {
-			return 'Fleet ' . $this . ' is now defending ' . $destination;
+		$this->executeMoveTroops($mission);
+		$destination = $mission['destination'];
+		return "Fleet $this is now defending $destination ($destination->pretty_coordinates)";
+	}
+
+	protected function validateMoveTroops( array &$mission ) {
+		$destination = Planet::fromCoordinates($mission['x'], $mission['y'], $mission['z']);
+		if ( !$destination || $destination->id == $this->owner_planet_id ) {
+			throw new FleetMissionException($this, "Invalid destination");
 		}
+
+		if ( empty($mission['ticks']) ) {
+			throw new FleetMissionException($this, "You must enter an action time");
+		}
+
+		$mission['destination'] = $destination;
+	}
+
+	protected function executeMoveTroops( array $mission ) {
+		$destination = $mission['destination'];
+		$eta = $this->calculateEtaTo($destination);
+
+		$powerUsage = $this->owner_planet->ticker->rdResultTravelCosts($this->ships_power);
+		$this->owner_planet->takeResources([$this->owner_planet->power_resource->id => $powerUsage]);
+
+		$this->update([
+			'action' => $mission['action'],
+			'destination_planet_id' => $destination->id,
+			'travel_eta' => $eta,
+			'action_eta' => $mission['ticks'],
+			'activated' => 0,
+		]);
 	}
 
 	public function moveShips( $shipId, $amount, self $to ) {

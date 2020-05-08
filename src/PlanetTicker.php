@@ -123,6 +123,20 @@ class PlanetTicker {
 		}, $costs);
 	}
 
+	public function rdResultTravelEta( int $base ) : int {
+		$rdFinished = $this->planet->finished_rd_ids;
+		$rdResults = $this->ticker->getRDResultsByTypeAndRD('travel_eta', $rdFinished);
+
+		return ceil($this->applyRdResults($base, $rdResults));
+	}
+
+	public function rdResultTravelCosts( int $base ) : int {
+		$rdFinished = $this->planet->finished_rd_ids;
+		$rdResults = $this->ticker->getRDResultsByTypeAndRD('power_usage', $rdFinished);
+
+		return ceil($this->applyRdResults($base, $rdResults));
+	}
+
 	protected function applyRdResults( int $base, array $results ) {
 		foreach ( $results as $result ) {
 			switch ( $result->unit ) {

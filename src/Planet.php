@@ -205,7 +205,7 @@ class Planet extends Model {
 	}
 
 	public function get_pretty_coordinates() {
-		return '[' . implode(':', $this->coordinates) . ']';
+		return implode(':', $this->coordinates);
 	}
 
 	public function get_x() {

@@ -172,7 +172,7 @@ echo "-- ^ has been destroyed\n";
 echo "-- ^ is done & returning\n";
 					$fleet->update([
 						'action' => 'return',
-						'travel_eta' => Fleet::planetDistanceEta($fleet->owner_planet, $fleet->destination_planet),
+						'travel_eta' => $fleet->calculateEtaTo($fleet->destination_planet),
 					]);
 				}
 			}

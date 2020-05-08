@@ -1,11 +1,24 @@
 <?php
 
+use rdx\ps\Fleet;
 use rdx\ps\Planet;
 use rdx\ps\Unit;
 
 class NotEnoughException extends Exception {
 	public function __construct( $types ) {
 		parent::__construct(implode(', ', (array) $types));
+	}
+}
+
+class FleetMissionException extends Exception {
+	protected $fleet;
+	public function __construct( Fleet $fleet, $message ) {
+		parent::__construct($message);
+
+		$this->fleet = $fleet;
+	}
+	public function getFleet() {
+		return $this->fleet;
 	}
 }
 
@@ -368,7 +381,7 @@ function getFleetMatrix( Planet $objPlanet, $withDetails = true ) {
 
 	if ( $withDetails ) {
 		$html .= '<tr>';
-		$html .= '<th>ETA</th>';
+		$html .= '<th>Ship ETA</th>';
 		foreach ( $fleets as $fleet ) {
 			$html .= '<td>' . ( $fleet->fleetname ? $fleet->ships_eta : '' ) . '</td>';
 		}
