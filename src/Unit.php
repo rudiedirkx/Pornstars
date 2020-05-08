@@ -39,6 +39,8 @@ class Unit extends Model {
 		'newsscan' => 'scan',
 		'productionscan' => 'scan',
 		'politicalscan' => 'scan',
+		'freezership' => 'ship',
+		'freezerdefence' => 'defence',
 	];
 
 	/**

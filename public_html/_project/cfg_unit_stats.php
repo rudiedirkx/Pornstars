@@ -57,7 +57,20 @@ if ( isset($_POST['units']) ) {
 	return do_redirect(null);
 }
 
-// @todo Create new. Incl type-table, see Unit::$tables
+if ( isset($_POST['new_unit_type'], $_POST['r_d_required']) ) {
+	$db->begin();
+
+	$id = Unit::insert([
+		'T' => $_POST['new_unit_type'],
+		'r_d_required_id' => $_POST['r_d_required'],
+		'o' => 99,
+	]);
+	$db->insert(Unit::$tables[$_POST['new_unit_type']], ['id' => $id]);
+
+	$db->commit();
+
+	return do_redirect();
+}
 
 $arrRD = $db->select_fields('d_r_d_available', "id, CONCAT(UPPER(T), ': ', name)", '1 ORDER BY T, id');
 $arrUsedRD = array_intersect_key($arrRD, $db->select_fields('d_all_units', 'r_d_required_id', '1'));
@@ -190,7 +203,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 			echo '<tr>';
 			echo '<th>Order</th>';
-			echo '<td colspan="9"><input name="units[' . $unit->id . '][o]" value="' . $unit->o . '" size="5" /></td>';
+			echo '<td colspan="9"><input type="number" min="0" name="units[' . $unit->id . '][o]" value="' . $unit->o . '" size="5" /></td>';
 			echo '</tr>';
 
 			echo '</table>';
@@ -232,7 +245,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 <form method="post" action>
 	<fieldset>
-		<select name="new_unit_type"><?= html_options($types) ?></select>
+		<select name="new_unit_type"><?= html_options(array_combine($types, $types)) ?></select>
 		<select name="r_d_required"><?= html_options($arrRD) ?></select>
 		<input type="submit" value="New" />
 	</fieldset>
