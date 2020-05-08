@@ -6,14 +6,13 @@ require_once('inc.shipstats.php');
 
 _header();
 
-$t_arrCombatStats = db_select('d_combat_stats', 'ratio != 0.0');
+$t_arrCombatStats = $db->select('d_combat_stats', 'ratio != 0.0')->all();
 $arrCombatStats = array();
 foreach ( $t_arrCombatStats AS $arrStats ) {
 	$arrCombatStats[$arrStats['shooting_unit_id']][$arrStats['receiving_unit_id']] = array((float)$arrStats['ratio'], $arrStats['target_priority']);
 }
 
-$arrAttackers = db_select('d_all_units', 'id IN (SELECT DISTINCT shooting_unit_id FROM d_combat_stats) ORDER BY id ASC');
-$arrDefenders = db_select('d_all_units', 'id IN (SELECT DISTINCT receiving_unit_id FROM d_combat_stats) ORDER BY id ASC');
+$arrAttackers = $arrDefenders = $db->select('d_all_units', "T IN ('ship', 'defence') ORDER BY o ASC")->all();
 
 $iFreezers = 0;
 
