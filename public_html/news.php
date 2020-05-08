@@ -1,6 +1,9 @@
 <?php
 
-require_once('inc.config.php');
+use rdx\ps\News;
+
+require 'inc.bootstrap.php';
+
 logincheck();
 
 if ( isset($_GET['delete'], $_GET['all']) )
@@ -21,14 +24,14 @@ else if ( isset($_GET['delete'], $_GET['subject']) )
 
 _header();
 
+$arrNewsItems = News::all("planet_id = ? AND (deleted = '0' OR seen = '0') ORDER BY id DESC", [PLANET_ID]);
+
 ?>
 <div class="header">Planetary News</div>
 
 <br />
 
 <?php
-
-$arrNewsItems = db_select('d_news_subjects s, news n', 'n.news_subject_id = s.id AND n.planet_id = '.PLANET_ID.' AND (n.deleted = \'0\' OR n.seen = \'0\') ORDER BY n.id DESC');
 
 if ( 0 < count($arrNewsItems) )
 {
@@ -58,8 +61,6 @@ else {
 
 echo '<br />';
 
-db_update('news', 'seen = \'1\'', 'planet_id = '.PLANET_ID.' AND utc_time < '.time());
+$db->update('news', "seen = '1'", 'planet_id = ? AND utc_time < ?', [PLANET_ID, time()]);
 
 _footer();
-
-?>

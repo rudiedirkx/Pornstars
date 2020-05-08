@@ -12,7 +12,7 @@ class Thread extends Model {
 	 * Static
 	 */
 
-	public function findReadable( $id, Planet $planet ) {
+	static public function findReadable( $id, Planet $planet ) {
 		if ( $id ) {
 			if ( $thread = self::find($id) ) {
 				if ( !$thread->parent_thread_id && $thread->galaxy_id == $planet->galaxy_id ) {
