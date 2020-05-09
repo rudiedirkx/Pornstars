@@ -8,6 +8,20 @@ require '../inc.bootstrap.php';
 <head>
 <title>TechTree V2</title>
 <style>
+body {
+	margin-top: 40px;
+}
+#info {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 40px;
+	padding: 0 10px;
+	line-height: 20px;
+	white-space: pre-line;
+	background-color: pink;
+}
 table {
 	border-collapse: separate;
 	border-spacing: 0 5px;
@@ -30,6 +44,7 @@ th.focus {
 </head>
 
 <body>
+<div id="info"></div>
 
 <?= getChildren() ?>
 
@@ -44,10 +59,15 @@ document.onclick = function(e) {
 	});
 
 	if (unfocus.indexOf(cell) < 0) {
+		document.querySelector('#info').textContent = cell.textContent + "\n" + cell.dataset.explanation;
+
 		var focus = [].slice.call(document.querySelectorAll('[data-rd-id="' + cell.dataset.rdId + '"]'));
 		focus.forEach(function(cell) {
 			cell.classList.add('focus');
 		});
+	}
+	else {
+		document.querySelector('#info').textContent = '';
 	}
 };
 </script>
@@ -73,11 +93,11 @@ function getChildren( $f_iParent = null, &$arrDone = array(0) ) {
 			$name = strtoupper($rd['T']) . '. ' . $rd['name'];
 
 			if ( isset($arrDone[ $rd['id'] ]) ) {
-				$szHtml .= '<tr><th data-rd-id="' . $rd['id'] . '" class="double">' . html($name) . '</th></tr>';
+				$szHtml .= '<tr><th data-explanation="' . html($rd['explanation']) . '" data-rd-id="' . $rd['id'] . '" class="double">' . html($name) . '</th></tr>';
 			}
 			else {
 				$arrDone[ $rd['id'] ] = $rd['id'];
-				$szHtml .= '<tr><th data-rd-id="' . $rd['id'] . '">' . html($name) . '</th>';
+				$szHtml .= '<tr><th data-explanation="' . html($rd['explanation']) . '" data-rd-id="' . $rd['id'] . '">' . html($name) . '</th>';
 				$szChildrenHtml = getChildren($rd['id'], $arrDone);
 				if ( $szChildrenHtml ) {
 					$szHtml .= '<td>' . $szChildrenHtml . '</td>';

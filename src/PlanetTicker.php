@@ -137,6 +137,13 @@ class PlanetTicker {
 		return ceil($this->applyRdResults($base, $rdResults));
 	}
 
+	public function rdResultFleets( int $base ) : int {
+		$rdFinished = $this->planet->finished_rd_ids;
+		$rdResults = $this->ticker->getRDResultsByTypeAndRD('fleets', $rdFinished);
+
+		return floor($this->applyRdResults($base, $rdResults));
+	}
+
 	protected function applyRdResults( int $base, array $results ) {
 		foreach ( $results as $result ) {
 			switch ( $result->unit ) {

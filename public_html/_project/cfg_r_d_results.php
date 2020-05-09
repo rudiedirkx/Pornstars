@@ -2,7 +2,7 @@
 
 require_once '../inc.bootstrap.php';
 
-$types = ['travel_eta', 'r_d_eta', 'r_d_costs', 'power_usage', 'offense', 'defence'];
+$types = ['travel_eta', 'r_d_eta', 'r_d_costs', 'power_usage', 'offense', 'defence', 'fleets'];
 $types = $db->select_fields('d_resources', "CONCAT('income:', id), CONCAT(resource, ' income')", '1') + array_combine($types, $types);
 
 $units = ['real', 'pct'];
@@ -45,7 +45,7 @@ $arrRDResults[] = new db_generic_record(['id' => '0']);
 		foreach ( $arrRDResults AS $n => $r ) {
 			$dummy = $r->id ? null : '--';
 
-			echo '<tbody class="filterable">';
+			echo '<tbody class="' . ($r->id ? 'filterable' : '') . '">';
 			echo '<tr>';
 			echo '<th>[' . $r->id . '] Type</th>';
 			echo '<td><select data-type="' . $r->type . '" name="r[' . $r->id . '][type]">' . html_options($types, $r->type, $dummy) . '</select></td>';

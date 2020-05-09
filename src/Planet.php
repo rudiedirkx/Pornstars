@@ -119,8 +119,13 @@ class Planet extends Model {
 		return $this->finished_rd_ids = $db->select_fields('planet_r_d', 'r_d_id, r_d_id', 'eta = 0 AND planet_id = ?', [$this->id]);
 	}
 
+	public function get_num_fleets() {
+		global $NUM_OUTGOING_FLEETS;
+		return $this->num_fleets = $this->ticker->rdResultFleets($NUM_OUTGOING_FLEETS);
+	}
+
 	public function get_fleets() {
-		$fleets = Fleet::all('owner_planet_id = ? ORDER BY fleetname', [$this->id]);
+		$fleets = Fleet::all('owner_planet_id = ? AND fleetname <= ? ORDER BY fleetname', [$this->id, $this->num_fleets]);
 		return $this->fleets = array_reduce($fleets, function($fleets, $fleet) {
 			return $fleets + [$fleet->fleetname => $fleet];
 		}, []);
