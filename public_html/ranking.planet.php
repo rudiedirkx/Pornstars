@@ -18,7 +18,7 @@ $planets = Planet::all('1 ORDER BY score DESC');
 
 <table>
 	<tr>
-		<th>#</th>
+		<th align="right">#</th>
 		<th nowrap>X : Y : Z</th>
 		<th>Tag</th>
 		<th>Rulername</th>
@@ -26,9 +26,9 @@ $planets = Planet::all('1 ORDER BY score DESC');
 		<th>Score</th>
 		<th>Size</th>
 	</tr>
-	<? foreach ( $planets as $planet ): ?>
+	<? $n = 0; foreach ( $planets as $planet ): ?>
 		<tr>
-			<td>#</td>
+			<td align="right"><?= ++$n ?></td>
 			<td nowrap><a href="galaxy.php?x=<?= $planet->x ?>&y=<?= $planet->y ?>"><?= $planet->x ?> : <?= $planet->y ?></a> : <?= $planet->z ?></td>
 			<td><?= html($planet->alliance_tag) ?></td>
 			<td><?= html($planet->rulername) ?></td>

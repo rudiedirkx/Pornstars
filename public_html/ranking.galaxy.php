@@ -18,16 +18,16 @@ $galaxies = Galaxy::all('1 ORDER BY (SELECT SUM(score) FROM planets WHERE galaxy
 
 <table>
 	<tr>
-		<th>#</th>
+		<th align="right">#</th>
 		<th>X&nbsp;:&nbsp;Y</th>
 		<th>Name</th>
 		<th>Score</th>
 		<th>Size</th>
 		<th># planets</th>
 	</tr>
-	<? foreach ( $galaxies as $galaxy ): ?>
+	<? $n = 0; foreach ( $galaxies as $galaxy ): ?>
 		<tr>
-			<td>#</td>
+			<td align="right"><?= ++$n ?></td>
 			<td><a href="galaxy.php?x=<?= $galaxy->x ?>&y=<?= $galaxy->y ?>"><?= implode('&nbsp;:&nbsp;', $galaxy->coordinates) ?></a></td>
 			<td><?= html($galaxy->name) ?></td>
 			<td><?= nummertje($galaxy->score) ?></td>

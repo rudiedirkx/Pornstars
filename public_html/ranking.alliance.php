@@ -18,16 +18,16 @@ $alliances = Alliance::all('1 ORDER BY (SELECT SUM(score) FROM planets WHERE all
 
 <table>
 	<tr>
-		<th>#</th>
+		<th align="right">#</th>
 		<th>Tag</th>
 		<th>Name</th>
 		<th>Score</th>
 		<th>Size</th>
 		<th># planets</th>
 	</tr>
-	<? foreach ( $alliances as $alliance ): ?>
+	<? $n = 0; foreach ( $alliances as $alliance ): ?>
 		<tr>
-			<td>#</td>
+			<td align="right"><?= ++$n ?></td>
 			<td><?= html($alliance->tag) ?></td>
 			<td><a href="alliance.php?id=<?= $alliance->id ?>"><?= html($alliance->name) ?></a></td>
 			<td><?= nummertje($alliance->score) ?></td>
