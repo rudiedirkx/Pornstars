@@ -6,7 +6,7 @@ require_once('inc.shipstats.php');
 
 _header();
 
-$rs = db_select('d_resources', '1 ORDER BY id ASC');
+$rs = $db->select('d_resources', '1 ORDER BY id ASC')->all();
 
 ?>
 
@@ -41,12 +41,12 @@ $rs = db_select('d_resources', '1 ORDER BY id ASC');
 
 $c = array('#333333', '#222222');
 $i = $t = 0;
-$arrFighterUnits = db_select_by_field('d_all_units', 'id', 'T IN (\'ship\', \'defence\') ORDER BY T ASC, o ASC');
+$arrFighterUnits = $db->select_by_field('d_all_units', 'id', 'T IN (\'ship\', \'defence\') ORDER BY T DESC, o ASC')->all();
 foreach ( $arrFighterUnits AS $iUnitId => &$arrUnit ) {
 
-	$arrUnit['targets'] = array_values(db_select_fields('d_combat_stats', 'receiving_unit_id,receiving_unit_id', 'shooting_unit_id = '.(int)$arrUnit['id'].' ORDER BY target_priority ASC LIMIT 3'));
+	$arrUnit['targets'] = array_values($db->select_fields('d_combat_stats', 'receiving_unit_id,receiving_unit_id', 'shooting_unit_id = '.(int)$arrUnit['id'].' ORDER BY target_priority ASC LIMIT 3'));
 
-	$szType = 'defence' === $arrUnit['T'] ? 'DEF' : ( $arrUnit['is_stealth'] ? 'STE' : ( !$arrUnit['is_offensive'] ? 'NLF' : 'NOR' ) );
+	$szType = 'defence' === $arrUnit['T'] ? 'DEF' : ( $arrUnit['is_stealth'] ? 'STE' : 'NOR' );
 	$szTypes = array(
 		'NOR'	=> 'Normal',
 		'NLF'	=> 'Non-lethal',
@@ -61,7 +61,7 @@ foreach ( $arrFighterUnits AS $iUnitId => &$arrUnit ) {
 	echo '<td align="center">'.( isset($arrUnit['targets'][0]) ? strtolower($arrFighterUnits[$arrUnit['targets'][0]]['unit_short']) : '-' ).'</td>';
 	echo '<td align="center">'.( isset($arrUnit['targets'][1]) ? strtolower($arrFighterUnits[$arrUnit['targets'][1]]['unit_short']) : '-' ).'</td>';
 	echo '<td align="center" style="border-right:solid 1px black;">'.( isset($arrUnit['targets'][2]) ? strtolower($arrFighterUnits[$arrUnit['targets'][2]]['unit_short']) : '-' ).'</td>';
-	foreach ( db_fetch('SELECT c.*, r.resource FROM d_resources r LEFT JOIN d_unit_costs c ON r.id = c.resource_id AND c.unit_id = '.$arrUnit['id'].' WHERE 1 ORDER BY r.id ASC') AS $costs ) {
+	foreach ( $db->fetch('SELECT c.*, r.resource FROM d_resources r LEFT JOIN d_unit_costs c ON r.id = c.resource_id AND c.unit_id = '.$arrUnit['id'].' WHERE 1 ORDER BY r.id ASC') AS $costs ) {
 		echo '<td align="right" title="'.$costs['resource'].'">'.nummertje($costs['amount']).'</td>';
 	}
 	echo '<td align="right" style="border-right:solid 1px black;">'.$arrUnit['build_eta'].'</td>';

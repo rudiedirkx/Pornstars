@@ -138,7 +138,7 @@ $szCurLeader = '<a style="cursor:help;" title="' . html($objLeaderPlanet) . '" h
 			<?php } ?>
 		</td>
 		<td>Leader:<br /><?= $szCurLeader ?></td>
-		<td>You:<br /><?= $g_user->ranked ?> / <?= nummertje($g_user->score) ?></td>
+		<td>You:<br /><?= $g_user->rankedth ?> / <?= nummertje($g_user->score) ?></td>
 	</tr>
 </table>
 <?php

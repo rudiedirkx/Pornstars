@@ -11,10 +11,15 @@ $_time = microtime(1);
 $debug = empty($_GET['ajax']);
 
 
-$ticker = Ticker::instance();
+$ticker = Ticker::instance($debug);
 
 
-// $db->begin();
+// Missing ships & defences
+$ticker->ensureZeroShips();
+$ticker->ensureZeroDefences();
+
+
+$db->begin();
 
 
 // Resources
@@ -67,10 +72,6 @@ if ($debug) {
 }
 
 $battles = $ticker->makeBattles($fleets);
-if ($debug) {
-	echo "Battles:\n";
-	dump($battles);
-}
 foreach ($battles as $battle) {
 	$ticker->fightBattle($battle);
 }
@@ -86,6 +87,10 @@ $g_prefs->update([
 	'last_tick' => time(),
 	'tickcount = tickcount + 1',
 ]);
+
+$db->commit();
+
+
 
 echo "\nTook " . round((microtime(1) - $_time) * 1000) . " ms\n\n";
 

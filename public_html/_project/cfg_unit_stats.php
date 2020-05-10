@@ -45,7 +45,7 @@ if ( isset($_POST['units']) ) {
 					'shooting_unit_id' => $id,
 					'receiving_unit_id' => $otherId,
 					'ratio' => 1 / $combat['ratio'],
-					'target_priority' => $combat['target_priority'] ?: 1,
+					'target_priority' => $combat['target_priority'] ?: 0,
 				]);
 			}
 		}
@@ -57,6 +57,7 @@ if ( isset($_POST['units']) ) {
 	return do_redirect(null);
 }
 
+// Create new
 if ( isset($_POST['new_unit_type'], $_POST['r_d_required']) ) {
 	$db->begin();
 
@@ -99,6 +100,12 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 
 ?>
 <title>Units</title>
+
+<style>
+input[type="number"][size="1"] {
+	width: 2.5em;
+}
+</style>
 
 <p>
 	Filter:
@@ -222,7 +229,7 @@ $arrSteals = array_combine($arrSteals, $arrSteals);
 					echo '<td nowrap>' . $unit2->unit . '</td>';
 					echo '<td>';
 					echo '<input name="units[' . $unit->id . '][combat_stats][' . $unit2->id . '][ratio]" value="' . ( $combat ? round(1 / $combat[0], 2) : '' ) . '" size="5" />';
-					echo '<input name="units[' . $unit->id . '][combat_stats][' . $unit2->id . '][target_priority]" value="'.( $combat ? $combat[1] : '' ) . '" size="1" />';
+					echo '<input name="units[' . $unit->id . '][combat_stats][' . $unit2->id . '][target_priority]" value="'.( $combat ? $combat[1] : '' ) . '" size="1" type="number" />';
 					echo '</td>';
 					echo '</tr>';
 				}

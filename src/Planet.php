@@ -192,6 +192,13 @@ class Planet extends Model {
 		return $this->resources = $db->select_by_field('d_resources c, planet_resources p', 'id', 'c.id = p.resource_id AND p.planet_id = ?', [$this->id], ['class' => Resource::class])->all();
 	}
 
+	public function get_rankedth() {
+		$suffix = ['th', 'st', 'nd', 'rd'];
+		$rank = $this->ranked;
+		$suffix = $suffix[substr($rank, -1)] ?? 'th';
+		return "$rank$suffix";
+	}
+
 	public function get_ranked() {
 		global $db;
 		return $this->ranked = $db->count('planets', 'score > ?', [$this->score]) + 1;

@@ -6,6 +6,9 @@ class Ticker {
 
 	static $instance;
 
+	protected $db;
+	protected $debug = false;
+
 	protected $rd_results;
 	protected $power_map;
 
@@ -33,9 +36,7 @@ class Ticker {
 
 	public function getPowerMap() {
 		if ( !$this->power_map ) {
-			global $db;
-
-			$this->power_map = $db->select_fields('d_all_units', 'id, power', 'T = ?', ['power']);
+			$this->power_map = $this->db->select_fields('d_all_units', 'id, power', 'T = ?', ['power']);
 		}
 
 		return $this->power_map;
@@ -43,9 +44,7 @@ class Ticker {
 
 	public function getRDResultsByTypeAndRD( $type, array $rd ) {
 		if ( !$this->rd_results ) {
-			global $db;
-
-			$results = $db->select('d_r_d_results', "enabled = '1' ORDER BY o");
+			$results = $this->db->select('d_r_d_results', "enabled = '1' ORDER BY o");
 
 			$this->rd_results = [];
 			foreach ( $results as $result ) {
@@ -67,10 +66,26 @@ class Ticker {
 		return [];
 	}
 
-	public function updateScores() {
-		global $db;
+	public function ensureZeroShips() {
+		$this->db->execute("
+			INSERT INTO ships_in_fleets (fleet_id, unit_id)
+			SELECT f.id, s.id FROM fleets f, d_ships s WHERE NOT EXISTS (
+				SELECT * FROM ships_in_fleets WHERE unit_id = s.id AND fleet_id = f.id
+			)
+		");
+	}
 
-		$db->execute('
+	public function ensureZeroDefences() {
+		$this->db->execute("
+			INSERT INTO defence_on_planets (planet_id, unit_id)
+			SELECT p.id, d.id FROM planets p, d_defence d WHERE NOT EXISTS (
+				SELECT * FROM defence_on_planets WHERE unit_id = d.id AND planet_id = p.id
+			)
+		");
+	}
+
+	public function updateScores() {
+		$this->db->execute('
 			UPDATE planets
 			SET score =
 				0.01 * (			/*SHIPS IN FLEETS*/
@@ -138,10 +153,14 @@ class Ticker {
 		$battles = [];
 		foreach ( $fleets as $i => $fleet ) {
 			if ( $fleet->travel_eta == 0 && $fleet->action_eta > 0 && $fleet->action != 'return' ) {
-				isset($battles[$fleet->destination_planet_id]) or $battles[$fleet->destination_planet_id] = new Battle($fleet->destination_planet);
+				isset($battles[$fleet->destination_planet_id]) or $battles[$fleet->destination_planet_id] = new Battle($this->units, $fleet->destination_planet);
 				$battles[$fleet->destination_planet_id]->addFleet($fleet);
 				unset($fleets[$i]);
 			}
+		}
+
+		foreach ($battles as $battle) {
+			$battle->prepareRatios();
 		}
 
 		return $battles;
@@ -149,35 +168,34 @@ class Ticker {
 
 	public function fightBattle( Battle $battle ) {
 echo "BATTLE AT $battle->location\n";
-		$returning = [];
-		foreach ([$battle->defending, $battle->attacking] as $fleets) {
-			foreach ($fleets as $fleet) {
+		foreach ($battle->getAllActiveFleets() as $fleet) {
 echo "- [$fleet->action] $fleet->owner_planet's $fleet (".($fleet->action_eta-1)." left)\n";
-				$fleet->update([
-					'action_eta' => $fleet->action_eta - 1,
-				]);
+			$fleet->update([
+				'action_eta' => $fleet->action_eta - 1,
+			]);
+		}
 
-				// @todo Fight?
+		$battle->fight();
 
-				if ($fleet->getTotalShips() == 0) {
+		foreach ($battle->getAllActiveFleets() as $fleet) {
+			if ($fleet->getTotalShips() == 0) {
 echo "-- ^ has been destroyed\n";
-					$fleet->update([
-						'action' => null,
-						'travel_eta' => 0,
-						'action_eta' => 0,
-						'destination_planet_id' => null,
-					]);
-				}
-				elseif ($fleet->action_eta == 0) {
+				$fleet->update([
+					'action' => null,
+					'travel_eta' => 0,
+					'action_eta' => 0,
+					'destination_planet_id' => null,
+				]);
+			}
+			elseif ($fleet->action_eta == 0) {
 echo "-- ^ is done & returning\n";
-					$fleet->update([
-						'action' => 'return',
-						'travel_eta' => $fleet->calculateEtaTo($fleet->destination_planet),
-					]);
-				}
+				$fleet->update([
+					'action' => 'return',
+					'travel_eta' => $fleet->calculateEtaTo($fleet->destination_planet),
+				]);
 			}
 		}
-echo "\n";
+$this->debug and dump($battle);
 	}
 
 	public function moveFleets( array $fleets ) {
@@ -200,9 +218,12 @@ echo "$fleet->owner_planet's $fleet traveled to $fleet->action (".($fleet->trave
 		}
 	}
 
-	static public function instance() {
+	static public function instance($debug = false) {
 		if ( !self::$instance ) {
+			global $db;
 			self::$instance = new self;
+			self::$instance->db = $db;
+			self::$instance->debug = $debug;
 		}
 
 		return self::$instance;

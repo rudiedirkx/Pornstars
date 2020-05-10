@@ -85,6 +85,11 @@ class Unit extends Model {
 	 * Getters
 	 */
 
+	public function get_kill_ratios() {
+		global $db;
+		return $db->select_fields('d_combat_stats', 'receiving_unit_id, ratio', 'shooting_unit_id = ? ORDER BY target_priority', [$this->id]);
+	}
+
 	public function get_costs() {
 		global $db;
 		$costs = $db->select('d_unit_costs', 'unit_id = ? ORDER BY variant', [$this->id]);
